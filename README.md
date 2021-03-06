@@ -5,8 +5,8 @@
 
 <!-- badges: start -->
 
-[![Render and Deploy RMarkdown
-Website](https://github.com/Wang-Cankun/iris3api/actions/workflows/main.yml/badge.svg)](https://github.com/Wang-Cankun/iris3api/actions/workflows/main.yml)
+[![Render and Deploy pkgdown
+Website](https://github.com/Wang-Cankun/iris3api/actions/workflows/pkgdown.yml/badge.svg)](https://github.com/Wang-Cankun/iris3api/actions/workflows/pkgdown.yml)
 [![R-CMD-check](https://github.com/Wang-Cankun/iris3api/workflows/R-CMD-check/badge.svg)](https://github.com/Wang-Cankun/iris3api/actions)
 [![Project Status: WIP - Initial development is in progress, but there
 has not yet been a stable, usable release suitable for the
