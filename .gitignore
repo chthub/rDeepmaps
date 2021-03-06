@@ -5,6 +5,11 @@ inst/doc
 .httr-oauth
 .DS_Store
 
+# Example data
+
+/data-raw/*.csv
+/data-raw/*.fst
+
 # Site
 
 _site

@@ -22,7 +22,14 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Imports: 
-    Seurat
+    Seurat,
+    jsonlite,
+    Polychrome,
+    scales,
+    qs
 Language: en-US
 URL: https://github.com/Wang-Cankun/iris3api
 BugReports: https://github.com/Wang-Cankun/iris3api/issues
+Depends: 
+    tidyverse,
+    R (>= 2.10)

@@ -6,3 +6,16 @@
 ## usethis namespace: start
 ## usethis namespace: end
 NULL
+
+#' Hello world function
+#'
+#' This function sends hello message from a given name.
+#'
+#' @param name echo name
+#'
+#' @return A string
+#' @export
+hello_name <- function(name){
+  result <- as.character(str_glue('Hello, {name}'))
+}
+
