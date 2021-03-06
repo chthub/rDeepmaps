@@ -6,9 +6,12 @@
 #'
 
 load_zeisel_2015 <- function() {
-  library(fst)
-  expr <- read_fst('data-raw/Zeisel_expression.fst')
-  meta <- read_csv('data-raw/Zeisel_index_label.csv')
+  expr <- fst::read_fst('data-raw/Zeisel_expression.fst')
+  meta <- readr::read_csv('data-raw/Zeisel_index_label.csv')
+  rownames(expr) <- NULL
+  rownames(meta) <- NULL
+  expr <- tibble::column_to_rownames(expr, "X1")
+  meta <- tibble::column_to_rownames(meta, "Cell")
   zeisel_2015 <- list(expr=expr, meta=meta)
   usethis::use_data(zeisel_2015, overwrite = TRUE)
 }
@@ -19,8 +22,12 @@ load_zeisel_2015 <- function() {
 #' @return null
 #'
 load_yan_2013 <- function() {
-  expr <- read_csv('data-raw/Yan_2013_expression.csv')
-  meta <- read_csv('data-raw/Yan_2013_label.csv')
+  expr <- readr::read_csv('data-raw/Yan_2013_expression.csv')
+  meta <- readr::read_csv('data-raw/Yan_2013_label.csv')
+  rownames(expr) <- NULL
+  rownames(meta) <- NULL
+  expr <- tibble::column_to_rownames(expr, "Gene_ID")
+  meta <- tibble::column_to_rownames(meta, "Cell_type")
   yan_2013 <- list(expr=expr, meta=meta)
   usethis::use_data(yan_2013, overwrite = TRUE)
 }
