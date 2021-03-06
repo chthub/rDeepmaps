@@ -18,8 +18,7 @@ Suggests:
     knitr,
     rmarkdown,
     styler,
-    spelling,
-    covr
+    spelling
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Imports: 
