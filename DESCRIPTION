@@ -17,6 +17,12 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    styler
+    styler,
+    spelling
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Imports: 
+    Seurat
+Language: en-US
+URL: https://github.com/Wang-Cankun/iris3api
+BugReports: https://github.com/Wang-Cankun/iris3api/issues
