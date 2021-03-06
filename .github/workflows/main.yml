@@ -3,6 +3,8 @@ name: Render and Deploy RMarkdown Website
 jobs:
   build:
     runs-on: ubuntu-18.04
+    env:
+      DEPLOY_PATH: _site
     steps:
       - name: Checkout Repository
         uses: actions/checkout@master
@@ -13,8 +15,7 @@ jobs:
       - name: Render Site
         run: |-
           Rscript -e "rmarkdown::render_site(encoding = 'UTF-8')"
-          echo "DEPLOY_PATH=$(Rscript -e "cat(rmarkdown::site_config()[['output_dir']])")" >> $GITHUB_ENV
-          # echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(rmarkdown::site_config()[['output_dir']])")"
+          # echo "DEPLOY_PATH=$(Rscript -e "cat(rmarkdown::site_config()[['output_dir']])")" >> $GITHUB_ENV
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
         uses: maxheld83/ghpages@v0.3.0
