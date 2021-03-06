@@ -18,7 +18,8 @@ Suggests:
     knitr,
     rmarkdown,
     styler,
-    spelling
+    spelling,
+    covr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Imports: 
@@ -26,10 +27,10 @@ Imports:
     jsonlite,
     Polychrome,
     scales,
-    qs
+    qs,
+    tidyverse
 Language: en-US
 URL: https://github.com/Wang-Cankun/iris3api
 BugReports: https://github.com/Wang-Cankun/iris3api/issues
 Depends: 
-    tidyverse,
     R (>= 2.10)

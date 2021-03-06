@@ -16,6 +16,6 @@ NULL
 #' @return A string
 #' @export
 hello_name <- function(name){
-  result <- as.character(str_glue('Hello, {name}'))
+  result <- as.character(stringr::str_glue('Hello, {name}'))
 }
 

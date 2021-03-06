@@ -7,13 +7,12 @@
 
 [![Render and Deploy RMarkdown
 Website](https://github.com/Wang-Cankun/iris3api/actions/workflows/main.yml/badge.svg)](https://github.com/Wang-Cankun/iris3api/actions/workflows/main.yml)
-
 [![R-CMD-check](https://github.com/Wang-Cankun/iris3api/workflows/R-CMD-check/badge.svg)](https://github.com/Wang-Cankun/iris3api/actions)
-
 [![Project Status: WIP - Initial development is in progress, but there
 has not yet been a stable, usable release suitable for the
 public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-
+[![Codecov test
+coverage](https://codecov.io/gh/Wang-Cankun/iris3api/branch/master/graph/badge.svg)](https://codecov.io/gh/Wang-Cankun/iris3api?branch=master)
 <!-- badges: end -->
 
 The package is the R API server for IRIS3 website.
