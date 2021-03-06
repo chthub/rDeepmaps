@@ -1,4 +1,5 @@
 name: 'iris3-api-website'
+output_dir: public
 navbar:
   title: 'iris3-api'
   left:

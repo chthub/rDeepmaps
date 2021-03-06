@@ -4,7 +4,6 @@ jobs:
   build:
     runs-on: ubuntu-18.04
     env:
-      DEPLOY_PATH: _site
     steps:
       - name: Checkout Repository
         uses: actions/checkout@master
@@ -20,6 +19,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: maxheld83/ghpages@v0.3.0
         env:
-          BUILD_DIR: $DEPLOY_PATH
+          BUILD_DIR: public
           GH_PAT: ${{ secrets.GH_PAT }}
     container: rocker/verse:latest

@@ -28,9 +28,9 @@ The package is the R API server for IRIS3 website.
 
 ## Installation
 
-```{r}
+```{r, eval=FALSE}
 library(devtools)
-install_github("Wang-Cankun/iris3api")
+install_github("Wang-Cankun/iris3api@master")
 
 ```
 ## Example
