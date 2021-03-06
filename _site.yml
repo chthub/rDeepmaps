@@ -1,0 +1,8 @@
+name: 'iris3-api-website'
+navbar:
+  title: 'iris3-api'
+  left:
+    - text: 'Home'
+      href: index.html
+    - text: 'News'
+      href: news.html
