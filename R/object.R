@@ -6,6 +6,7 @@
 #' @return a S4 object.
 #' @export
 #'
+#' @importFrom methods new
 create_uploadinfo_object <-
   function(upload_info = list()) {
     message("Creating IRIS3 object. \n")
