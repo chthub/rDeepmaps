@@ -2,7 +2,6 @@
 
 export(create_uploadinfo_object)
 export(hello_name)
-export(print_wd)
 export(start_server)
 export(style_and_lint)
 import(plumber)

@@ -19,3 +19,8 @@ object
 \description{
 Start IRIS3 R api server
 }
+\examples{
+\dontrun{
+start_server(port=8081)
+}
+}

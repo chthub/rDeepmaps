@@ -1,11 +1,10 @@
-#' Echo working directory
+#' Print working directory and a message
 #'
 #' @param msg a character message
 #'
 #' @return a character message
-#' @export
 #'
 print_wd <- function(msg = "Hello") {
-  return(glue::glue("Message: {msg}
+  return(glue::glue("Message: {msg},\\
                     Working directory={getwd()}"))
 }

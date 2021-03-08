@@ -7,6 +7,10 @@
 #' @param host The host used to serve the output viewer. If omitted, "127.0.0.1"
 #' is used.
 #' @return object
+#' @examples
+#' \dontrun{
+#' start_server(port=8081)
+#' }
 #' @export
 start_server <-
   function(port = NULL,

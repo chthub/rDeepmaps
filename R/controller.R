@@ -1,8 +1,8 @@
 #' Echo the parameter that was sent in
-#'
+#' @name Echo
 #' @param msg The message to echo back.
 #'
-#' @get /echo
+#* @get /echo
 function(msg = "") {
-  return(print_wd())
+  return(print_wd(msg))
 }

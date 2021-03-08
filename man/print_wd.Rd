@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{print_wd}
 \alias{print_wd}
-\title{Echo working directory}
+\title{Print working directory and a message}
 \usage{
 print_wd(msg = "Hello")
 }
@@ -13,5 +13,5 @@ print_wd(msg = "Hello")
 a character message
 }
 \description{
-Echo working directory
+Print working directory and a message
 }
