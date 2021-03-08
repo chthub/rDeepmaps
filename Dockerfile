@@ -60,6 +60,12 @@ RUN installGithub.r -u FALSE\
 # Clean up installation
 RUN rm -rf /tmp/* 
 RUN rm -rf /var/lib/apt/lists/*
+
+# Set up working directory
+
+RUN MKDIR /data
+WORKDIR /data
+
 # Expose plumber API port inside docker
 EXPOSE 8000
 
@@ -68,4 +74,5 @@ EXPOSE 8000
 ENTRYPOINT ["R"]
 
 # Test running
-#docker run --rm -d --name satijalab/seurat:latest
+# docker run --rm -d --name satijalab/seurat:latest
+# docker run --rm -d --name wangcankun100/iris3api
