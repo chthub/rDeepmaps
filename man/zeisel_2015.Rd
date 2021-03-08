@@ -5,13 +5,12 @@
 \alias{zeisel_2015}
 \title{Data of zeisel_2015}
 \format{
-A list with expr and labels:
-$expr: a data frame with 19972 genes (rows) amd 3005 cells (columns)
-$meta:
+A list with expression matrix and metadata:
 #'\describe{
-\item{Label}{fct cell type}
-\item{Sex}{fct random generated sex info}
-\item{Sample}{fct random generated sample info}
+\item{$expr}{a data frame with 19972 genes (rows) amd 3005 cells (columns)}
+\item{$meta$Label}{fct cell type}
+\item{$meta$Sex}{fct random generated sex info}
+\item{$meta$Sample}{fct random generated sample info}
 }
 }
 \source{

@@ -5,11 +5,12 @@
 \alias{yan_2013}
 \title{Data of yan_2013}
 \format{
-A list with expr and labels:
-$expr: a data frame with 20214 genes (rows) amd 90 cells (columns)
+A list with expression matrix and metadata:
+
 $meta:
 \describe{
-\item{Cluster}{fct cell type}
+\item{$expr}{a data frame with 20214 genes (rows) amd 90 cells (columns)}
+\item{$meta$Cluster}{fct cell type}
 }
 }
 \source{
