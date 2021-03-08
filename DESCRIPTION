@@ -18,18 +18,32 @@ Suggests:
     knitr,
     rmarkdown,
     styler,
-    spelling
+    spelling,
+    devtools,
+    roxygen2
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Imports: 
     Seurat,
+    Signac,
     jsonlite,
     Polychrome,
     scales,
     qs,
-    tidyverse
+    tibble,
+    plumber,
+    dplyr,
+    ggplot2,
+    stringr,
+    readr,
+    future,
+    lintr (>= 2.0.1),
+    glue,
+    methods
+Depends: 
+    R (>= 2.10)
 Language: en-US
 URL: https://github.com/Wang-Cankun/iris3api
 BugReports: https://github.com/Wang-Cankun/iris3api/issues
-Depends: 
-    R (>= 2.10)
+Remotes: 
+    jimhester/lintr

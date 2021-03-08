@@ -1,3 +1,6 @@
+.lintr
+_site.yml
+index.Rmd
 ^iris3api\.Rproj$
 ^\.Rproj\.user$
 ^CODE_OF_CONDUCT\.md$

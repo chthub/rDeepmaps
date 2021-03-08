@@ -1,25 +1,20 @@
-#' CreateIRIS3Object
-#' @name CreateIRIS3Object
-#' @title CreateIRIS3Object
-#' @description Create IRIS3 object
-#' @param x Seurat, a seurat object
+#' Create UploadInfo Object
+#' @name create_uploadinfo_object
+#' @title create_uploadinfo_object
+#' @description Create IRIS3 UploadInfo object
 #' @param upload_info upload data information
-#' @return it should return a IRIS3 S4 object.
+#' @return a S4 object.
 #' @export
 #'
-#' @examples
-#' data("yan_2013")
-#' seurat_obj <- Seurat::CreateSeuratObject(yan_2013$expr)
-#' object <- CreateIRIS3Object(seurat_obj)
-# globalVariables(c("input_matrix"))
-CreateIRIS3Object <-
-  function(x = seurat_object,
-           upload_info = new(Class = "UploadInfo")) {
+create_uploadinfo_object <-
+  function(upload_info = list()) {
     message("Creating IRIS3 object. \n")
     obj <-
-      new(Class = "IRIS3",
-          seurat = x,
-          upload_info = upload_info)
-    # obj <- suppressMessages(AddMeta(obj))
+      new(
+        Class = "UploadInfo",
+        type = "RNA",
+        expr_filename = "expr.csv",
+        label_filename = "label.csv"
+      )
     return(obj)
   }
