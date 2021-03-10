@@ -114,15 +114,15 @@ is_matrix_empty <- function(x) {
 
 #' Convert empty string to "-"
 #'
-#' @param string
+#' @param string string
 #'
 #' @return
 #'
 #' @references https://rviews.rstudio.com/2019/08/13/plumber-logging/
-convert_empty <- function(string) {
-  if (string == "") {
+convert_empty <- function(str) {
+  if (str == "") {
     "-"
   } else {
-    string
+    str
   }
 }

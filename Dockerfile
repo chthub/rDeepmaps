@@ -50,7 +50,9 @@ RUN install2.r --error --skipinstalled -r $CRAN \
 	vroom \
 	lintr \
 	gert \
-	Signac
+	Signac \ 
+	logger \
+	tictoc 
 
 # Install GitHub R dependencies
 
