@@ -4,10 +4,10 @@
 \alias{convert_empty}
 \title{Convert empty string to "-"}
 \usage{
-convert_empty(string)
+convert_empty(str)
 }
 \arguments{
-\item{string}{}
+\item{string}{string}
 }
 \value{
 
