@@ -7,10 +7,9 @@
 start_server(port = 8000, host = "127.0.0.1")
 }
 \arguments{
-\item{port}{The port on which to serve the output viewer.  If omitted, a
-random port between 8000 and 9999 is chosen.}
+\item{port}{default: 8000}
 
-\item{host}{The host used to serve the output viewer. If omitted, "127.0.0.1"
+\item{host}{default: "127.0.0.1"
 is used.}
 }
 \description{

@@ -1,4 +1,5 @@
 linters: with_defaults(
-  open_curly_linter = NULL, 
-  closed_curly_linter = NULL
-  ) 
+  open_curly_linter = NULL,
+  closed_curly_linter = NULL,
+  object_name_linter = NULL
+  )

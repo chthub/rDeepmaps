@@ -1,23 +1,51 @@
-library(iris3api)
+# Controller for iris3api
+
+require(iris3api, quietly = TRUE)
 
 #* @apiTitle Plumber Example API
 
 #* Log requests
-#* @filter log_request
-iris3api::log_request
+#* filter log_request
+#* log_request
 
 #* Echo back the input
 #* @param msg The message to echo
 #* @get /echo
-iris3api::echo_back
+echo_back
 
 #* Plot a histogram
-#* @png
+#* @serializer png
 #* @get /plot
-iris3api::plot_histogram
+plot_histogram
 
 #* Return the sum of two numbers
 #* @param a The first number to add
 #* @param b The second number to add
 #* @post /sum
-iris3api::sum_numbers
+sum_numbers
+
+#* Read data into Seurat object
+#* @param filename
+#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @post /load
+load_seurat
+
+#* Read data into Seurat object
+#* @param filename
+#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @post /cluster
+cluster_seurat
+
+#* Get Variable genes list
+#* @get /var-genes-list
+qc_list
+
+
+#* Get all Seurat Idents names
+#* @get /idents
+get_all_idents
+
+
+#* Get all gene names
+#* @get /genes
+get_all_genes

@@ -1,8 +1,7 @@
 #' Start IRIS3 R api server
 #' @import plumber
-#' @param port The port on which to serve the output viewer.  If omitted, a
-#' random port between 8000 and 9999 is chosen.
-#' @param host The host used to serve the output viewer. If omitted, "127.0.0.1"
+#' @param port default: 8000
+#' @param host default: "127.0.0.1"
 #' is used.
 #' @return NULL
 #' @examples
@@ -19,7 +18,23 @@ start_server <-
         plumber::plumb(dir = as.character(system.file("endpoints",
           package = "iris3api"
         ))) %>%
-          plumber::pr_set_docs(FALSE) %>% # Disable swagger
+          plumber::pr_hook("preroute", function() {
+            tictoc::tic()
+          }) %>%
+          plumber::pr_hook("postroute", function(req, res) {
+            end <- tictoc::toc(quiet = TRUE)
+            logger::log_info(
+              glue(
+                '{convert_empty(req$REMOTE_ADDR)} \\
+              "{convert_empty(req$HTTP_USER_AGENT)}"\\
+               {convert_empty(req$REQUEST_METHOD)}\\
+               {convert_empty(req$PATH_INFO)}\\
+               {convert_empty(res$status)}\\
+               {round(end$toc-end$tic,digits=5)}s'
+              )
+            )
+          }) %>%
+          plumber::pr_set_docs(FALSE) %>%
           plumber::pr_run(
             host = host,
             port = as.numeric(port)

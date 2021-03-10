@@ -6,7 +6,7 @@
 \alias{iris3api-package}
 \title{iris3api: IRIS3-api}
 \description{
-The API server for IRIS3 website.
+The R API server for IRIS3 website.
 }
 \seealso{
 Useful links:

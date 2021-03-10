@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "flykun0620@gmail.com",
            comment = c(ORCID = "0000-0002-0225-9855"))
-Description: The API server for IRIS3 website.
+Description: The R API server for IRIS3 website.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -24,26 +24,30 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Imports: 
-    Seurat,
     Signac,
     jsonlite,
     Polychrome,
     scales,
     qs,
     tibble,
-    plumber,
     dplyr,
-    ggplot2,
     stringr,
-    readr,
     future,
-    lintr (>= 2.0.1),
     glue,
-    methods
+    methods,
+    ggplot2,
+    utils,
+    BiocManager,
+    remotes,
+    Matrix,
+    lintr,
+    rlang,
+    logger,
+    tictoc
 Depends: 
+    Seurat,
+    plumber,
     R (>= 2.10)
 Language: en-US
 URL: https://github.com/Wang-Cankun/iris3api
 BugReports: https://github.com/Wang-Cankun/iris3api/issues
-Remotes: 
-    jimhester/lintr
