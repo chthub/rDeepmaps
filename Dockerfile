@@ -1,4 +1,4 @@
-FROM satijalab/seurat:latest
+FROM satijalab/seurat:4.0.0
 LABEL maintainer="Cankun Wang <cankun.wang@osumc.edu>"
 
 WORKDIR /tmp
@@ -15,13 +15,14 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
 	libsasl2-dev \
 	libsqlite3-dev \
 	libssh2-1-dev \
-	unixodbc-dev
+	unixodbc-dev 
 
 # Found more libraries need to be installed during my debugging
 RUN apt-get -y --no-install-recommends install \
 	libbz2-dev \
 	liblzma-dev \
-	libsodium-dev
+	libsodium-dev \
+	libhiredis-dev
 
 ###############
 # HTSlib 1.11.0#
@@ -39,7 +40,7 @@ RUN wget --no-check-certificate https://github.com/samtools/htslib/archive/1.11.
 	cp -R * /usr/lib/
 
 # Install Bioconductor dependencies
-RUN R -e 'BiocManager::install(c("JASPAR2020","GO.db", "GenomicAlignments", "ggbio", "biovizBase"), Ncpu = 2L)'
+RUN R -e 'BiocManager::install(c("JASPAR2020","GO.db", "GenomicAlignments", "ggbio", "biovizBase"))'
 
 # Install CRAN dependencies
 
@@ -52,7 +53,8 @@ RUN install2.r --error --skipinstalled -r $CRAN \
 	gert \
 	Signac \ 
 	logger \
-	tictoc 
+	tictoc \
+	redux
 
 # Install GitHub R dependencies
 
@@ -64,16 +66,19 @@ RUN rm -rf /tmp/*
 RUN rm -rf /var/lib/apt/lists/*
 
 # Set up working directory
-
-RUN MKDIR /data
+RUN mkdir /data
 WORKDIR /data
+
+# app.R is the entry to start API server
+COPY app.R /data/app.R
 
 # Expose plumber API port inside docker
 EXPOSE 8000
 
 # Start R API server
-
 ENTRYPOINT ["R"]
+
+#ENTRYPOINT ["Rscript", "app.R"]
 
 # Test running
 # docker run --rm -d --name satijalab/seurat:latest
