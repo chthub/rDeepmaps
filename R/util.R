@@ -114,7 +114,7 @@ is_matrix_empty <- function(x) {
 
 #' Convert empty string to "-"
 #'
-#' @param string string
+#' @param str string
 #'
 #' @return
 #'

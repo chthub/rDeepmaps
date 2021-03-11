@@ -18,18 +18,27 @@ start_server <-
         plumber::plumb(dir = as.character(system.file("endpoints",
           package = "iris3api"
         ))) %>%
-          plumber::pr_hook("preroute", function() {
+          plumber::pr_hook("preroute", function(req, res) {
             tictoc::tic()
+            logger::log_info(
+              glue(
+               '{convert_empty(req$REMOTE_ADDR)} \\
+              "{convert_empty(req$HTTP_USER_AGENT)}"\\
+               {convert_empty(req$REQUEST_METHOD)}\\
+               {convert_empty(req$PATH_INFO)}\\
+               {convert_empty(res$status)}'
+              )
+            )
           }) %>%
           plumber::pr_hook("postroute", function(req, res) {
             end <- tictoc::toc(quiet = TRUE)
             logger::log_info(
               glue(
-                '{convert_empty(req$REMOTE_ADDR)} \\
-              "{convert_empty(req$HTTP_USER_AGENT)}"\\
-               {convert_empty(req$REQUEST_METHOD)}\\
-               {convert_empty(req$PATH_INFO)}\\
-               {convert_empty(res$status)}\\
+                '
+               {convert_empty(req$REQUEST_METHOD)} \\
+               {convert_empty(req$PATH_INFO)} \\
+               {convert_empty(res$status)} \\
+               Time elapsed: \\
                {round(end$toc-end$tic,digits=5)}s'
               )
             )
