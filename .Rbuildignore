@@ -1,4 +1,5 @@
 app.R
+docker-compose.yml
 Dockerfile
 .lintr
 _site.yml
