@@ -7,7 +7,7 @@
 qc_list()
 }
 \value{
-
+list of QC metrics for plotting
 }
 \description{
 Get QC metrics list

@@ -15,19 +15,19 @@ load_seurat(
 )
 }
 \arguments{
-\item{req}{test}
+\item{req}{request payload}
 
-\item{filename}{test}
+\item{filename}{string}
 
-\item{min_cells}{test}
+\item{min_cells}{number}
 
-\item{min_genes}{test}
+\item{min_genes}{number}
 
-\item{nVariableFeatures}{test}
+\item{nVariableFeatures}{number}
 
-\item{percentMt}{test}
+\item{percentMt}{number}
 
-\item{removeRibosome}{test}
+\item{removeRibosome}{boolean}
 }
 \value{
 list of basic QC metrics

@@ -4,14 +4,16 @@
 \alias{cluster_seurat}
 \title{Run Seurat clustering}
 \usage{
-cluster_seurat(req, nPCs = 20, resolution = 0.5)
+cluster_seurat(req, nPCs = 20, resolution = 0.5, neighbor = 25)
 }
 \arguments{
-\item{req}{test}
+\item{req}{request payload}
 
-\item{nPCs}{test}
+\item{nPCs}{string}
 
-\item{resolution}{test}
+\item{resolution}{string}
+
+\item{neighbor}{string}
 }
 \value{
 

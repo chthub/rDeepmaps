@@ -7,7 +7,7 @@
 convert_empty(str)
 }
 \arguments{
-\item{string}{string}
+\item{str}{string}
 }
 \value{
 

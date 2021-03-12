@@ -1,12 +1,12 @@
 #' Load data to Seurat
 #' @import Seurat
-#' @param req test
-#' @param filename test
-#' @param min_cells test
-#' @param min_genes test
-#' @param nVariableFeatures test
-#' @param percentMt test
-#' @param removeRibosome test
+#' @param req request payload
+#' @param filename string
+#' @param min_cells number
+#' @param min_genes number
+#' @param nVariableFeatures number
+#' @param percentMt number
+#' @param removeRibosome boolean
 #'
 #' @return list of basic QC metrics
 #' @export

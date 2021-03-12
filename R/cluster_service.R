@@ -1,18 +1,23 @@
 #' Run Seurat clustering
 #'
-#' @param req test
-#' @param nPCs test
-#' @param resolution test
+#' @param req request payload
+#' @param nPCs string
+#' @param resolution string
+#' @param neighbor string
 #'
 #' @return
 #' @export
 #'
 cluster_seurat <- function(req,
                            nPCs = 20,
-                           resolution = 0.5) {
-  message(glue("Run clustering. nPC={nPCs}, resolution={resolution}"))
+                           resolution = 0.5,
+                           neighbor = 25) {
+  message(glue(
+    "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
+  ))
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
+  neighbor <- as.numeric(neighbor)
   e1$obj <- NormalizeData(e1$obj, verbose = F)
   e1$obj <-
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
@@ -24,7 +29,12 @@ cluster_seurat <- function(req,
       npcs = nPCs,
       verbose = F
     )
-  e1$obj <- FindNeighbors(e1$obj, dims = 1:nPCs, verbose = F)
+  e1$obj <-
+    FindNeighbors(e1$obj,
+      dims = 1:nPCs,
+      k.param = neighbor,
+      verbose = F
+    )
   e1$obj <-
     FindClusters(e1$obj, resolution = resolution, verbose = F)
   e1$obj <- RunUMAP(
@@ -40,4 +50,38 @@ cluster_seurat <- function(req,
       umap2 = as.vector(Embeddings(e1$obj, reduction = "umap")[, 2])
     )
   ))
+}
+
+#' Return active cell idents labels
+#'
+#' @return
+#' @export
+#'
+active_label <- function() {
+  return(1)
+}
+
+#' Merge active clusters
+#' @param req request payload
+#' @param newClusterIds array
+#' @return array levels of renamed new idents
+#' @export
+#'
+merge_idents <- function(req, newClusterIds) {
+  print(newClusterIds)
+  message(glue("Adding new idents {e1$ident_idx}; {newClusterIds}"))
+  this_meta_name <- glue("new_ident_{e1$meta_counter}")
+  this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
+  split_ids <- strsplit(newClusterIds, " ")[[1]]
+
+  for (i in seq_along(levels(this_idents))) {
+    if (levels(this_idents)[i] %in% split_ids) {
+      levels(this_idents)[i] <- split_ids[1]
+    }
+  }
+
+  e1$obj <-
+    AddMetaData(e1$obj, this_idents, col.name = this_meta_name)
+  e1$ident_idx <- e1$ident_idx + 1
+  return(levels(this_idents))
 }

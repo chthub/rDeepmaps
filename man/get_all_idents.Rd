@@ -7,7 +7,7 @@
 get_all_idents()
 }
 \value{
-
+array all idents names
 }
 \description{
 Get all Idents names from object

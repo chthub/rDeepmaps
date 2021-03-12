@@ -1,6 +1,6 @@
 #' Get QC metrics list
 #'
-#' @return
+#' @return list of QC metrics for plotting
 #' @export
 #'
 qc_list <- function() {
@@ -9,7 +9,7 @@ qc_list <- function() {
   this_obj <-
     as.matrix(GetAssayData(subset(e1$obj, features = vargenes), slot = "data"))
   row_min <- apply(this_obj, 1, min)
-  row_sd <- apply(this_obj, 1, sd)
+  row_sd <- apply(this_obj, 1, stats::sd)
   row_max <- apply(this_obj, 1, max)
   n_genes_per_cell <- e1$obj$nFeature_RNA
   n_reads_per_cell <- e1$obj$nCount_RNA

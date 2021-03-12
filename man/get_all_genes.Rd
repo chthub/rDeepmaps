@@ -7,7 +7,7 @@
 get_all_genes()
 }
 \value{
-
+array all gene names
 }
 \description{
 Get all gene names/ids from object

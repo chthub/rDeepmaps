@@ -36,6 +36,15 @@ load_seurat
 #* @post /cluster
 cluster_seurat
 
+#* Plot umap
+#* @get /umap-cluster
+active_label
+
+#* Merge idents
+#* @param newClusterIds
+#* @post /merge-idents
+merge_idents
+
 #* Get Variable genes list
 #* @get /var-genes-list
 qc_list
@@ -45,7 +54,14 @@ qc_list
 #* @get /idents
 get_all_idents
 
-
 #* Get all gene names
 #* @get /genes
 get_all_genes
+
+#* Get all Seurat Idents names
+#* @post /idents
+set_idents
+
+#* Calculate DEG for two selections
+#* @post /deg
+calc_deg
