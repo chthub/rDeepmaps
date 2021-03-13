@@ -81,21 +81,16 @@ start_debug_server <-
             tictoc::tic()
           }) %>%
           plumber::pr_hook("postroute", function(req, value) {
-            utils::str(
-              list(
-                type = as.character(glue("postroute: {req$REQUEST_METHOD} {req$PATH_INFO}")),
-                query_str = req$QUERY_STRING,
-                post_str = req$body,
-                value = value
-              )
-            )
-            return(value)
-          }) %>%
-          plumber::pr_hook("postserialize", function(req, value) {
             end <- tictoc::toc(quiet = TRUE)
             utils::str(
               list(
-                type = as.character(glue("postserialize: {req$REQUEST_METHOD} {req$PATH_INFO}")),
+                type = as.character(
+                  glue("postroute: \\
+                {req$REQUEST_METHOD} \\
+                     {req$PATH_INFO}")
+                ),
+                query_str = req$QUERY_STRING,
+                post_str = req$body,
                 value = value,
                 elapsed = as.character(round(end$toc - end$tic, digits = 7))
               )
