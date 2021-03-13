@@ -69,19 +69,22 @@ active_label <- function() {
 #'
 merge_idents <- function(req, newClusterIds) {
   print(newClusterIds)
-  message(glue("Adding new idents {e1$ident_idx}; {newClusterIds}"))
+  message(glue("Renaming idents: {e1$ident_idx} at ID: {newClusterIds} "))
   this_meta_name <- glue("new_ident_{e1$meta_counter}")
   this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
-  split_ids <- strsplit(newClusterIds, " ")[[1]]
-
-  for (i in seq_along(levels(this_idents))) {
-    if (levels(this_idents)[i] %in% split_ids) {
-      levels(this_idents)[i] <- split_ids[1]
+  this_idents_levels <- levels(this_idents)
+  for (i in seq_along(this_idents_levels)) {
+    if (this_idents_levels[i] %in% newClusterIds) {
+      this_idents_levels[i] <- newClusterIds[1]
     }
   }
-
+  levels(this_idents) <- this_idents_levels
   e1$obj <-
     AddMetaData(e1$obj, this_idents, col.name = this_meta_name)
-  e1$ident_idx <- e1$ident_idx + 1
-  return(levels(this_idents))
+  e1$meta_counter <- e1$meta_counter + 1
+
+  return(list(
+    new_ident = this_meta_name,
+    new_levels = levels(this_idents)
+  ))
 }
