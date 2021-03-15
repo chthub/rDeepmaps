@@ -45,10 +45,31 @@ active_label
 #* @post /merge-idents
 merge_idents
 
+#* Select-category
+#* @param categoryName
+#* @post /select-category
+select_category
+
+#* Select-cells
+#* @param categoryName
+#* @param filterPayload
+#* @post /select-cells
+select_cells
+
+#* Subset cells
+#* @param selectionPayload
+#* @post /subset-cells
+subset_cells
+
+#* Plot umap
+#* @param categoryName
+#* @post /umap-static
+#* @serializer png list(width = 700, height = 600)
+umap_plot
+
 #* Get Variable genes list
 #* @get /var-genes-list
 qc_list
-
 
 #* Get all Seurat Idents names
 #* @get /idents
@@ -61,6 +82,11 @@ get_all_genes
 #* Get all Seurat Idents names
 #* @post /idents
 set_idents
+
+#* Get all Seurat Idents names
+#* @param type
+#* @post /set-obj
+set_obj
 
 #* Calculate DEG for two selections
 #* @post /deg

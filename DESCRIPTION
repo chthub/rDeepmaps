@@ -43,7 +43,8 @@ Imports:
     lintr,
     rlang,
     logger,
-    tictoc
+    tictoc,
+    rlist
 Depends: 
     Seurat,
     plumber,
