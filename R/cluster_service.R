@@ -144,8 +144,7 @@ select_category <- function(req, categoryName = "name3") {
 #'   direction = c('>', 'in'),
 #'   thres = c('1', NA),
 #'   category = c(NULL, 'cell_type'),
-#'   level = c(NA, list(c('1_oligodendrocytes',
-#'   '2_pyramidal_CA1','3_pyramidal_SS')))
+#'   level = c(NA, '1_oligodendrocytes')
 #' )
 #'  newLevelName <- 'label1'
 #'
@@ -161,7 +160,7 @@ select_cells <- function(req, newLevelName = "ct1", filterPayload) {
   message(glue("Select cells..."))
   list_cells <- list()
   print(filterPayload)
-  for (i in 1:nrow(filterPayload)) {
+  for (i in seq_len(nrow(filterPayload))) {
     this_filter <- filterPayload[i, ]
     if (this_filter$type == "gene") {
       this_cells <-
@@ -237,7 +236,7 @@ subset_cells <- function(req, selectionPayload) {
   list_cells <- list()
   print(selectionPayload)
 
-  for (i in 1:nrow(selectionPayload)) {
+  for (i in seq_len(nrow(selectionPayload))) {
     this_filter <- selectionPayload[i, ]
     if (this_filter$type == "gene") {
       this_cells <-

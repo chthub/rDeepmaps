@@ -44,11 +44,13 @@ Imports:
     rlang,
     logger,
     tictoc,
-    rlist
+    rlist,
+    SeuratObject 
 Depends: 
     Seurat,
     plumber,
     R (>= 2.10)
+Remotes: mojaveazure/seurat-disk
 Language: en-US
 URL: https://github.com/Wang-Cankun/iris3api
 BugReports: https://github.com/Wang-Cankun/iris3api/issues
