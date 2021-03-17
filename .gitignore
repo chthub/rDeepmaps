@@ -6,6 +6,11 @@ inst/doc
 .DS_Store
 
 tmp
+# Ignore serilization data
+*.h5
+*.h5Seurat
+*.loom
+*.h5ad
 
 # Example data
 
