@@ -19,3 +19,24 @@ filtered cell labels, obj will store current cells
 \description{
 Select cells based on criteria
 }
+\examples{
+\dontrun{
+filterPayload <- data.frame(
+  type = c("gene", "cluster"),
+  name = c("Gad1", NA),
+  direction = c(">", "in"),
+  thres = c("1", NA),
+  category = c(NULL, "cell_type"),
+  level = c(NA, "1_oligodendrocytes")
+)
+newLevelName <- "label1"
+
+this_filter <- list(
+  type = "cluster",
+  direction = "in",
+  category = "cell_type",
+  level = "1_oligodendrocytes"
+)
+}
+
+}

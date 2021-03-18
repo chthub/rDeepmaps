@@ -136,26 +136,26 @@ select_category <- function(req, categoryName = "name3") {
 #' @param filterPayload array
 #' @return filtered cell labels, obj will store current cells
 #' @export
-#' @example
+#' @examples
 #' \dontrun{
 #' filterPayload <- data.frame(
-#'   type = c('gene','cluster'),
-#'   name = c('Gad1', NA),
-#'   direction = c('>', 'in'),
-#'   thres = c('1', NA),
-#'   category = c(NULL, 'cell_type'),
-#'   level = c(NA, '1_oligodendrocytes')
+#'   type = c("gene", "cluster"),
+#'   name = c("Gad1", NA),
+#'   direction = c(">", "in"),
+#'   thres = c("1", NA),
+#'   category = c(NULL, "cell_type"),
+#'   level = c(NA, "1_oligodendrocytes")
 #' )
-#'  newLevelName <- 'label1'
+#' newLevelName <- "label1"
 #'
 #' this_filter <- list(
-#'   type = 'cluster',
-#'   direction = 'in',
-#'   category = 'cell_type',
-#'   level = '1_oligodendrocytes'
+#'   type = "cluster",
+#'   direction = "in",
+#'   category = "cell_type",
+#'   level = "1_oligodendrocytes"
 #' )
 #' }
-
+#'
 select_cells <- function(req, newLevelName = "ct1", filterPayload) {
   message(glue("Select cells..."))
   list_cells <- list()
