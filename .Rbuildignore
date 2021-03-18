@@ -16,3 +16,8 @@ index.Rmd
 ^codecov\.yml$
 ^docs$
 ^pkgdown$
+
+*.h5
+*.h5Seurat
+*.loom
+*.h5ad
