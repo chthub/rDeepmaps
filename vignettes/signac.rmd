@@ -1,0 +1,676 @@
+---
+title: "IRIS3 - 10X scATAC multiome data - PBMC 3K unsort"
+author: "Cankun"
+date: "XXX"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r warning=TRUE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tinytex)
+library(hdf5r)
+library(patchwork)
+library(dplyr)
+library(Seurat)
+library(Signac)
+library(GenomeInfoDb)
+library(rmarkdown)
+library(rtracklayer)
+library(ggplot2)
+
+library(EnsDb.Hsapiens.v86)
+library(BSgenome.Hsapiens.UCSC.hg38)
+library(here)
+
+
+
+```
+# Goal
+
+For this tutorial, we will be analyzing a single-cell ATAC-seq dataset of human peripheral blood mononuclear 3K cells (PBMCs) provided by 10x Genomics. And integrated analysis of multimodal single-cell data.
+
+ref: https://support.10xgenomics.com/single-cell-multiome-atac-gex/datasets/1.0.0/human_brain_3k
+
+
+
+# scATAC-seq preprocessing
+
+
+```{r,echo=F,eval=T,message=F,warning=F,error=F}
+count_filename <- here::here("pbmc_unsorted_3k_filtered_feature_bc_matrix.h5")
+fragments_filename <- here::here("pbmc_unsorted_3k_atac_fragments.tsv.gz")
+fragments_index_filename <- here::here("pbmc_unsorted_3k_atac_fragments.tsv.gz.tbi")
+barcode_meta_filename <- here::here("pbmc_unsorted_3k_per_barcode_metrics.csv")
+
+```
+
+
+```{r,echo=F,eval=T,message=F,warning=F,error=F}
+
+####
+pbmc <- readRDS("pbmc_3k.RDS")
+DefaultAssay(pbmc) <- "SCT"
+####
+```
+
+
+### Read h5 file 
+
+```{r message=T}
+# Read h5 file
+inputdata.10x <- Read10X_h5(count_filename)
+rna_counts <- inputdata.10x$`Gene Expression`
+atac_counts <- inputdata.10x$Peaks
+
+
+# Use peaks in standard chromosomes
+grange.counts <-
+  StringToGRanges(rownames(atac_counts), sep = c(":", "-"))
+grange.use <-
+  seqnames(grange.counts) %in% standardChromosomes(grange.counts)
+atac_counts <- atac_counts[as.vector(grange.use),]
+
+
+# Annotation imformation
+annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+seqlevelsStyle(annotations) <- 'UCSC'
+genome(annotations) <- "hg38"
+```
+
+## Create an object from a count matrix or normalized data matrix.
+### Read metadata
+The expected format of the input matrix is features x cells
+1) counts: unnormalized data (raw counts)
+2) data: normalized data; if provided, do not pass counts
+3) min cells /max.cells: include features detected in at least/less than this many cells.(cutoff 'q' followed by the percentage of cells, eg: 'q90')
+4) min.features: include cells where at least this many features are detected.
+5) fragments: to a tabix-indexed fragments file for the data contained in the input matrix.
+6) genome: the name of UCSC genome
+7) annotation: a set of \code{\link[GenomicRanges]{GRanges}} containing annotations for the genome used (add the gene information to the object)
+8) frag.file <- the path of fragments.tsv.gz"
+
+```{r}
+# Create Seurat object
+getwd()
+metadata <- read.csv(
+  file = barcode_meta_filename,
+  header = TRUE,
+  row.names = 1
+)
+
+# Add blacklist fragments
+# Read blacklist_hg38 and fragments
+blacklist<-import.bed("blacklist.bb")
+
+# Import fragments and remove from blacklist
+frag<-import.bed(fragments_filename)
+over<-findOverlaps(frag,blacklist)
+a<-as.data.frame(frag[over@from,])
+a<-a[,c("name","score")]
+a[] <- lapply(a, function(x) type.convert(as.character(x)))
+bla<-aggregate(.~name,a,FUN="sum")
+rownames(bla)<-bla$name
+blacklist_region_fragments<-list()
+h<-lapply(metadata$gex_barcode, function(x) ifelse(x %in% bla$name, unlist(append(blacklist_region_fragments,bla[x,'score'])),unlist(append(blacklist_region_fragments,0) )))    
+metadata$blacklist_region_fragments<-unlist(h)
+
+
+chrom_assay <- CreateChromatinAssay(
+  counts = atac_counts,
+  sep = c(":", "-"),
+  genome = 'hg38',
+  fragments = fragments_filename,
+  min.cells = 5,
+  #min.feature = 200,
+  annotation = annotations,
+)
+
+
+pbmc <- CreateSeuratObject(
+  counts = chrom_assay,
+  assay = "ATAC",
+  meta.data = metadata
+)
+exp_assay <- CreateAssayObject(counts = rna_counts)
+pbmc[["RNA"]]<-exp_assay
+DefaultAssay(pbmc) <- "RNA"
+pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT-")
+
+```
+
+## Compute nucleosome signal score per cell 
+
+1) assay: only required if a fragment is not provided. If NULL, use the active assay.
+2) n: number of lines to read from the fragment file. If NULL, read all lines.
+
+```{r}
+
+DefaultAssay(pbmc) <- "ATAC"
+pbmc <- NucleosomeSignal(object = pbmc)
+VlnPlot(object = pbmc,features ='nucleosome_signal')
+#Histogram plot
+#FragmentHistogram(object = pbmc)
+
+pbmc$nucleosome_group <- ifelse(pbmc$nucleosome_signal > 1, 'NS > 1', 'NS < 1')
+FragmentHistogram(object = pbmc, group.by = "nucleosome_group")
+
+#save.image("atac.rdata")
+#saveRDS(pbmc,"pbmc2.rds")
+#saveRDS(da_peaks,"da_peaks.rds")
+
+
+```
+
+## Compute TSS enrichment score per cell
+
+1) tss.positions: a GRanges object containing the TSS positions. If NULL, use the genomic annotations stored in the assay.
+2) n: number of TSS positions to use. This will select the first _n_ TSSs from the set. If NULL, use all TSSs (slower).
+3) cells: a vector of cells to include. If NULL (default), use all cells in the object.
+4) fast: just compute the TSS enrichment score, without storing. This reduces the memory required to store the object but does not allow plotting the accessibility profile at the TSS.
+
+```{r }
+
+pbmc <- TSSEnrichment(object = pbmc, fast = FALSE)
+#downstream plotting of the TSS enrichment signal for different groups of cells.
+pbmc$high.tss <- ifelse(pbmc$TSS.enrichment > 2, 'High', 'Low')
+TSSPlot(pbmc, group.by = 'high.tss') + NoLegend()
+#VlnPlot for TSS.enrichment
+VlnPlot(object = pbmc,features = 'TSS.enrichment')
+```
+
+## Add blacklist ratio and fraction of reads in peaks 
+
+```{r}
+# pct_reads_in_peaks enrich/total
+pbmc$pct_reads_in_peaks <- pbmc$atac_peak_region_fragments/pbmc$atac_fragments*100
+
+pbmc$blacklist_ratio <- pbmc$blacklist_region_fragments / (pbmc$atac_peak_region_fragments+0.01)
+
+
+```
+
+## Data filter
+
+```{r}
+VlnPlot(
+  pbmc,
+  features = c(
+    "nCount_ATAC",
+    "nCount_RNA",
+    "percent.mt",
+    "blacklist_ratio",
+    "nucleosome_signal"
+  ),
+  ncol = 2,
+  log = TRUE,
+  pt.size = 0
+) + NoLegend()
+
+VlnPlot(pbmc, features ="nCount_ATAC",log = F)
+VlnPlot(pbmc, features ="nCount_RNA",log = F)
+VlnPlot(pbmc, features ="percent.mt",log = F)
+VlnPlot(object = pbmc,features = 'pct_reads_in_peaks')
+VlnPlot(object = pbmc,features ='atac_peak_region_fragments')
+VlnPlot(object = pbmc,features ='blacklist_ratio')
+
+
+pbmc <- subset(
+  x = pbmc,
+  subset = nCount_ATAC < 50000 &
+    nCount_ATAC > 500 &
+    nCount_RNA < 15000 &
+    atac_peak_region_fragments < 20000 &
+    nCount_RNA > 200 &
+    percent.mt < 25 &
+    blacklist_ratio < 0.05
+)
+
+
+
+```
+
+## RNA analysis
+
+```{r message=TRUE, warning=TRUE}
+DefaultAssay(pbmc) <- "RNA"
+pbmc <- FindVariableFeatures(pbmc, selection.method = "vst", nfeatures = 2000)
+pbmc <- ScaleData(pbmc)
+
+#
+#pbmc <- NormalizeData(pbmc)
+pbmc <- SCTransform(pbmc)
+pbmc <- RunPCA(pbmc)
+#pbmc <- SCTransform(pbmc, verbose = FALSE) %>% RunPCA() %>% RunUMAP(dims = 1:50, reduction.name = 'umap.rna', reduction.key = 'rnaUMAP_')
+pbmc <- RunUMAP(pbmc, reduction = 'pca', dims = 1:50, reduction.name = "umap.rna", reduction.key = "rnaUMAP_")
+
+#pbmc<-RunUMAP(pbmc,dims = 1:50, reduction.name = 'umap.rna', reduction.key = 'rnaUMAP_')
+```
+
+## Linear dimensional reduction & Normalization (TF-IDF)
+
+FindTopFeatures 
+
+1) min.cutoff:  use only the top n% of features (peaks) for dimensional reduction 
+
+2) normalizes across cells to correct for differences in cellular sequencing depth
+
+3) across peaks to give higher values to more rare peaks.
+```{r message=TRUE, warning=TRUE}
+DefaultAssay(pbmc) <- "ATAC"
+pbmc <- FindTopFeatures(pbmc, min.cutoff = 'q0')
+pbmc <- RunTFIDF(pbmc)
+```
+
+## Dimension reduction 
+
+Run SVD on TD-IDF matrix, using the features (peaks) selected above
+There is a strong correlation between the first LSI component and the total number of counts for the cell
+So remove the first LSI component when do downstream analyses
+
+```{r message=TRUE, warning=TRUE}
+pbmc <- RunSVD(pbmc)
+```
+
+## Non-linear dimension reduction
+
+Remove the first LSI component
+```{r message=TRUE, warning=TRUE}
+pbmc <- RunUMAP(pbmc, reduction = 'lsi', dims = 2:50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
+```
+
+## Clustering for integrated data
+
+```{r}
+
+pbmc <- FindMultiModalNeighbors(pbmc, reduction.list = list("pca", "lsi"), dims.list = list(1:50, 2:50))
+pbmc <- RunUMAP(pbmc, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+pbmc <- FindClusters(pbmc, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
+DimPlot(pbmc, reduction = "umap.rna",  label = TRUE, label.size = 2.5, repel = TRUE) + ggtitle("RNA")
+DimPlot(pbmc, reduction = "umap.atac",  label = TRUE, label.size = 2.5, repel = TRUE) + ggtitle("ATAC")
+DimPlot(pbmc, reduction = "wnn.umap", label = TRUE, label.size = 2.5, repel = TRUE) + ggtitle("WNN")
+#p1 + p2 + p3 & NoLegend() & theme(plot.title = element_text(hjust = 0.5))
+
+
+
+
+```
+
+
+# Generate gene-cell matrix for ATAC assay using MAESTRO
+
+```{r}
+library(MAESTRO)
+
+DefaultAssay(pbmc) <- 'ATAC'
+peak_count_matrix <-  GetAssayData(pbmc)
+
+pbmc_atac_activity_mat <- ATACCalculateGenescore(peak_count_matrix, organism = "GRCh38", decaydistance = 10000, model = "Enhanced")
+
+pbmc[['MAESTRO']] <- CreateAssayObject(counts = pbmc_atac_activity_mat)
+
+# saveRDS(pbmc_atac_activity_mat,"pbmc_3k_activity_mat.rds")
+
+# Create MAESTRO peak-gene-activity matrix from unit matrix
+
+dia<- Matrix::Diagonal(nrow(peak_count_matrix))
+rownames(dia)<- rownames(peak_count_matrix)
+colnames(dia)<-1:ncol(dia)
+pbmc_gene <- ATACCalculateGenescore(dia, organism = "GRCh38", decaydistance = 10000, model = "Enhanced")
+colnames(pbmc_gene)<-rownames(peak_count_matrix)
+
+saveRDS(pbmc_gene,"pbmc_3k_activity_unit_mat.rds")
+
+
+```
+
+
+
+```{r}
+ATAC_gene_peak <- pbmc_gene
+peak_cell <- GetAssayData(pbmc, assay = "ATAC", slot = "count")
+gene_cell <- GetAssayData(pbmc, assay = "RNA", slot = "count")
+
+normalize_peak_to_gene <-
+  function(ATAC_gene_peak,
+           peak_cell,
+           gene_cell,
+           normalize = "combine") {
+    peak_count <- peak_cell
+    gene_count <- gene_cell
+    peak_count[peak_count > 0] = 1
+    WA <- ATAC_gene_peak %*% peak_count
+    WA <- WA[which(rowSums(as.matrix(WA)) > 0), ]
+    gene_count <- gene_count[which(rowSums(as.matrix(gene_count)) > 0), ]
+    commongene <- intersect(x = rownames(WA), y = rownames(gene_count))
+    WA <- as.matrix(WA)
+    WA <- WA[commongene, ]
+    gene_count <- gene_count[commongene, ]
+    if (normalize == "log") {
+      norm_gene_count <-
+        NormalizeData(CreateSeuratObject(counts = gene_count))$RNA@data
+      norm_WBinary <-
+        NormalizeData(CreateSeuratObject(counts = WA))$RNA@data
+    }
+    if (normalize == "scale") {
+      norm_gene_count <- gene_count / rowSums(gene_count)
+      norm_WBinary <- WA / rowSums(WA)
+      
+    }
+    if (normalize == "combine") {
+      norm_gene_count <-
+        NormalizeData(CreateSeuratObject(counts = gene_count))$RNA@data
+      norm_gene_count <- norm_gene_count / rowSums(norm_gene_count)
+      norm_WBinary <-
+        NormalizeData(CreateSeuratObject(counts = WA))$RNA@data
+      norm_WBinary <- norm_WBinary / rowSums(norm_WBinary)
+    }
+    m <- list()
+    m[["gene"]] <- norm_gene_count
+    m[["atac"]] <- norm_WBinary
+    return (m)
+  }
+
+#example
+peak_count <- pbmc@assays$ATAC@counts
+gene_count<-as.matrix(pbmc[['RNA']]@counts)
+m<-normalize_peak_to_gene(ATAC_gene_peak,peak_count,gene_count,"combine")
+
+saveRDS(as.matrix(m$gene),"pbmc_3k_norm_sct.rds")
+saveRDS(as.matrix(m$atac),"pbmc_3k_norm_atac.rds")
+
+```
+
+# Test visualize from RNA and ATAC-activity
+
+```{r}
+pbmc[['MAESTRO']]
+DefaultAssay(pbmc) <- 'MAESTRO'
+FeaturePlot(pbmc, c("LEF1","TREM1"))
+
+DefaultAssay(pbmc) <- 'SCT'
+FeaturePlot(pbmc, c("LEF1","TREM1"))
+
+
+```
+
+# Transfer cell types from PBMC reference
+
+```{r}
+library(SeuratDisk)
+
+# load PBMC reference
+reference <- SeuratDisk::LoadH5Seurat("pbmc_multimodal.h5seurat")
+#saveRDS(reference, "pbmc_ref.rds")
+DefaultAssay(pbmc) <- "SCT"
+
+# transfer cell type labels from reference to query
+transfer_anchors <- FindTransferAnchors(
+  reference = reference,
+  query = pbmc,
+  normalization.method = "SCT",
+  reference.reduction = "spca",
+  recompute.residuals = FALSE,
+  dims = 1:50
+)
+
+predictions <- TransferData(
+  anchorset = transfer_anchors, 
+  refdata = reference$celltype.l2,
+  weight.reduction = pbmc[['pca']],
+  dims = 1:50
+)
+
+pbmc <- AddMetaData(
+  object = pbmc,
+  metadata = predictions
+)
+
+# set the cell identities to the cell type predictions
+Idents(pbmc) <- pbmc$predicted.id
+DimPlot(pbmc, reduction = 'umap.rna')
+# set a reasonable order for cell types to be displayed when plotting
+#levels(pbmc) <- c("CD4 Naive", "CD4 TCM", "CD4 CTL", "CD4 TEM", "CD4 Proliferating",
+#                  "CD8 Naive", "dnT",
+#                 "CD8 TEM", "CD8 TCM", "CD8 Proliferating", "MAIT", "NK", "NK_CD56bright",
+#                 "NK Proliferating", "gdT",
+#                 "Treg", "B naive", "B intermediate", "B memory", "Plasmablast",
+#                 "CD14 Mono", "CD16 Mono",
+#                 "cDC1", "cDC2", "pDC", "HSPC", "Eryth", "ASDC", "ILC", "Platelet")
+```
+
+
+# Save Seurat/signac object
+
+```{r,echo=F,eval=F,message=F,warning=F,error=F}
+# Custom data can be stored in pbmc@tools
+pbmc@tools$test <- 'test_info_in_tool'
+pbmc@tools$test2 <- 'test_info_in_tool2'
+
+
+SeuratDisk::SaveH5Seurat(pbmc, filename = "pbmc_3k.h5Seurat",overwrite = T)
+SeuratDisk::Convert("pbmc_3k.h5Seurat", dest = "pbmc_3k.h5ad")
+
+saveRDS(as.matrix(GetAssayData(pbmc, slot = "data", assay = "SCT")), "pbmc_3k_sct.rds")
+saveRDS(as.matrix(GetAssayData(pbmc, slot = "data", assay = "MAESTRO")), "pbmc_3k_maestero.rds")
+
+pbmc_sct <- subset(pbmc, assay = 'SCT')
+
+SeuratDisk::SaveH5Seurat(pbmc_sct, filename = "pbmc_sct.h5Seurat",overwrite = T)
+SeuratDisk::Convert("pbmc_sct.h5Seurat", dest = "pbmc_sct.h5ad")
+
+saveRDS(pbmc, "pbmc_3k.rds")
+
+```
+
+```{r,echo=F,eval=F,message=F,warning=F,error=F}
+hfile <- Connect("pbmc_3k.h5Seurat")
+hfile$index()
+DefaultAssay(pbmc) 
+
+GetAssayData(pbmc)[1:5,1:5]
+```
+
+
+```{r}
+
+## Construct graph
+#pbmc <- FindNeighbors(object = pbmc, reduction = 'lsi', dims = 2:30)
+#clustering
+#algorithm Algorithm for modularity optimization (1 = original Louvain
+#algorithm; 2 = Louvain algorithm with multilevel refinement; 3 = SLM
+#algorithm; 4 = Leiden algorithm
+#pbmc <- FindClusters(object = pbmc, verbose = FALSE, algorithm = 3)
+# UAMP plot
+#DimPlot(object = pbmc, label = TRUE) + NoLegend()
+```
+
+# Differentially accessible peaks between clusters
+
+1) cells.i: Vector of cell names belonging to group i.
+2) features: Genes to test. Default is to use all genes
+3) test.use: wilcox; bimod; roc; t; negbinoml poisson; LR;MAST;DESeq2
+4) Variables to test, used only when test.use is one of 'LR', 'negbinom', 'poisson', or 'MAST'
+5) min.pct: only test genes that are detected in a minimum fraction of min.pct cells in either of the two populations
+
+```{r}
+
+Idents(pbmc) <- pbmc$seurat_clusters
+da_peaks <- FindMarkers(
+ object = pbmc,
+ ident.1 = "1",
+ ident.2 = "2",
+ min.pct = 0.2,
+ test.use = 'LR',
+ latent.vars = 'atac_peak_region_fragments'
+)
+
+# VlnPlot and UMAP for differentially accessible peaks between clusters
+ plot1 <- VlnPlot(
+ object = pbmc,
+ features = rownames(da_peaks)[1],
+ pt.size = 0.1,
+ idents = c("1","2")
+ )
+ plot2 <- FeaturePlot(
+ object = pbmc,
+ features = rownames(da_peaks)[1],
+ pt.size = 0.1
+ )
+plot1
+plot2
+
+```
+
+## Visualization of genomic regions
+
+The averaged frequency of sequenced DNA fragments for different groups of cells within a given genomic region
+1) region: a set of genomic coordinates to show. Can be a GRanges object, a string encoding a genomic position, 
+   a gene name, or a vector of strings describing the genomic coordinates or gene names to plot. If a gene name is supplied, annotations    must be present in the assay.
+2) peaks: display gene annotations
+3) annotation: display gene annotations
+4) links: display links
+5) tile: display per-cell fragment information in sliding windows.
+6) group.by: name of one or more metadata columns to group (color) the cells by. Default is the current cell identities
+7) extend.upstream/extend.downstream: Number of bases to extend the region upstream/downstream.
+8) expression.assay: name of the assay containing expression data to plot alongside accessibility tracks. Only needed if supplying      features argument.
+```{r}
+DefaultAssay(pbmc) <- 'ATAC'
+cov_plot <- CoveragePlot(
+  object = pbmc,
+  region = rownames(da_peaks)[1],
+  annotation = FALSE,
+  peaks = FALSE
+)
+cov_plot
+```
+
+## Plotting gene expression (for multimodal single-cell datasets)
+
+1) features: a list of features to plot
+2) assay: name of the assay storing expression information
+3) group by: a grouping variable to group cells by. If NULL, use the current cell identities.
+4) idents: a list of identities to include in the plot. If NULL, include all identities
+
+```{r}
+DefaultAssay(pbmc) <- "SCT"
+expr_plot <- ExpressionPlot(
+  object = pbmc,
+  features = "CD8A",
+  assay = "SCT"
+)
+expr_plot
+```
+
+## Examine the accessible regions of each cell to determine enriched motifs.
+
+```{r}
+#BiocManager::install("chromVAR")
+library(chromVAR)
+library(devtools)
+#install_github('immunogenomics/presto')
+library(presto)
+#BiocManager::install("TFBSTools")
+library(TFBSTools)
+#BiocManager::install("JASPAR2020")
+library(JASPAR2020)
+#BiocManager::install("motifmatchr")
+library(motifmatchr)
+#BiocManager::install("BSgenome.Hsapiens.UCSC.hg38")
+library(BSgenome.Hsapiens.UCSC.hg38)
+```
+
+# Scan the DNA sequence of each peak for the presence of each motif, and create a Motif object
+
+```{r}
+DefaultAssay(pbmc) <- "ATAC"
+pwm_set <- getMatrixSet(x = JASPAR2020, opts = list(species = 9606, all_versions = FALSE))
+motif.matrix <- CreateMotifMatrix(features = granges(pbmc), pwm = pwm_set[1], genome = 'hg38', use.counts = FALSE)
+motif.object <- CreateMotifObject(data = motif.matrix, pwm = pwm_set[1])
+pbmc <- SetAssayData(pbmc, assay = 'ATAC', slot = 'motifs', new.data = motif.object)
+
+# Note that this step can take 30-60 minutes 
+pbmc <- RunChromVAR(
+  object = pbmc,
+  genome = BSgenome.Hsapiens.UCSC.hg38
+)
+```
+
+## Identify key regulators of each cell state
+
+Aim to identify TFs whose expression is enriched in multiple cell types in the RNA measurements, but also have enriched accessibility for their motifs in the ATAC measurements.
+
+Such as the CCAAT Enhancer Binding Protein (CEBP) family of proteins, that both the expression of the CEBPB, and the accessibility of the MA0466.2.4 motif (which encodes the binding site for CEBPB), are both enriched in monocytes.
+```{r}
+
+DefaultAssay(pbmc) <- 'chromvar'
+#DimPlot(pbmc, label = TRUE,cols = c("lightgrey", "darkred")) + NoLegend()
+FeaturePlot(
+  object = pbmc,
+  features = "MA0030.1",
+  min.cutoff = 'q10',
+  max.cutoff = 'q90',
+  reduction = 'wnn.umap',
+  pt.size = 0.1
+)
+DefaultAssay(pbmc) <- 'RNA'
+FeaturePlot(
+  object = pbmc,
+  features = "FOXF2",
+  min.cutoff = 'q10',
+  max.cutoff = 'q90',
+  reduction = 'wnn.umap',
+  pt.size = 0.1
+)
+
+#gene_plot | motif_plot
+```
+
+In order to quantify this relationship, and search across all cell types to find similar examples. To do so, we will use the presto package to perform fast differential expression. We run two tests: one using gene expression data, and the other using chromVAR motif accessibilities. presto calculates a p-value based on the Wilcox rank sum test, which is also the default test in Seurat, and we restrict our search to TFs that return significant results in both tests.
+
+Presto also calculates an "AUC" statistic, which reflects the power of each gene (or motif) to serve as a marker of cell type. A maximum AUC value of 1 indicates a perfect marker. Since the AUC statistic is on the same scale for both genes and motifs, we take the average of the AUC values from the two tests, and use this to rank TFs for each cell type:
+```{r}
+
+pbmc$celltype<-Idents(pbmc)
+  markers_rna <- presto:::wilcoxauc.Seurat(X = pbmc, group_by = 'celltype', assay = 'data', seurat_assay = 'RNA')
+markers_motifs <- presto:::wilcoxauc.Seurat(X = pbmc, group_by = 'celltype', assay = 'data', seurat_assay = 'chromvar')
+motif.names <- markers_motifs$feature
+colnames(markers_rna) <- paste0("RNA.", colnames(markers_rna))
+colnames(markers_motifs) <- paste0("motif.", colnames(markers_motifs))
+markers_rna$gene <- markers_rna$RNA.feature
+DefaultAssay(pbmc) <- 'chromvar'
+markers_motifs$gene <- ConvertMotifID(pbmc, id = motif.names)
+
+# identify top markers in other cell types
+topTFs <- function(celltype, padj.cutoff = 1e-2) {
+  ctmarkers_rna <- dplyr::filter(
+    markers_rna, RNA.group == celltype, RNA.padj < padj.cutoff, RNA.logFC > 0) %>% 
+    arrange(-RNA.auc)
+  ctmarkers_motif <- dplyr::filter(
+    markers_motifs, motif.group == celltype, motif.padj < padj.cutoff, motif.logFC > 0) %>% 
+    arrange(-motif.auc)
+  top_tfs <- inner_join(
+    x = ctmarkers_rna[, c(2, 11, 6, 7)], 
+    y = ctmarkers_motif[, c(2, 1, 11, 6, 7)], by = "gene"
+  )
+  top_tfs$avg_auc <- (top_tfs$RNA.auc + top_tfs$motif.auc) / 2
+  top_tfs <- arrange(top_tfs, -avg_auc)
+  return(top_tfs)
+}
+
+```
+
+
+# After obtain GAS from velocity
+
+```{r}
+gas_result <- readRDS("pbmc_3k_gas.rds")
+
+```
+
+```{r}
+
+```

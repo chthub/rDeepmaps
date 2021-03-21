@@ -1,0 +1,646 @@
+---
+title: "IRIS3 - 10X scATAC multiome data - PBMC 3K unsort"
+author: "Cankun"
+date: "XXX"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r warning=TRUE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(bluster)
+library(here)
+library(cluster)
+library(Seurat)
+library(Signac)
+library(tidyverse)
+library(motifmatchr)
+library(GenomicRanges)
+library(TFBSTools)
+
+library(tinytex)
+library(hdf5r)
+library(patchwork)
+
+
+library(GenomeInfoDb)
+
+
+library(ggplot2)
+
+
+
+
+
+```
+# Load object
+
+
+```{r,echo=F,eval=T,message=F,warning=F,error=F}
+
+####
+pbmc <- readRDS("pbmc_3k.RDS")
+DefaultAssay(pbmc) <- "SCT"
+####
+```
+
+# Read gene & cell matrix from HGT
+
+```{r}
+gas_result <- read_csv("pbmc_3k_gas.csv") 
+rownames(gas_result) <- NULL
+gas_result <- column_to_rownames(gas_result, "X1")
+#gas_result <- readRDS("pbmc_3k_gas.rds")
+gene_hgt_matrix <- readRDS("pbmc_3k_gene_matrix.rds") %>%
+  readr::type_convert()
+cell_hgt_matrix <- readRDS("pbmc_3k_cell_matrix.rds") %>%
+  readr::type_convert()
+
+GAS = gas_result
+```
+
+```{r}
+co_expression <- function(cell_hgt_matrix, gene_hgt_matrix, GAS) {
+  cell_hgt_matrix <- as.matrix(cell_hgt_matrix)
+  rownames(cell_hgt_matrix) <- colnames(GAS)
+  np <- NNGraphParam(k = 30, cluster.fun = "louvain")
+  graph.out <-  clusterRows(cell_hgt_matrix, np)
+  sil <- silhouette(as.numeric(graph.out), dist(cell_hgt_matrix))
+  print(summary(sil)$avg.width)
+  # pro
+  #cell_hgt_matrix <- exp(cell_hgt_matrix)/rowSums(exp(cell_hgt_matrix))
+  gene_hgt_matrix <- as.matrix(gene_hgt_matrix)
+  rownames(gene_hgt_matrix) <- rownames(GAS)
+  imputa_GAS <- gene_hgt_matrix %*% t(cell_hgt_matrix)
+  cc_matrix <- colSums(cell_hgt_matrix[as.numeric(graph.out) == 1, ]) / nrow(cell_hgt_matrix[as.numeric(graph.out) ==1, ])
+  for (i in (2:length(unique(as.numeric(graph.out))))) {
+    a <- colSums(cell_hgt_matrix[as.numeric(graph.out) == i, ]) / nrow(cell_hgt_matrix[as.numeric(graph.out) == i, ])
+    cc_matrix <- rbind (cc_matrix, a)
+    
+  }
+  #cc_matrix <- exp(cc_matrix)/rowSums(exp(cc_matrix))
+  #print(cc_matrix)
+  #gene_hgt_matrix <- exp(gene_hgt_matrix)/rowSums(exp(gene_hgt_matrix))
+  #print(gene_hgt_matrix)
+  #ct_vec <- c()
+  coexp_gene <- list()
+  for (i in (1:ncol(gene_hgt_matrix))) {
+    ct <- unname(which(cc_matrix[, i] == max(cc_matrix[, i])))
+    #print(ct)
+    thre <-
+      min(gene_hgt_matrix[, i]) + 0.9 * (max(gene_hgt_matrix[, i]) - min(gene_hgt_matrix[, i]))
+    gene <- rownames(gene_hgt_matrix)[gene_hgt_matrix[, i] > thre]
+    #gene<-rownames(gene_hgt_matrix)[gene_hgt_matrix[,i]>quantile(gene_hgt_matrix,0.99)]
+    if (length(gene) < 10) {
+      next
+    }
+    else{
+      coexp_gene[[paste(paste0("ct", ct), i, sep = "_")]] <- gene
+      #print(gene)
+    }
+  }
+  m <- list()
+  m[[1]] <- graph.out
+  m[[2]] <- coexp_gene
+  hgt_coexpression <- m
+  return (m)
+}
+
+
+for (i in seq_along(hgt_coexpression[[2]])) {
+  write_lines(hgt_coexpression[[2]][[i]],paste0("pbmc_3k_coexpression",i,".txt"))
+}
+
+# Next, run lisa in terminal for all results
+#lisa multi hg38 pbmc_3k_coexpression*  -o lisa --save_metadata -c 40
+
+```
+
+# Test HGT embedding
+
+```{r}
+
+pbmc <- AddMetaData(pbmc, graph.out, col.name = "hgt_cluster")
+as.character(as.numeric(colnames(cell_hgt_matrix)) + 1)
+
+#colnames(cell_hgt_matrix) <- as.character(as.numeric(colnames(cell_hgt_matrix)) + 1)
+colnames(cell_hgt_matrix) <- as.character(c(1:20))
+HGT_embedding <-
+  CreateDimReducObject(
+    embeddings = cell_hgt_matrix,
+    loadings = gene_hgt_matrix,
+    key = "HGT_",
+    assay = "RNA"
+  )
+
+pbmc@reductions[['HGT']] <- HGT_embedding
+
+Idents(pbmc) <- pbmc$hgt_cluster
+DimPlot(pbmc, reduction = 'HGT', dims = c(1, 2))
+DimPlot(pbmc, reduction = 'umap.rna')
+
+test1 <- FindNeighbors(pbmc, reduction = "HGT")
+test1 <- FindClusters(test1,resolution = 0.5)
+DimPlot(test1, reduction = 'HGT')
+pbmc@reductions$HGT@cell.embeddings
+
+
+names(kidney[["HGT"]])
+Idents(pbmc) <- pbmc$seurat_clusters
+DimPlot(pbmc, reduction = 'HGT')
+DimPlot(pbmc, reduction = 'umap.rna')
+
+for (i in seq_along(m[[2]])) {
+  this_genes <- m[[2]][i]
+}
+
+
+
+```
+
+
+# Use LISA passed TFs to run motif scan
+
+```{r}
+passed_lisa_tf <- c("MAF", "KLF15")
+motif_set<-openxlsx::read.xlsx("database/motif.xlsx",sheet=3)
+
+tf_for_scan <- motif_set[motif_set$symbol %in% passed_lisa_tf,]
+
+motif_dir <- "database/pwm"
+  PWList <- list()
+  for (file in tf_for_scan$id){
+    df <- read.table(file.path(motif_dir, paste0(file,".txt")), 
+                     header = T,
+                     row.names = 1)
+    mt <- as.matrix(df)
+    if (!all(rowSums((mt))==1)){
+      mt[,4] = 1- mt[,1]-mt[,2]-mt[,3]
+    }
+    if (nrow(mt) ==0) next
+    motif_id <- sub('.txt','',file)
+    #print(motif_id)
+    name <- motif_set$symbol[motif_set$id==motif_id]
+    PWList[[motif_id]] <- PWMatrix(ID = motif_id, name=name, profileMatrix = t(mt))
+  
+  }
+  
+  # Filtered motif list for scan
+  PWMatrixLists <- do.call(PWMatrixList,PWList)
+  
+
+```
+
+# Get gene ranges for genes
+
+
+```{r}
+species <- "human"
+
+if (species == "human") {
+  gene.ranges <- genes(EnsDb.Hsapiens.v86)
+} else{
+  gene.ranges <- genes(EnsDb.Mmusculus.v79)
+}
+
+gene.use <-
+  seqnames(gene.ranges) %in% standardChromosomes(gene.ranges)[standardChromosomes(gene.ranges) !=
+                                                                "MT"]
+gene.ranges <- gene.ranges[as.vector(gene.use)]
+gene.ranges <-
+  gene.ranges[gene.ranges$gene_name %in% commongene]
+genebodyandpromoter.coords <-
+  Extend(x = gene.ranges,
+         upstream = 2000,
+         downstream = 0)
+
+
+
+this_genes <- hgt_coexpression[[2]][[1]] 
+this_generanges <- gene.ranges[gene.ranges$symbol %in% this_genes]
+this_promoter_region <-
+  promoters(this_generanges, upstream = 2000, downstream = 0)
+
+#BiocManager::install("BSgenome.Hsapiens.NCBI.GRCh38")
+#library(BSgenome.Hsapiens.NCBI.GRCh38)
+
+this_promoter_symbols <- this_promoter_region$symbol
+
+this_promoter_region <-
+  GRanges(
+    seqnames = paste("chr", this_promoter_region@seqnames, sep = ""),
+    ranges = ranges(this_promoter_region)
+  )
+names(this_promoter_region) <- this_promoter_symbols
+
+
+motif_ix <-
+  matchMotifs(
+    PWMatrixLists,
+    this_promoter_region,
+    genome = "hg38",
+    out = "scores",
+    p.cutoff = 5e-05
+  )
+
+
+
+this_motif_result <- motif_ix@assays@data$motifScores
+rownames(this_motif_result) <- rownames(motifMatches(motif_ix))
+colnames(this_motif_result) <- paste0(tf_for_scan$symbol,"-",tf_for_scan$id)
+
+
+```
+
+# Get regulons and sub-regulons
+
+```{r}
+#library(rlist)
+hgt_coexpression[[2]]
+# Sub-regulons
+sub_regulon_result <- list()
+for (i in seq_len(ncol(this_motif_result))) {
+  this_genes <- names(which(this_motif_result[,i] > 0))
+  tmp_list <- list(this_genes)
+  #names(tmp_list) <- colnames(this_motif_result)[i]
+  sub_regulon_result[i] <- tmp_list
+}
+
+names(sub_regulon_result) <- colnames(this_motif_result)
+
+
+# Regulons
+tf_names_in_subregulon <-
+  gsub("-.*", "", names(sapply(sub_regulon_result, names)))
+
+tmp_list <- sub_regulon_result
+names(tmp_list) <- tf_names_in_subregulon
+keys <- unique(names(lapply(tmp_list, names)))
+
+regulon_result = sapply(keys, function(name) {
+  unique(as.character(unlist(tmp_list[grep(name, names(tmp_list))])))
+})
+
+
+
+
+```
+
+# Extract promoters 
+
+```{r}
+
+passed_lisa_tf <- 1
+
+library(MAESTRO)
+DefaultAssay(pbmc) <- 'ATAC'
+peak_count_matrix <-  GetAssayData(pbmc)
+
+dia<- Matrix::Diagonal(nrow(peak_count_matrix))
+rownames(dia)<- rownames(peak_count_matrix)
+colnames(dia)<-1:ncol(dia)
+pbmc_gene <- ATACCalculateGenescore(dia, organism = "GRCh38", decaydistance = 10000, model = "Enhanced")
+colnames(pbmc_gene)<-rownames(peak_count_matrix)
+
+
+peak_cell <- pbmc@assays$ATAC
+gene_peak <- pbmc_gene
+gene_count <- read_rds("pbmc_3k_norm_sct.rds")
+commongene <- rownames(gene_count)
+species <- "human"
+
+
+AccPromoter <-
+  function(peak_cell,
+           gene_peak,
+           commongene,
+           species = "human") {
+    if (species == "human") {
+      gene.ranges <- genes(EnsDb.Hsapiens.v86)
+    } else{
+      gene.ranges <- genes(EnsDb.Mmusculus.v79)
+    }
+    
+    gene.use <-
+      seqnames(gene.ranges) %in% standardChromosomes(gene.ranges)[standardChromosomes(gene.ranges) !=
+                                                                    "MT"]
+    gene.ranges <- gene.ranges[as.vector(gene.use)]
+    gene.ranges <- gene.ranges[gene.ranges$gene_name %in% commongene]
+    genebodyandpromoter.coords <-
+      Extend(x = gene.ranges,
+             upstream = 2000,
+             downstream = 0)
+    #str(genebodyandpromoter.coords)
+    x <- as.data.frame(genebodyandpromoter.coords@ranges)
+    peaks <-
+      GRanges(
+        seqnames = paste("chr", genebodyandpromoter.coords@seqnames, sep = ""),
+        ranges = IRanges(start = , x$start,
+                         width = x$width)
+      )
+    
+    peak_name <-
+      colnames(gene_peak)[lengths(strsplit(gsub(":", "-", colnames(gene_peak)) , split = "-")) ==
+                            3]
+    peak_name <-
+      do.call(what = rbind, strsplit(gsub(":", "-", peak_name) , split = "-"))
+    peak_name <- as.data.frame(peak_name)
+    #peak_name<-rownames(peak_cell)[peak_name[,1] %in% c('chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX','chrY'),1:3]
+    names(peak_name) <- c("chromosome", 'start', 'end')
+    peak_name <- GenomicRanges::makeGRangesFromDataFrame(peak_name)
+    #str(peaks)
+    over <- findOverlaps(peak_name, peaks)
+    str(over)
+    promoter_gene <-
+      genebodyandpromoter.coords$gene_name[unique(over@to)]
+    str(promoter_gene)
+    gene_peak <- gene_peak[promoter_gene, ]
+
+    #m <- list()
+    #m[[1]] <- gene_peak
+    #m[[2]]<-hint_atac
+    #m[[3]]<-pbmc_hint
+    return(gene_peak)
+  }
+
+
+gene_peak_pro <- m[[1]]
+gene_peak_pro <- AccPromoter(peak_cell,
+                             gene_peak,
+                             commongene,
+                             species = "human")
+
+```
+
+# BA score
+
+```{r}
+colnames(gene_peak_pro) <- rownames(pbmc)
+
+library(gdata)
+
+MatchData <- pbmc
+peak <- colnames(gene_peak_pro)
+species <- "human"
+reference <- "hg38" 
+
+#save.image("pbmc_0319.rdata")
+
+
+CalBA_score<-function(MatchData, peak, species="human",reference="hg38"){
+
+  motif_set<-openxlsx::read.xlsx("database/motif.xlsx",sheet=3)
+  motif_dir <- "database/pwm"
+  PWList <- list()
+  for (file in list.files(motif_dir, pattern = ".txt")){
+    df <- read.table(file.path(motif_dir, file), 
+                     header = T,
+                     row.names = 1)
+    mt <- as.matrix(df)
+    if (!all(rowSums((mt))==1)){
+      mt[,4] = 1- mt[,1]-mt[,2]-mt[,3]
+    }
+    if (nrow(mt) ==0) next
+    motif_id <- sub('.txt','',file)
+    #print(motif_id)
+    name <- motif_set$symbol[motif_set$id==motif_id]
+    PWList[[motif_id]] <- PWMatrix(ID = motif_id, name=name, profileMatrix = t(mt))
+  
+  }
+  
+  PWMatrixLists <- do.call(PWMatrixList,PWList)
+  
+  # Normalize peak names
+  #peak_name<-peak
+  peak<-peak[lengths(strsplit(gsub(":", "-", peak) , split = "-"))==3]
+  peak_name<-peak
+  peak<-do.call(what=rbind,strsplit( gsub(":", "-", peak) , split = "-"))
+  peak<-as.data.frame(peak)
+  names(peak)<- c("chromosome", 'start', 'end')
+  peak<-GenomicRanges::makeGRangesFromDataFrame(peak)
+  
+  # subset
+  peak <- peak[1:5]
+  
+  if(species=="human"){
+    human_motif_set <- motif_set[motif_set$species=='Homo Sapiens',]$id
+    pwms <- PWMatrixLists[human_motif_set]
+    motif_ix <- matchMotifs(pwms, peak, genome = "hg38",out ="scores",p.cutoff = 5e-05 )
+  }
+  if(species=="mouse"){
+    mouse_motif_set <- motif_set[motif_set$species=='Mus Musculus',]$id
+    pwms <- PWMatrixLists[mouse_motif_set]
+    motif_ix <- matchMotifs(pwms, peak, genome = "mm10",out ="scores",p.cutoff = 5e-05 )
+  }
+  
+  #saveRDS(motif_ix,"/fs/project/PAS1475/Xiaoying/Lisa/human_motif_ix.rds")
+  BA_score <- motif_ix@assays@data$motifScores
+  if(species=="human"){
+    colnames(BA_score)<- motif_set[motif_set$species=='Homo Sapiens',]$symbol
+  }
+  if(species=="mouse"){
+    colnames(BA_score)<- motif_set[motif_set$species=='Mus Musculus',]$symbol
+  }
+  
+  rownames(BA_score)<-gsub(":", "-", peak_name)[1:500]
+  
+  DefaultAssay(MatchData) <- "ATAC"
+  if (reference=="hg38"){
+    library(BSgenome.Hsapiens.UCSC.hg38)
+    geno = BSgenome.Hsapiens.UCSC.hg38
+  }
+  if (reference=="hg19"){
+    library(BSgenome.Hsapiens.UCSC.hg19)
+    geno = BSgenome.Hsapiens.UCSC.hg19
+  }
+  if (reference=="mm10"){
+    library(BSgenome.Mmusculus.UCSC.mm10)
+    geno = BSgenome.Mmusculus.UCSC.mm10
+  }
+  if (reference=="mm9"){
+    library(BSgenome.Mmusculus.UCSC.mm9)
+    geno = BSgenome.Mmusculus.UCSC.mm9
+  }
+  a<- CreateChromatinAssay(
+    counts =MatchData[["ATAC"]][peak_name,] ,
+    sep = c(":", "-"),
+  )
+  b <- CreateSeuratObject(
+    counts = a,
+    assay = "ATAC",
+    #meta.data = metadata
+  )
+  M <- AddMotifs(
+    object = b,
+    genome = geno,
+    pfm = pwms
+    )
+  m<-list()
+  # M is 
+  m[[1]]<-M
+  
+  ## Every peak has a BA score, row-peak, column-TF
+  m[[2]]<-BA_score
+  return (m)
+}
+
+#Example
+start_time <-Sys.time()
+if (is.null(hint)){
+  m<-CalBA_score(kidney, colnames(gene_peak_pro),species="mouse",reference="mm10")
+  M<-m[[1]]
+  BA_score<-m[[2]]
+}else{
+  m<-CalBA_score(pbmc, hint_atac)
+  human<-m[[1]]
+  BA_score<-m[[2]]
+}
+
+m<-CalBA_score(kidney, colnames(gene_peak_pro),species="mouse",reference="mm10")
+M<-m[[1]]
+BA_score<-m[[2]]
+
+```
+
+
+# Motif enrichment
+
+```{r}
+ct_subregulon <- list()
+ct_regulon <- list()
+coexp_tf <- list()
+
+#co is gene list modules
+
+for (i in (1:length(co))) {
+  co[[i]] <- intersect(co[[i]], rownames(gene_peak_pro))
+  a <- which(gene_peak_pro[co[[i]], ] > 0, arr.ind = T)
+  enriched.motifs <- FindMotifs(object = M,
+                                features = unique(colnames(gene_peak_pro)[unname(a[, 'col'])]))
+  if (enrich == T) {
+    tf_enrich_0.05 <-
+      enriched.motifs$motif.name[enriched.motifs$pvalue < 0.05]
+    tf_enrich_0.05 <- gsub("\\(.*\\)", "", tf_enrich_0.05)
+  } else{
+    tf_enrich_0.05 <- enriched.motifs$motif.name
+    tf_enrich_0.05 <- gsub("\\(.*\\)", "", tf_enrich_0.05)
+  }
+  
+  TF <- tf_enrich_0.05
+  #TF<- intersect(tf_pval_0.05,unique(colnames(mat1)))
+  if (length(co[[i]]) < 500 & length(co[[i]]) > 50) {
+    tf <-
+      read.table(
+        paste(
+          "/fs/project/PAS1475/Xiaoying/Lisa1/ct",
+          unlist(strsplit(names(co[i]), split = "_"))[2],
+          "_results/",
+          "ct_",
+          unlist(strsplit(names(co[i]), split = "_"))[2],
+          ".lisa.tsv",
+          sep = ""
+        ),
+        sep = "\t"
+      )
+    #co_exp <- intersect(unlist(unname(co_exp)),rownames(mat))
+    #co_exp <- unlist(unname(co_exp))
+    tf_pval_0.05 <- unique(tf[, 3][tf[, 12] < 0.05])
+    TF <- intersect(tf_enrich_0.05, tf_pval_0.05)
+    #a<-which(gene_peak_pro[co_exp,]>0,arr.ind = T)
+  }
+  #TF<-intersect(TF,rownames(GAS))
+  coexp_tf[[names(co[i])]] <- TF
+  print(length(TF))
+  if (length(TF) > 0) {
+    for (k in 1:length(TF)) {
+      if (length(co[[i]][mat[co[[i]], TF[k]] > 0]) > 10) {
+        ct_subregulon[[paste(TF[k], unlist(strsplit(names(co[i]), split = "_"))[2], sep =
+                               "_")]] <- co[[i]][mat[co[[i]], TF[k]] > 0]
+      }
+      
+    }
+  }
+}
+TF_all_U <- list()
+TF_all <- unlist(strsplit(names(ct_subregulon), split = "_"))
+ct_TF <- TF_all[seq(2, length(TF_all), 3)]
+TF_all <- TF_all[seq(1, length(TF_all), 3)]
+for (i in unique(ct_TF)) {
+  TF_all_U[[i]] <- TF_all[ct_TF == i]
+}
+
+```
+
+
+
+# Run lisa
+
+```{r}
+run_Lisa<-function(co,species="human"){
+  system("rm -rf /fs/project/PAS1475/Xiaoying/Lisa1/ct*")
+  CT<-unique(unlist(strsplit(names(co),split="_"))[seq(2,length(unlist(strsplit(names(co),split="_"))),2)])
+  for (i in CT){
+    system(paste0("mkdir /fs/project/PAS1475/Xiaoying/Lisa1/ct",i))
+  }
+  for (j in (1:length(co))){
+    if (length(co[[j]])<50 | length(co[[j]])>500){next}else{
+      ct <- unlist(strsplit(names(co[j]),split="_"))[2]
+    
+      write.table(co[[j]],paste0("/fs/project/PAS1475/Xiaoying/Lisa1/ct",ct,"/",names(co[j])),quote=F,sep="\t",row.names = F,col.names = F)
+      
+      if (species=="human"){
+        system(paste0("sh /fs/project/PAS1475/Xiaoying/Lisa1/d.sh ",ct))
+      }else{
+        system(paste0("sh /fs/project/PAS1475/Xiaoying/Lisa1/mouse.sh ",ct))
+      }
+      
+  }
+}
+  
+  return (CT)
+}
+```
+
+
+# Gene set enrichment
+
+```{r}
+library(enrichR)
+dbs <-
+  c(
+    "GO_Molecular_Function_2018",
+    "GO_Cellular_Component_2018",
+    "GO_Biological_Process_2018",
+    "KEGG_2019_Human"
+  )
+this_enriched <- enrichr(unlist(this_genes), dbs)
+
+this_enriched
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
