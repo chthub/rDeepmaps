@@ -75,7 +75,7 @@ active_label <- function() {
 merge_idents <- function(req, newClusterIds) {
   print(newClusterIds)
   message(glue("Renaming idents: {e1$ident_idx} at ID: {newClusterIds} "))
-  this_meta_name <- glue("new_ident_{e1$new_meta_counter}")
+  this_meta_name <- glue("new_merge_{e1$new_meta_counter}")
   this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
   this_idents_levels <- levels(this_idents)
   for (i in seq_along(this_idents_levels)) {

@@ -31,8 +31,9 @@ sum_numbers
 load_seurat
 
 #* Read data into Seurat object
-#* @param filename
-#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @param nPCs
+#* @param resolution
+#* @param neighbor
 #* @post /cluster
 cluster_seurat
 
@@ -69,7 +70,7 @@ umap_plot
 
 #* Get Variable genes list
 #* @get /var-genes-list
-qc_list
+rna_qc_list
 
 #* Get all Seurat Idents names
 #* @get /idents

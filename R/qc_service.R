@@ -1,9 +1,9 @@
-#' Get QC metrics list
+#' Get QC metrics list for single scRNA-seq dataset
 #'
 #' @return list of QC metrics for plotting
 #' @export
 #'
-qc_list <- function() {
+rna_qc_list <- function() {
   vargenes <- VariableFeatures(e1$obj)
   Idents(e1$obj) <- e1$obj@meta.data$empty_ident
   this_obj <-
