@@ -8,7 +8,7 @@ name: pkgdown
 
 jobs:
   pkgdown:
-    runs-on: ${{ matrix.config.os }}
+    runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     strategy:
@@ -42,14 +42,6 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
-      - name: Install system dependencies
-        if: runner.os == 'Linux'
-        run: |
-          while read -r cmd
-          do
-            eval sudo $cmd
-          done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
-
       - name: Install dependencies
         run: |
           if (Sys.info()['sysname'] == "Windows") {
@@ -63,7 +55,6 @@ jobs:
           setRepositories(ind=1:2)
           remotes::install_deps(dependencies = TRUE, repos = getOption('repos'), Ncpu = 2L)
           remotes::install_cran("rcmdcheck", Ncpu = 2L)
-          install.packages("pkgdown")
         shell: Rscript {0}
 
       - name: Install package
