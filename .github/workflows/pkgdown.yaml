@@ -63,6 +63,7 @@ jobs:
           setRepositories(ind=1:2)
           remotes::install_deps(dependencies = TRUE, repos = getOption('repos'), Ncpu = 2L)
           remotes::install_cran("rcmdcheck", Ncpu = 2L)
+          install.packages("pkgdown")
         shell: Rscript {0}
 
       - name: Install package
