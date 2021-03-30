@@ -25,3 +25,17 @@
 #' }
 #' @source \url{https://science.sciencemag.org/content/347/6226/1138.abstract}
 "zeisel_2015"
+
+#' Data of ifnb_2800
+#'
+#' ifnb 2800: Subset of IFNB-Stimulated and Control PBMCs, Human, 15 cell types, 2800 cells
+#'
+#' @format A list with expression matrix and metadata:
+#' #'\describe{
+#'   \item{$expr}{a data frame with x genes (rows) amd 2800 cells (columns)}
+#'   \item{$meta$Label}{fct cell type}
+#'   \item{$meta$Sex}{fct random generated sex info}
+#'   \item{$meta$Sample}{fct random generated sample info}
+#' }
+#' @source \url{https://satijalab.org/seurat/articles/integration_introduction.html}
+"ifnb_2800"

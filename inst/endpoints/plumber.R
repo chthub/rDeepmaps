@@ -28,14 +28,26 @@ sum_numbers
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
 #* @post /load
-load_seurat
+load_single_rna
+
+#* Read multiple scRNA-seq
+#* @param filename
+#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @post /load-multi-rna
+load_multi_rna
+
+#* Read data into Seurat object
+#* @param filename
+#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @post /load-multiome
+load_multiome
 
 #* Read data into Seurat object
 #* @param nPCs
 #* @param resolution
 #* @param neighbor
 #* @post /cluster
-cluster_seurat
+cluster_single_rna
 
 #* Plot umap
 #* @get /umap-cluster
@@ -71,6 +83,15 @@ umap_plot
 #* Get Variable genes list
 #* @get /var-genes-list
 rna_qc_list
+
+#* Plot Variable genes statc plot
+#* @get /var-genes-plot
+#* @serializer png list(width = 800, height = 600)
+rna_qc_plot
+
+#* Get ATAC QC list
+#* @get /atac-qc-list
+atac_qc_list
 
 #* Get all Seurat Idents names
 #* @get /idents

@@ -16,3 +16,6 @@ index.Rmd
 ^codecov\.yml$
 ^docs$
 ^pkgdown$
+^.qsave$
+/inst/extdata/pbmc_match_3k.qsave
+pbmc_match_3k.qsave

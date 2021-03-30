@@ -11,6 +11,7 @@ tmp
 *.h5Seurat
 *.loom
 *.h5ad
+*.qsave
 
 # Example data
 

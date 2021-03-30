@@ -8,10 +8,69 @@
 #' @return
 #' @export
 #'
-cluster_seurat <- function(req,
-                           nPCs = 20,
-                           resolution = 0.5,
-                           neighbor = 20) {
+cluster_single_rna <- function(req,
+                               nPCs = 20,
+                               resolution = 0.5,
+                               neighbor = 20) {
+  message(glue(
+    "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
+  ))
+  nPCs <- as.numeric(nPCs)
+  resolution <- as.numeric(resolution)
+  neighbor <- as.numeric(neighbor)
+  e1$obj <- NormalizeData(e1$obj, verbose = F)
+  e1$obj <-
+    ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
+  variable_genes <- VariableFeatures(e1$obj)
+
+  e1$obj <-
+    RunPCA(e1$obj,
+      features = variable_genes,
+      npcs = nPCs,
+      verbose = F
+    )
+  e1$obj <-
+    FindNeighbors(e1$obj,
+      dims = 1:nPCs,
+      k.param = neighbor,
+      verbose = F
+    )
+  e1$obj <-
+    FindClusters(e1$obj, resolution = resolution, verbose = F)
+  e1$obj <- RunUMAP(
+    e1$obj,
+    dims = 1:nPCs,
+    n.neighbors = 15,
+    verbose = F
+  )
+
+  e1$ident_idx <-
+    which(colnames(e1$obj@meta.data) == "seurat_clusters")
+  Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+
+  return(list(
+    n_seurat_clusters = length(levels(e1$obj$seurat_clusters)),
+    umap_pts = data.frame(
+      umap1 = as.vector(Embeddings(e1$obj, reduction = "umap")[, 1]),
+      umap2 = as.vector(Embeddings(e1$obj, reduction = "umap")[, 2])
+    )
+  ))
+}
+
+#' Run multiome clustering
+#'
+#' @param req request payload
+#' @param nPCs string
+#' @param resolution string
+#' @param neighbor string
+#'
+#' @return
+#' @export
+#'
+cluster_multiome <- function(req,
+                             nPCs = 20,
+                             resolution = 0.5,
+                             neighbor = 20) {
   message(glue(
     "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
@@ -294,9 +353,8 @@ subset_cells <- function(req, selectionPayload) {
 #' @param req request payload
 #' @param categoryName string
 #'
-#' @return
+#' @return static image
 #' @export
-
 umap_plot <- function(req, categoryName = "seurat_clusters") {
   print(categoryName)
   this_ident_idx <-

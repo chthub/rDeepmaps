@@ -36,6 +36,30 @@ set_idents <- function(req, name = "orig.ident") {
   return(levels(as.factor(e1$obj@meta.data[, e1$ident_idx])))
 }
 
+#' Get all assays names from object
+#'
+#' @return array all assays names
+#' @export
+get_all_assays <- function() {
+  return(list(
+    assay_idx = e1$assay_idx,
+    all_assays = names(e1$obj@assays)
+  ))
+}
+
+#' Set Seurat Assay by name
+#' @param req request payload
+#' @param name string idents name
+#' @return array levels of new idents
+#' @export
+#'
+set_assay <- function(req, name = "RNA") {
+  e1$assay_idx <- which(names(e1$obj@assays) == name)
+  return(list(
+    assay_idx = e1$assay_idx,
+    all_assays = names(e1$obj@assays)
+  ))
+}
 
 #' Set subset obj or full_obj
 #' @param req request payload

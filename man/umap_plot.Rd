@@ -12,7 +12,7 @@ umap_plot(req, categoryName = "seurat_clusters")
 \item{categoryName}{string}
 }
 \value{
-
+static image
 }
 \description{
 Plot static UMAP

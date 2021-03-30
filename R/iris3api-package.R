@@ -14,6 +14,7 @@ e1 <- rlang::env(
   sub_obj = NULL, # from selection
   full_obj = NULL, # with all cells
   ident_idx = 1,
+  assay_idx = 1,
   new_meta_counter = 1,
 )
 NULL
