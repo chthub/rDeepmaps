@@ -83,8 +83,6 @@ rna_qc_list <- function() {
   )
 }
 
-
-
 #' Variable genes scatter plot
 #'
 #' @return static plot

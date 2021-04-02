@@ -24,6 +24,8 @@ plot_histogram
 #* @post /sum
 sum_numbers
 
+####################################
+
 #* Read data into Seurat object
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
@@ -42,12 +44,21 @@ load_multi_rna
 #* @post /load-multiome
 load_multiome
 
-#* Read data into Seurat object
+####################################
+
+#* Run RNA sample clustering
 #* @param nPCs
 #* @param resolution
 #* @param neighbor
 #* @post /cluster
 cluster_single_rna
+
+#* Run multiome clustering
+#* @param nPCs
+#* @param resolution
+#* @param neighbor
+#* @post /cluster-multiome
+cluster_multiome
 
 #* Plot umap
 #* @get /umap-cluster
@@ -57,6 +68,12 @@ active_label
 #* @param newClusterIds
 #* @post /merge-idents
 merge_idents
+
+#* Rename idents
+#* @param old_name
+#* @param new_name
+#* @post /rename-idents
+rename_idents
 
 #* Select-category
 #* @param categoryName
@@ -80,6 +97,21 @@ subset_cells
 #* @serializer png list(width = 700, height = 600)
 umap_plot
 
+#* Plot umap gene plot
+#* @param gene
+#* @post /gene-umap-static
+#* @serializer png list(width = 700, height = 600)
+gene_umap_plot
+
+#* Plot violin gene plot
+#* @param gene
+#* @param split
+#* @post /violin-gene
+#* @serializer png list(width = 700, height = 600)
+violin_gene_plot
+
+####################################
+
 #* Get Variable genes list
 #* @get /var-genes-list
 rna_qc_list
@@ -92,6 +124,12 @@ rna_qc_plot
 #* Get ATAC QC list
 #* @get /atac-qc-list
 atac_qc_list
+
+#* Calculate DEG for two selections
+#* @post /deg
+calc_deg
+
+####################################
 
 #* Get all Seurat Idents names
 #* @get /idents
@@ -106,10 +144,22 @@ get_all_genes
 set_idents
 
 #* Get all Seurat Idents names
+#* @get /assays
+get_all_assays
+
+#* Get all Seurat Idents names
+#* @post /assays
+set_assay
+
+#* Get all Seurat Idents names
 #* @param type
 #* @post /set-obj
 set_obj
 
-#* Calculate DEG for two selections
-#* @post /deg
-calc_deg
+#* Get all Seurat Idents names
+#* @param type
+#* @post /set-obj
+set_obj
+
+
+####################################

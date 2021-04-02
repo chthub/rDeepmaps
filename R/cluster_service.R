@@ -153,6 +153,32 @@ merge_idents <- function(req, newClusterIds) {
   ))
 }
 
+s
+#' Rename clusters/idents
+#' @param req request payload
+#' @param old_name array
+#' @param new_name array
+#' @return array levels of renamed new idents
+#' @export
+#'
+rename_idents <- function(req, old_name = 1, new_name = 1) {
+
+  message(glue("Renaming idents: {e1$ident_idx} at ID: {old_name} "))
+  this_meta_name <- glue("new_merge_{e1$new_meta_counter}")
+  this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
+  this_idents_levels <- levels(this_idents)
+
+  old_name_idx <- which(this_idents_levels == as.character(old_name))
+
+  levels(this_idents)[old_name_idx] <- as.character(new_name)
+
+  e1$obj@meta.data[, e1$ident_idx] <- this_idents
+
+  return(list(
+    new_levels = levels(this_idents)
+  ))
+}
+
 
 #' Set or select category to assign labels
 #'
@@ -364,5 +390,39 @@ umap_plot <- function(req, categoryName = "seurat_clusters") {
   plot <- DimPlot(e1$obj, reduction = "umap")
 
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+  return(print(plot))
+}
+
+#' Plot static UMAP
+#' @param req request payload
+#' @param gene string
+#'
+#' @return static image
+#' @export
+gene_umap_plot <- function(req, gene = "Gad1") {
+  print(gene)
+  plot <- FeaturePlot(e1$obj, feature = gene)
+  return(print(plot))
+}
+
+
+#' Plot violin gene UMAP
+#' @param req request payload
+#' @param gene string
+#' @param split string
+#' @return static image
+#' @export
+#'
+violin_gene_plot <- function(req, gene="Gad1", split="sex"){
+  #ident_idx=9
+  if (split == "NULL") {
+    Idents(e1$obj) <- e1$obj@meta.data[,e1$ident_idx]
+    plot <- VlnPlot(e1$obj, gene, group.by = colnames(e1$obj@meta.data)[e1$ident_idx])
+  } else{
+    idx <- which(colnames(e1$obj@meta.data) == split)
+    Idents(e1$obj) <- e1$obj@meta.data[,e1$ident_idx]
+    plot <- VlnPlot(e1$obj, gene, split.by = colnames(e1$obj@meta.data)[idx], group.by = colnames(e1$obj@meta.data)[e1$ident_idx])
+  }
+
   return(print(plot))
 }

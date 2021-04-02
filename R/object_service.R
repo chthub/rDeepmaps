@@ -6,12 +6,14 @@ get_all_idents <- function() {
   all_idents <- list()
   for (i in seq_along(colnames(e1$obj@meta.data))) {
     this_ident <- colnames(e1$obj@meta.data)[i]
-    this_levels <- levels(as.factor(e1$obj@meta.data[, i]))
-    tmp_list <- list(
-      ident = this_ident,
-      levels = this_levels
-    )
-    all_idents <- rlist::list.append(all_idents, tmp_list)
+    if(!this_ident %in% c("orig.ident","nCount_RNA","nFeature_RNA","percent.mt","percent.ribo")) {
+      this_levels <- levels(as.factor(e1$obj@meta.data[, i]))
+      tmp_list <- list(
+        ident = this_ident,
+        levels = this_levels
+      )
+      all_idents <- rlist::list.append(all_idents, tmp_list)
+    }
   }
   return(all_idents)
 }

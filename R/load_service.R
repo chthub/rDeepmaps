@@ -204,8 +204,7 @@ load_multiome <-
            nVariableFeatures = 3000,
            percentMt = 5,
            removeRibosome = FALSE) {
-    e1$obj <- qs::qread("C:/Users/flyku/Documents/
-                        GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
+    e1$obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
 
     raw_obj <- e1$obj
     raw_percent_zero <-
