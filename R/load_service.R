@@ -72,6 +72,7 @@ load_single_rna <-
         nfeatures = as.numeric(nVariableFeatures),
         verbose = F
       )
+    e1$obj <- NormalizeData(e1$obj, verbose = F)
     return(
       list(
         raw_n_genes = dim(raw_obj)[1],

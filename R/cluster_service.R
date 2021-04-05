@@ -18,7 +18,7 @@ cluster_single_rna <- function(req,
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
-  e1$obj <- NormalizeData(e1$obj, verbose = F)
+
   e1$obj <-
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
@@ -153,7 +153,7 @@ merge_idents <- function(req, newClusterIds) {
   ))
 }
 
-s
+
 #' Rename clusters/idents
 #' @param req request payload
 #' @param old_name array

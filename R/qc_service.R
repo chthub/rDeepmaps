@@ -179,3 +179,19 @@ atac_qc_list <- function() {
     )
   )
 }
+
+#' Gene-gene correlation static plot
+#' @param req request payload
+#' @param gene1 string gene1
+#' @param gene2 string gene2
+#' @return static plot
+#' @export
+#'
+#'
+gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
+  if ("ATAC" %in% names(e1$obj@assays)) {
+    DefaultAssay(e1$obj) <- "SCT"
+  }
+  plot1 <- FeatureScatter(object = e1$obj, feature1 = gene1, feature2 = gene2, slot = "data")
+  return(print(plot1))
+}

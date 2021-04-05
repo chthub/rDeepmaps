@@ -125,9 +125,30 @@ rna_qc_plot
 #* @get /atac-qc-list
 atac_qc_list
 
+#* Plot gene-correlation plot
+#* @post /gene-correlation-plot
+#* @serializer png list(width = 800, height = 600)
+gene_cor_plot
+
+#################################### DEG
+
 #* Calculate DEG for two selections
 #* @post /deg
 calc_deg
+
+#################################### Enrich
+
+#* Calculate GSEA table
+#* @param genes
+#* @param database
+#* @post /gsea-table
+calc_gsea_table
+
+#* Calculate GSEA table
+#* @param term
+#* @post /gsea-plot
+#* @serializer png list(width = 800, height = 600)
+calc_gsea_plot
 
 ####################################
 
