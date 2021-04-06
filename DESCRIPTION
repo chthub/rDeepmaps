@@ -45,7 +45,8 @@ Imports:
     rlang,
     logger,
     tictoc,
-    rlist
+    rlist,
+    magrittr
 Depends: 
     Seurat,
     R (>= 4.0.0)

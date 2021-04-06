@@ -126,3 +126,18 @@ convert_empty <- function(str) {
     str
   }
 }
+
+#' Calculate mean values of a matrix by bins
+#'
+#' @param vec vector
+#' @param every bin size
+#' @return
+#'
+#'
+BinMean <- function (vec, every, na.rm = FALSE) {
+  n <- length(vec)
+  x <- .colMeans(vec, every, n %/% every, na.rm)
+  r <- n %% every
+  if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
+  x
+}

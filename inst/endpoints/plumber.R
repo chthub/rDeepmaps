@@ -91,25 +91,6 @@ select_cells
 #* @post /subset-cells
 subset_cells
 
-#* Plot umap
-#* @param categoryName
-#* @post /umap-static
-#* @serializer png list(width = 700, height = 600)
-umap_plot
-
-#* Plot umap gene plot
-#* @param gene
-#* @post /gene-umap-static
-#* @serializer png list(width = 700, height = 600)
-gene_umap_plot
-
-#* Plot violin gene plot
-#* @param gene
-#* @param split
-#* @post /violin-gene
-#* @serializer png list(width = 700, height = 600)
-violin_gene_plot
-
 ####################################
 
 #* Get Variable genes list
@@ -125,10 +106,6 @@ rna_qc_plot
 #* @get /atac-qc-list
 atac_qc_list
 
-#* Plot gene-correlation plot
-#* @post /gene-correlation-plot
-#* @serializer png list(width = 800, height = 600)
-gene_cor_plot
 
 #################################### DEG
 
@@ -143,12 +120,6 @@ calc_deg
 #* @param database
 #* @post /gsea-table
 calc_gsea_table
-
-#* Calculate GSEA table
-#* @param term
-#* @post /gsea-plot
-#* @serializer png list(width = 800, height = 600)
-calc_gsea_plot
 
 ####################################
 
@@ -183,4 +154,40 @@ set_obj
 set_obj
 
 
-####################################
+#################################### Visualization
+#* Calculate GSEA table
+#* @param term
+#* @post /gsea-plot
+#* @serializer png list(width = 800, height = 600)
+calc_gsea_plot
+
+#* Plot gene-correlation plot
+#* @post /gene-correlation-plot
+#* @serializer png list(width = 1600, height = 1200, res = 300)
+gene_cor_plot
+
+#* Plot umap
+#* @param categoryName
+#* @post /umap-static
+#* @serializer png list(width = 700, height = 600)
+umap_plot
+
+#* Plot umap gene plot
+#* @param gene
+#* @post /gene-umap-static
+#* @serializer png list(width = 700, height = 600)
+gene_umap_plot
+
+#* Plot violin gene plot
+#* @param gene
+#* @param split
+#* @post /violin-gene
+#* @serializer png list(width = 700, height = 600)
+violin_gene_plot
+
+#* Heatmap
+#* @param features
+#* @param split
+#* @post /heatmap
+#* @serializer png list(width = 1000, height = 600)
+feature_heatmap
