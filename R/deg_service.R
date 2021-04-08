@@ -30,5 +30,6 @@ calc_deg <-
         logfc.threshold = min_lfc
       )
     this_markers <- tibble::rownames_to_column(this_markers, "gene")
+    e1$deg <- this_markers
     return(list(this_markers))
   }

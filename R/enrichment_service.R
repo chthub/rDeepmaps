@@ -1,7 +1,6 @@
 #' Run GSEA enrichment
 #'
 #' @param req request payload
-#' @param genes string
 #' @param database string
 #'
 #' @return
@@ -9,21 +8,31 @@
 #'
 calc_gsea_table <-
   function(req,
-           genes,
-           database) {
+           database = "C2") {
     print("run GSEA")
-    Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
 
     library(fgsea)
     library(msigdbr)
-    m_df = msigdbr(species = "Mus musculus", category = "H")
+    if(e1$species == "Human") {
+      this_species <- "Homo sapiens"
+    } else {
+      this_species <- "Mus musculus"
+    }
+    m_df = msigdbr(species = this_species, category = database)
     m_list = m_df %>% split(x = .$gene_symbol, f = .$gs_name)
 
-    res <- as.numeric(seq_along(res))
-    names(res) <- VariableFeatures(e1$obj)
+    res <- e1$deg %>%
+      dplyr::select(gene, avg_log2FC) %>%
+      dplyr::arrange(desc(avg_log2FC)) %>%
+      na.omit() %>%
+      dplyr::distinct() %>%
+      dplyr::group_by(gene) %>%
+      tibble::deframe() %>%
+      sort(decreasing = T)
+
     fgseaRes <- fgsea(pathways = m_list,
                       stats = res,
-                      nperm = 1000)
+                      nperm = 500)
     gseaTable <- fgseaRes %>%
       tibble::as_tibble() %>%
       dplyr::arrange(desc(NES)) %>%

@@ -16,5 +16,7 @@ e1 <- rlang::env(
   ident_idx = 1,
   assay_idx = 1,
   new_meta_counter = 1,
+  species = NULL,
+  deg = NULL
 )
 NULL

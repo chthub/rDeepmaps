@@ -29,6 +29,7 @@ load_single_rna <-
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
+    e1$species <- 'Mouse'
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
       rep("empty_ident", length(levels(empty_ident)))
@@ -118,6 +119,7 @@ load_multi_rna <-
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
+    e1$species <- 'Human'
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
       rep("empty_ident", length(levels(empty_ident)))
@@ -205,8 +207,15 @@ load_multiome <-
            nVariableFeatures = 3000,
            percentMt = 5,
            removeRibosome = FALSE) {
-    e1$obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
+    print(getwd())
+    # rm(docker)
+    if(exists("docker")) {
+      e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
+    } else{
+      e1$obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
+    }
 
+    e1$species <- 'Mouse'
     raw_obj <- e1$obj
     raw_percent_zero <-
       length(which((as.matrix(

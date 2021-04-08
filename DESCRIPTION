@@ -46,7 +46,10 @@ Imports:
     logger,
     tictoc,
     rlist,
-    magrittr
+    magrittr,
+    ComplexHeatmap,
+    ggpubr,
+    fgsea
 Depends: 
     Seurat,
     R (>= 4.0.0)
