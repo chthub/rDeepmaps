@@ -47,9 +47,7 @@ Imports:
     tictoc,
     rlist,
     magrittr,
-    ComplexHeatmap,
     ggpubr,
-    fgsea
 Depends: 
     Seurat,
     R (>= 4.0.0)
