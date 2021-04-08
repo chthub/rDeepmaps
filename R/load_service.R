@@ -209,10 +209,11 @@ load_multiome <-
            removeRibosome = FALSE) {
     print(getwd())
     # rm(docker)
-    if(exists("docker")) {
+    if(e1$docker==T) {
       e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
     } else{
-      e1$obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
+      #e1$obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
+      e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
     }
 
     e1$species <- 'Human'
