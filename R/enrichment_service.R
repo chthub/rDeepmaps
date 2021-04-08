@@ -18,6 +18,7 @@ calc_gsea_table <-
     } else {
       this_species <- "Mus musculus"
     }
+    print(this_species)
     m_df = msigdbr(species = this_species, category = database)
     m_list = m_df %>% split(x = .$gene_symbol, f = .$gs_name)
 
