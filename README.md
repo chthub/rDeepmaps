@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# iris3api
+# deepmaps-api
 
 <!-- badges: start -->
 
@@ -13,11 +13,48 @@ has not yet been a stable, usable release suitable for the
 public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 <!-- badges: end -->
 
-The package is the R API server for IRIS3 website.
+The package is the R API server for DeepMAPS website.
 
 ## Installation
+
+### R package
 
 ``` r
 library(devtools)
 install_github("Wang-Cankun/iris3api@master")
+```
+
+### Docker build
+
+We split the package to 2 containers, as it can speed up the build and
+deployment time (40 min -\> 5 min).
+
+To build the docker image, enter project root directory first.
+
+#### Base image
+
+This base image contains all necessary for the package. Including
+plumber, Seurat, Signac, tidyverse, BioConductor suite (GenomicRanges,
+SingleCellExperiment, etc.)
+
+``` bash
+# Build
+docker build -f base.Dockerfile -t wangcankun100/deepmaps-api-base .
+
+# Test what packages are installed
+docker run wangcankun100/deepmaps-api-base
+```
+
+#### Client image
+
+This client image builds upon the deepmaps-api-base image. It will only
+install the R package itself.
+
+``` bash
+# Build
+docker build -f client.Dockerfile -t wangcankun100/deepmaps-api-client .
+
+
+# Run
+docker run --rm -p 8000:8000 wangcankun100/deepmaps-api-client
 ```

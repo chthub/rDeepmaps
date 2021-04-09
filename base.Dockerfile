@@ -1,4 +1,4 @@
-FROM satijalab/seurat:4.0.0
+FROM satijalab/seurat:latest
 LABEL maintainer="Cankun Wang <cankun.wang@osumc.edu>"
 
 WORKDIR /tmp
@@ -40,7 +40,7 @@ RUN wget --no-check-certificate https://github.com/samtools/htslib/archive/1.11.
 	cp -R * /usr/lib/
 
 # Install Bioconductor dependencies
-RUN R -e 'BiocManager::install(c("JASPAR2020", "GO.db","GenomicAlignments","ggbio","biovizBase","fgsea","ComplexHeatmap"))'
+RUN R -e 'BiocManager::install(c("JASPAR2020","GO.db","GenomicAlignments","ggbio","biovizBase","fgsea", "ComplexHeatmap"))'
 
 # Install CRAN dependencies
 
@@ -54,36 +54,46 @@ RUN install2.r --error --skipinstalled -r $CRAN \
 	Signac \ 
 	logger \
 	tictoc \
-	msigdbr
+	msigdbr 
 
-# Install GitHub R dependencies
+# Other CRAN dependencies found during check
 
-RUN installGithub.r -u FALSE\
-	Wang-Cankun/iris3api@master
+RUN install2.r --error --skipinstalled -r $CRAN \
+	rematch \
+	readr \
+	openxlsx \
+	readxl \
+	sp \
+	statmod \
+	statmod\
+	nloptr\
+	minqa\
+	lme4\
+	rio\
+	maptools\
+	pbkrtest\
+	carData\
+	car\
+	corrplot\
+	broom\
+	rstatix\
+	polynom\
+	ggsignif\
+	ggsci\
+	ggpubr \
+	spatstat \
+	rlist
 
 # Clean up installation
 RUN rm -rf /tmp/* 
 RUN rm -rf /var/lib/apt/lists/*
 
-# Set up working directory
-RUN mkdir /data
-WORKDIR /data
-
-# app.R is the entry to start API server
-COPY app.R /data/app.R
-
-# Copy example multiome data
-COPY inst/extdata/pbmc_match_3k.qsave /data/pbmc_match_3k.qsave
-
-# Expose plumber API port inside docker
-EXPOSE 8000
-
 # Start R API server
 # ENTRYPOINT ["R"]
 
-ENTRYPOINT ["Rscript", "app.R"]
+ENTRYPOINT ["Rscript", "-e", "installed.packages()"]
 
-# Test running
-# docker run --rm -d --name satijalab/seurat:latest
-# docker run --rm -d --name wangcankun100/iris3api
-# docker run --rm -p 8000:8000 wangcankun100/iris3api
+# Test
+# docker build -f base.Dockerfile -t wangcankun100/deepmaps-api-base
+# docker run wangcankun100/deepmaps-api-base
+
