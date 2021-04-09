@@ -33,7 +33,6 @@ Imports:
     tibble,
     dplyr,
     stringr,
-    future,
     glue,
     methods,
     ggplot2,
