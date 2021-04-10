@@ -3,9 +3,9 @@ LABEL maintainer="Cankun Wang <cankun.wang@osumc.edu>"
 
 WORKDIR /tmp
 
-# Install GitHub R dependencies
+# Install package, skip dependency and suggested packages
 
-RUN installGithub.r -u FALSE\
+RUN installGithub.r -d FALSE -u FALSE\
 	Wang-Cankun/iris3api@master
 
 # Clean up installation
@@ -32,4 +32,4 @@ ENTRYPOINT ["Rscript", "app.R"]
 
 # Test running
 # docker build -f client.Dockerfile -t wangcankun100/deepmaps-api-client .
-# docker run --rm -p 8000:8000 wangcankun100/deepmaps-api-client
+# 

@@ -1,4 +1,4 @@
-FROM satijalab/seurat:latest
+FROM satijalab/seurat:4.0.1
 LABEL maintainer="Cankun Wang <cankun.wang@osumc.edu>"
 
 WORKDIR /tmp
@@ -96,4 +96,5 @@ ENTRYPOINT ["Rscript", "-e", "installed.packages()"]
 # Test
 # docker build -f base.Dockerfile -t wangcankun100/deepmaps-api-base
 # docker run wangcankun100/deepmaps-api-base
+# docker push wangcankun100/deepmaps-api-base
 
