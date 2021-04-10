@@ -46,9 +46,7 @@ calc_gsea_table <-
 #' Generate GSEA plot
 #'
 #' @param req request payload
-#' @param genes string
-#' @param database string
-#'
+#' @param term string
 #' @return
 #' @export
 #'

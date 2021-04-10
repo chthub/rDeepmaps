@@ -6,25 +6,42 @@ get_all_idents <- function() {
   all_idents <- list()
   for (i in seq_along(colnames(e1$obj@meta.data))) {
     this_ident <- colnames(e1$obj@meta.data)[i]
-    if(!this_ident %in% c("orig.ident","nCount_RNA","nFeature_RNA","percent.mt","percent.ribo")) {
+    pattern <- c(
+      "orig.ident",
+      "nCount_*",
+      "nFeature_*",
+      "percent.*",
+      "pct.*",
+      "gex*",
+      "atac*",
+      "prediction*",
+      "nucleosome*",
+      "TSS.enrichment",
+      "TSS.percentile",
+      "high.tss",
+      "SCT.weight",
+      "blacklist*"
+    )
+    matches <- unique(grep(paste(pattern, collapse = "|"),
+                           this_ident, value = F))
+    if (length(matches) == 0) {
       this_levels <- levels(as.factor(e1$obj@meta.data[, i]))
-      tmp_list <- list(
-        ident = this_ident,
-        levels = this_levels
-      )
+      tmp_list <- list(ident = this_ident,
+                       levels = this_levels)
       all_idents <- rlist::list.append(all_idents, tmp_list)
     }
   }
+  all_idents
   return(all_idents)
 }
 
 #' Get all gene names/ids from object
-#'
-#' @return array all gene names
-#' @export
-get_all_genes <- function() {
-  return(rownames(e1$obj))
-}
+  #'
+  #' @return array all gene names
+  #' @export
+  get_all_genes <- function() {
+    return(rownames(e1$obj))
+  }
 
 
 #' Set Seurat Idents by name

@@ -25,7 +25,8 @@ load_single_rna <-
     meta <- iris3api::zeisel_2015$meta
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
-      CreateSeuratObject(raw_expr_data,
+      CreateSeuratObject(
+        raw_expr_data,
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
@@ -43,15 +44,14 @@ load_single_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-        col.name = "percent.mt"
-      )
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt")
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
-      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      Matrix::colSums(e1$obj[rb.genes,]) / Matrix::colSums(e1$obj) * 100
     e1$obj <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
@@ -115,7 +115,8 @@ load_multi_rna <-
     meta <- iris3api::ifnb_2800$meta
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
-      CreateSeuratObject(raw_expr_data,
+      CreateSeuratObject(
+        raw_expr_data,
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
@@ -139,15 +140,14 @@ load_multi_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-        col.name = "percent.mt"
-      )
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt")
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
-      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      Matrix::colSums(e1$obj[rb.genes,]) / Matrix::colSums(e1$obj) * 100
     e1$obj <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
@@ -209,9 +209,15 @@ load_multiome <-
            removeRibosome = FALSE) {
     print(getwd())
     # rm(docker)
-    #e1$obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
-    e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
-
+    if (file.exists("/data")) {
+      e1$obj <- qs::qread("data/pbmc_match_3k.qsave")
+    } else {
+      e1$obj <-
+        qs::qread(
+          "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
+        )
+    }
+    #e1$obj <- qs::qread("../extdata/pbmc_match_3k.qsave")
     e1$species <- 'Human'
     raw_obj <- e1$obj
     raw_percent_zero <-

@@ -168,3 +168,43 @@ feature_heatmap <- function(req, features=c("Gad1","Gad2"), meta="cell_type", co
   return(draw(ht))
 }
 
+
+#' ATAC coverage static plot
+#' @importFrom Signac CoveragePlot
+#' @param req request payload
+#' @param gene string
+#' @param flank string
+#' @param chr string
+#' @param start string
+#' @param end string
+#' @param is_annotation string
+#' @param is_peak string
+#' @return static plot
+#' @export
+#'
+coverage_plot <-
+  function(req,
+           gene = 'GAD2',
+           flank = '10000',
+           chr = 'chr10',
+           start = '26116307',
+           end = '26316307',
+           is_annotation = T,
+           is_peak = F) {
+    #Idents(e1$obj) <- e1$obj$cell_type
+    if(isTRUEorFALSE(gene)) {
+      this_ranges <- get_gene_range(gene = gene, flank = flank)
+    } else{
+      this_ranges <- paste(chr, start, end, sep = "-")
+    }
+    message(this_ranges)
+    cov_plot <- Signac::CoveragePlot(
+      object = e1$obj,
+      assay = "ATAC",
+      region = this_ranges,
+      annotation = is_annotation,
+      peaks = is_peak
+    )
+
+    return(print(cov_plot))
+  }

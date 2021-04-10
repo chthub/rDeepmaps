@@ -130,7 +130,8 @@ convert_empty <- function(str) {
 #' Calculate mean values of a matrix by bins
 #'
 #' @param vec vector
-#' @param every bin size
+#' @param every number bin size
+#' @praram na.rm boolean remove NAs?
 #' @return
 #'
 #'

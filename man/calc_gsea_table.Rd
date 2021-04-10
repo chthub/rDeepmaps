@@ -4,12 +4,10 @@
 \alias{calc_gsea_table}
 \title{Run GSEA enrichment}
 \usage{
-calc_gsea_table(req, genes, database)
+calc_gsea_table(req, database = "C2")
 }
 \arguments{
 \item{req}{request payload}
-
-\item{genes}{string}
 
 \item{database}{string}
 }

@@ -1,12 +1,12 @@
 #' @keywords internal
 "_PACKAGE"
 
-
 # The following block is used by usethis to automatically manage
 # roxygen namespace tags. Modify with care!
 ## usethis namespace: start
 #' @importFrom tibble tibble
 #' @importFrom glue glue
+#' @importFrom S4Vectors isTRUEorFALSE
 #' @import Seurat
 ## usethis namespace: end
 e1 <- rlang::env(

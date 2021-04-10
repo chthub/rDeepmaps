@@ -191,3 +191,15 @@ violin_gene_plot
 #* @post /heatmap
 #* @serializer png list(width = 1000, height = 600)
 feature_heatmap
+
+#* Coverage plot
+#* @param gene
+#* @param flank
+#* @param chr
+#* @param start
+#* @param end
+#* @param is_annotation
+#* @param is_peak
+#* @post /coverage-plot
+#* @serializer png list(width = 1200, height = 1000)
+coverage_plot
