@@ -10,11 +10,12 @@
 #' @import Seurat
 ## usethis namespace: end
 e1 <- rlang::env(
-  obj = NULL, # active
-  sub_obj = NULL, # from selection
-  full_obj = NULL, # with all cells
-  ident_idx = 1,
+  obj = NULL, # active object
+  sub_obj = NULL, # the subset object from selection
+  full_obj = NULL, # object with all cells
   assay_idx = 1,
+  embedding_idx = 2,
+  ident_idx = 1,
   new_meta_counter = 1,
   species = NULL,
   deg = NULL,

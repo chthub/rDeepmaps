@@ -131,11 +131,11 @@ convert_empty <- function(str) {
 #'
 #' @param vec vector
 #' @param every number bin size
-#' @praram na.rm boolean remove NAs?
+#' @praram `na.rm` boolean remove NAs?
 #' @return
 #'
 #'
-BinMean <- function (vec, every, na.rm = FALSE) {
+BinMean <- function(vec, every, na.rm = FALSE) {
   n <- length(vec)
   x <- .colMeans(vec, every, n %/% every, na.rm)
   r <- n %% every

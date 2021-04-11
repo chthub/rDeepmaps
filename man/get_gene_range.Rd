@@ -2,7 +2,7 @@
 % Please edit documentation in R/internal.R
 \name{get_gene_range}
 \alias{get_gene_range}
-\title{Get genomic range of a gene and extend a flank region}
+\title{Get genomic range of a gene and extend a flank region (Multiome project)}
 \usage{
 get_gene_range(gene = "GAD1", flank = "10000")
 }
@@ -15,5 +15,5 @@ get_gene_range(gene = "GAD1", flank = "10000")
 
 }
 \description{
-Get genomic range of a gene and extend a flank region
+Get genomic range of a gene and extend a flank region (Multiome project)
 }

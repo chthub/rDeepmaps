@@ -47,6 +47,11 @@ Imports:
     rlist,
     magrittr,
     ggpubr,
+    EnsDb.Hsapiens.v86,
+    EnsDb.Mmusculus.v79,
+    GenomicFeatures,
+    IRanges,
+    S4Vectors
 Depends: 
     Seurat,
     R (>= 4.0.0)

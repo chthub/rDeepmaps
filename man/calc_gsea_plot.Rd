@@ -9,9 +9,7 @@ calc_gsea_plot(req, term)
 \arguments{
 \item{req}{request payload}
 
-\item{genes}{string}
-
-\item{database}{string}
+\item{term}{string}
 }
 \value{
 

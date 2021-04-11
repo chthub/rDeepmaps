@@ -26,7 +26,7 @@ sum_numbers
 
 ####################################
 
-#* Read data into Seurat object
+#* Read data into  object
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
 #* @post /load
@@ -38,7 +38,7 @@ load_single_rna
 #* @post /load-multi-rna
 load_multi_rna
 
-#* Read data into Seurat object
+#* Read data into  object
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
 #* @post /load-multiome
@@ -121,38 +121,43 @@ calc_deg
 #* @post /gsea-table
 calc_gsea_table
 
-####################################
+#################################### Object manipulation
 
-#* Get all Seurat Idents names
-#* @get /idents
-get_all_idents
+#* Get all  Idents names
+#* @param type
+#* @post /set-obj
+set_obj
 
 #* Get all gene names
 #* @get /genes
 get_all_genes
 
-#* Get all Seurat Idents names
+#* Get all  Idents names
+#* @get /idents
+get_all_idents
+
+#* Get all  Idents names
+#* @param name
 #* @post /idents
 set_idents
 
-#* Get all Seurat Idents names
+#* Get all  assay names
 #* @get /assays
 get_all_assays
 
-#* Get all Seurat Idents names
-#* @post /assays
+#* Set assay names
+#* @param name
+#* @post /set-assay
 set_assay
 
-#* Get all Seurat Idents names
-#* @param type
-#* @post /set-obj
-set_obj
+#* Get all embedding names
+#* @get /embeddings
+get_all_embeddings
 
-#* Get all Seurat Idents names
-#* @param type
-#* @post /set-obj
-set_obj
-
+#* Get all  Idents names
+#* @param name
+#* @post /set-embedding
+set_embedding
 
 #################################### Visualization
 #* Calculate GSEA table

@@ -42,6 +42,9 @@ RUN wget --no-check-certificate https://github.com/samtools/htslib/archive/1.11.
 # Install Bioconductor dependencies
 RUN R -e 'BiocManager::install(c("JASPAR2020","GO.db","GenomicAlignments","ggbio","biovizBase","fgsea", "ComplexHeatmap"))'
 
+# Install Bioconductor databases
+RUN R -e 'BiocManager::install(c("EnsDb.Hsapiens.v86","EnsDb.Mmusculus.v79"))'
+
 # Install CRAN dependencies
 
 RUN install2.r --error --skipinstalled -r $CRAN \

@@ -9,7 +9,7 @@ BinMean(vec, every, na.rm = FALSE)
 \arguments{
 \item{vec}{vector}
 
-\item{every}{bin size}
+\item{every}{number bin size}
 }
 \value{
 

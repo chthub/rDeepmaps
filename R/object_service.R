@@ -1,3 +1,11 @@
+#' Get all gene names/ids from object
+#'
+#' @return array all gene names
+#' @export
+get_all_genes <- function() {
+  return(rownames(e1$obj))
+}
+
 #' Get all Idents names from object
 #'
 #' @return array all idents names
@@ -23,7 +31,8 @@ get_all_idents <- function() {
       "blacklist*"
     )
     matches <- unique(grep(paste(pattern, collapse = "|"),
-                           this_ident, value = F))
+                           this_ident,
+                           value = F))
     if (length(matches) == 0) {
       this_levels <- levels(as.factor(e1$obj@meta.data[, i]))
       tmp_list <- list(ident = this_ident,
@@ -34,14 +43,6 @@ get_all_idents <- function() {
   all_idents
   return(all_idents)
 }
-
-#' Get all gene names/ids from object
-  #'
-  #' @return array all gene names
-  #' @export
-  get_all_genes <- function() {
-    return(rownames(e1$obj))
-  }
 
 
 #' Set Seurat Idents by name
@@ -74,9 +75,41 @@ get_all_assays <- function() {
 #'
 set_assay <- function(req, name = "RNA") {
   e1$assay_idx <- which(names(e1$obj@assays) == name)
+  this_assay <- names(e1$obj@assays[e1$assay_idx])
+  message(name)
+  message(this_assay)
+  DefaultAssay(e1$obj) <- this_assay
   return(list(
-    assay_idx = e1$assay_idx,
+    assay_idx = e1$assay_idx - 1,
     all_assays = names(e1$obj@assays)
+  ))
+}
+
+
+#' Get all embedding/dimension reduction names from object
+#'
+#' @return array all embedding names
+#' @export
+get_all_embeddings <- function() {
+  return(list(
+    embedding_idx = e1$embedding_idx,
+    all_embeddings = names(e1$obj@reductions)
+  ))
+}
+
+#' Set embedding/dimension reduction by name
+#' @param req request payload
+#' @param name string idents name
+#' @return array levels of the active embedding
+#' @export
+#'
+set_embedding <- function(req, name = "pca") {
+  e1$embedding_idx <- which(names(e1$obj@reductions) == name)
+  message(e1$embedding_idx)
+  message(name)
+  return(list(
+    embedding_idx = e1$embedding_idx - 1,
+    all_embeddings = names(e1$obj@reductions)
   ))
 }
 

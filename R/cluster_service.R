@@ -162,7 +162,6 @@ merge_idents <- function(req, newClusterIds) {
 #' @export
 #'
 rename_idents <- function(req, old_name = 1, new_name = 1) {
-
   message(glue("Renaming idents: {e1$ident_idx} at ID: {old_name} "))
   this_meta_name <- glue("new_merge_{e1$new_meta_counter}")
   this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
@@ -373,4 +372,3 @@ subset_cells <- function(req, selectionPayload) {
     )
   )
 }
-

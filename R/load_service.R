@@ -30,7 +30,7 @@ load_single_rna <-
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
-    e1$species <- 'Mouse'
+    e1$species <- "Mouse"
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
       rep("empty_ident", length(levels(empty_ident)))
@@ -44,14 +44,15 @@ load_single_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-                  col.name = "percent.mt")
+        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+        col.name = "percent.mt"
+      )
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
-      Matrix::colSums(e1$obj[rb.genes,]) / Matrix::colSums(e1$obj) * 100
+      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
     e1$obj <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
@@ -120,7 +121,7 @@ load_multi_rna <-
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
-    e1$species <- 'Human'
+    e1$species <- "Human"
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
       rep("empty_ident", length(levels(empty_ident)))
@@ -140,14 +141,15 @@ load_multi_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-                  col.name = "percent.mt")
+        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+        col.name = "percent.mt"
+      )
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
-      Matrix::colSums(e1$obj[rb.genes,]) / Matrix::colSums(e1$obj) * 100
+      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
     e1$obj <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
@@ -217,8 +219,11 @@ load_multiome <-
           "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
         )
     }
-    #e1$obj <- qs::qread("../extdata/pbmc_match_3k.qsave")
-    e1$species <- 'Human'
+
+    set_embedding(name='HGT')
+
+    # e1$obj <- qs::qread("../extdata/pbmc_match_3k.qsave")
+    e1$species <- "Human"
     raw_obj <- e1$obj
     raw_percent_zero <-
       length(which((as.matrix(
