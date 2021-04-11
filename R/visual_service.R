@@ -1,5 +1,6 @@
 
 
+
 #' Gene-gene correlation static plot
 #' @param req request payload
 #' @param gene1 string gene1
@@ -136,10 +137,10 @@ feature_heatmap <-
     cell_info <- Idents(e1$obj)
     cell_label <- cbind(colnames(e1$obj), as.character(cell_info))
     colnames(cell_label) <- c("cell_name", "label")
-    cell_label <- cell_label[order(cell_label[, 1]),]
+    cell_label <- cell_label[order(cell_label[, 1]), ]
 
     cell_label <- as.data.frame(cell_label)
-    label_data <- cell_label[order(cell_label[, 2]),]
+    label_data <- cell_label[order(cell_label[, 2]), ]
     exp_data <- GetAssayData(e1$obj, slot = "data")
     cell_idx <- as.character(label_data[, 1])
     exp_data <- exp_data[, cell_idx]
@@ -151,7 +152,7 @@ feature_heatmap <-
       small_exp_data <<- t(apply(exp_data, 1, function(x) {
         BinMean(x, every = this_bin)
       }))
-      small_cell_label <- label_data[small_cell_idx,]
+      small_cell_label <- label_data[small_cell_idx, ]
     }
     colnames(small_exp_data) <- small_cell_label[, 1]
     library(matrixStats)
@@ -160,7 +161,8 @@ feature_heatmap <-
       (small_exp_data - rowMeans(small_exp_data)) / rowSds(small_exp_data)
 
 
-    mat <- small_exp_data[match(features, rownames(small_exp_data)),]
+    mat <-
+      small_exp_data[match(features, rownames(small_exp_data)), ]
 
     library(circlize)
     col_fun <- as.character(Polychrome::palette36.colors(36)[-2])
@@ -196,7 +198,8 @@ feature_heatmap <-
 #' ATAC coverage static plot
 #' @importFrom Signac CoveragePlot
 #' @param req request payload
-#' @param gene string
+#' @param type string
+#' @param gene string#'
 #' @param flank string
 #' @param chr string
 #' @param start string
@@ -208,6 +211,7 @@ feature_heatmap <-
 #'
 coverage_plot <-
   function(req,
+           type = "gene",
            gene = "GAD2",
            flank = "10000",
            chr = "chr10",
@@ -216,12 +220,12 @@ coverage_plot <-
            is_annotation = T,
            is_peak = F) {
     # Idents(e1$obj) <- e1$obj$cell_type
-    if (isTRUEorFALSE(gene) || nchar(gene)) {
+    if (type == 'gene') {
       this_ranges <- get_gene_range(gene = gene, flank = flank)
-    } else {
+    } else if (type == 'region') {
       this_ranges <- paste(chr, start, end, sep = "-")
     }
-    message(this_ranges)
+    message(e1$obj@assays$ATAC@fragments[[1]]@path)
     cov_plot <- Signac::CoveragePlot(
       object = e1$obj,
       assay = "ATAC",
@@ -229,6 +233,5 @@ coverage_plot <-
       annotation = is_annotation,
       peaks = is_peak
     )
-
     return(print(cov_plot))
   }

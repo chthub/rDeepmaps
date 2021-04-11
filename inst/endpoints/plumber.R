@@ -198,6 +198,7 @@ violin_gene_plot
 feature_heatmap
 
 #* Coverage plot
+#* @param type
 #* @param gene
 #* @param flank
 #* @param chr
