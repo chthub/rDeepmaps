@@ -216,7 +216,7 @@ coverage_plot <-
            is_annotation = T,
            is_peak = F) {
     # Idents(e1$obj) <- e1$obj$cell_type
-    if (isTRUEorFALSE(gene)) {
+    if (isTRUEorFALSE(gene) || nchar(gene)) {
       this_ranges <- get_gene_range(gene = gene, flank = flank)
     } else {
       this_ranges <- paste(chr, start, end, sep = "-")
