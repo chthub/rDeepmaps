@@ -62,7 +62,7 @@ set_idents <- function(req, name = "orig.ident") {
 #' @export
 get_all_assays <- function() {
   return(list(
-    assay_idx = e1$assay_idx,
+    assay_idx = e1$assay_idx - 1,
     all_assays = names(e1$obj@assays)
   ))
 }
@@ -92,7 +92,7 @@ set_assay <- function(req, name = "RNA") {
 #' @export
 get_all_embeddings <- function() {
   return(list(
-    embedding_idx = e1$embedding_idx,
+    embedding_idx = e1$embedding_idx - 1,
     all_embeddings = names(e1$obj@reductions)
   ))
 }

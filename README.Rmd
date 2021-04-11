@@ -57,11 +57,16 @@ This client image builds upon the deepmaps-api-base image. It will only install 
 ```{bash, eval=FALSE}
 # Build
 docker build --no-cache -f client.Dockerfile -t wangcankun100/deepmaps-api-client .
+docker push wangcankun100/deepmaps-api-client
 
+# Deploy
+docker pull wangcankun100/deepmaps-api-client
+docker run -d -v /var/www/nodejs/data/:/data --name deepmaps-api-client -p 8000:8000 wangcankun100/deepmaps-api-client
+docker logs deepmaps-api-client
+docker restart deepmaps-api-client
 
 # Run
 docker run --rm -p 8000:8000 wangcankun100/deepmaps-api-client
 docker run -v /var/www/nodejs/data/:/data -p 8000:8000 wangcankun100/deepmaps-api-client
-docker push wangcankun100/deepmaps-api-client
-docker pull wangcankun100/deepmaps-api-client
+
 ```

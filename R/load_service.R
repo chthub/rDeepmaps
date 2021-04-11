@@ -223,9 +223,8 @@ load_multiome <-
       e1$obj@assays$ATAC@fragments[[1]]@path <- "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
     }
 
-    e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
-
-    # e1$obj <- qs::qread("../extdata/pbmc_match_3k.qsave")
+    #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
+    set_embedding(name = "HGT")
     e1$species <- "Human"
     raw_obj <- e1$obj
     raw_percent_zero <-
