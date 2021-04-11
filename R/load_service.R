@@ -212,7 +212,7 @@ load_multiome <-
     print(getwd())
     # rm(docker)
     if (file.exists("/data")) {
-      e1$obj <- qs::qread("data/pbmc_match_3k.qsave")
+      e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
     } else {
       e1$obj <-
         qs::qread(
