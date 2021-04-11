@@ -213,6 +213,8 @@ load_multiome <-
     # rm(docker)
     if (file.exists("/data")) {
       e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
+      e1$obj@assays$ATAC@fragments[[1]]@path <- "/data/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+
     } else {
       e1$obj <-
         qs::qread(
