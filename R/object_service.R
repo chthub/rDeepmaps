@@ -76,8 +76,6 @@ get_all_assays <- function() {
 set_assay <- function(req, name = "RNA") {
   e1$assay_idx <- which(names(e1$obj@assays) == name)
   this_assay <- names(e1$obj@assays[e1$assay_idx])
-  message(name)
-  message(this_assay)
   DefaultAssay(e1$obj) <- this_assay
   return(list(
     assay_idx = e1$assay_idx - 1,

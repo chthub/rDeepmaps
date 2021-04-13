@@ -72,15 +72,21 @@ umap_plot <- function(req, categoryName = "seurat_clusters") {
 #' Plot static UMAP
 #' @param req request payload
 #' @param gene string
+#' @param assay string
 #'
 #' @return static image
 #' @export
-gene_umap_plot <- function(req, gene = "Gad1") {
-  print(gene)
+gene_umap_plot <- function(req, gene = "Gad1", assay="RNA") {
   this_embedding <- names(e1$obj@reductions[e1$embedding_idx])
-  print(e1$embedding_idx)
+
+  current_assay <- e1$assay_idx
+  e1$assay_idx <- which(names(e1$obj@assays) == assay)
+  this_assay <- names(e1$obj@assays[e1$assay_idx])
+  DefaultAssay(e1$obj) <- this_assay
   plot <-
     FeaturePlot(e1$obj, reduction = this_embedding, feature = gene)
+  this_assay <- names(e1$obj@assays[current_assay])
+  DefaultAssay(e1$obj) <- this_assay
   return(print(plot))
 }
 
@@ -89,10 +95,12 @@ gene_umap_plot <- function(req, gene = "Gad1") {
 #' @param req request payload
 #' @param gene string
 #' @param split string
+#' @param assay string
+#'
 #' @return static image
 #' @export
 #'
-violin_gene_plot <- function(req, gene = "Gad1", split = "sex") {
+violin_gene_plot <- function(req, gene = "Gad1", split = "sex", assay = "RNA") {
   # ident_idx=9
   if (split == "NULL") {
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
@@ -101,6 +109,11 @@ violin_gene_plot <- function(req, gene = "Gad1", split = "sex") {
   } else {
     idx <- which(colnames(e1$obj@meta.data) == split)
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+
+    current_assay <- e1$assay_idx
+    e1$assay_idx <- which(names(e1$obj@assays) == assay)
+    this_assay <- names(e1$obj@assays[e1$assay_idx])
+    DefaultAssay(e1$obj) <- this_assay
     plot <-
       VlnPlot(
         e1$obj,
@@ -108,6 +121,8 @@ violin_gene_plot <- function(req, gene = "Gad1", split = "sex") {
         split.by = colnames(e1$obj@meta.data)[idx],
         group.by = colnames(e1$obj@meta.data)[e1$ident_idx]
       )
+    this_assay <- names(e1$obj@assays[current_assay])
+    DefaultAssay(e1$obj) <- this_assay
   }
 
   return(print(plot))
@@ -225,7 +240,7 @@ coverage_plot <-
     } else if (type == 'region') {
       this_ranges <- paste(chr, start, end, sep = "-")
     }
-    message(e1$obj@assays$ATAC@fragments[[1]]@path)
+
     cov_plot <- Signac::CoveragePlot(
       object = e1$obj,
       assay = "ATAC",
@@ -233,5 +248,19 @@ coverage_plot <-
       annotation = is_annotation,
       peaks = is_peak
     )
-    return(print(cov_plot))
+    peak_plot <- Signac::PeakPlot(
+      object = e1$obj,
+      assay = "ATAC",
+      region = this_ranges
+    )
+    tile_plot <- Signac::TilePlot(
+      object = e1$obj,
+      assay = "ATAC",
+      region = this_ranges
+    )
+
+    combine_plot <- Signac::CombineTracks(
+      plotlist = list(cov_plot, tile_plot, peak_plot)
+    )
+    return(print(combine_plot))
   }
