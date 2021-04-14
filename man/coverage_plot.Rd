@@ -6,6 +6,7 @@
 \usage{
 coverage_plot(
   req,
+  type = "gene",
   gene = "GAD2",
   flank = "10000",
   chr = "chr10",
@@ -18,7 +19,9 @@ coverage_plot(
 \arguments{
 \item{req}{request payload}
 
-\item{gene}{string}
+\item{type}{string}
+
+\item{gene}{string#'}
 
 \item{flank}{string}
 

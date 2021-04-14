@@ -4,12 +4,14 @@
 \alias{gene_umap_plot}
 \title{Plot static UMAP}
 \usage{
-gene_umap_plot(req, gene = "Gad1")
+gene_umap_plot(req, gene = "Gad1", assay = "RNA")
 }
 \arguments{
 \item{req}{request payload}
 
 \item{gene}{string}
+
+\item{assay}{string}
 }
 \value{
 static image

@@ -6,20 +6,16 @@
 \usage{
 calc_deg(
   req,
-  ident1_idx = 5,
-  ident2_idx = 5,
   ident1 = 4,
   ident2 = 5,
   min_pct = 0.2,
-  min_lfc = 0.5
+  min_lfc = 0.5,
+  assay = "RNA",
+  pvalue = 0.05
 )
 }
 \arguments{
 \item{req}{request payload}
-
-\item{ident1_idx}{string}
-
-\item{ident2_idx}{string}
 
 \item{ident1}{string}
 
@@ -28,6 +24,10 @@ calc_deg(
 \item{min_pct}{string}
 
 \item{min_lfc}{string}
+
+\item{assay}{string}
+
+\item{pvalue}{string}
 }
 \value{
 
