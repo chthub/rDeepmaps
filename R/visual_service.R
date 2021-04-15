@@ -95,12 +95,13 @@ gene_umap_plot <- function(req, gene = "Gad1", assay="RNA") {
 #' @param req request payload
 #' @param gene string
 #' @param split string
+#' @param group string
 #' @param assay string
 #'
 #' @return static image
 #' @export
 #'
-violin_gene_plot <- function(req, gene = "Gad1", split = "sex", assay = "RNA") {
+violin_gene_plot <- function(req, gene = "Gad1", split = "sex", group  = "cell_type", assay = "RNA") {
   # ident_idx=9
   if (split == "NULL") {
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
@@ -114,12 +115,14 @@ violin_gene_plot <- function(req, gene = "Gad1", split = "sex", assay = "RNA") {
     e1$assay_idx <- which(names(e1$obj@assays) == assay)
     this_assay <- names(e1$obj@assays[e1$assay_idx])
     DefaultAssay(e1$obj) <- this_assay
+    this_group_idx <-
+      which(colnames(e1$obj@meta.data) == group)
     plot <-
       VlnPlot(
         e1$obj,
         gene,
         split.by = colnames(e1$obj@meta.data)[idx],
-        group.by = colnames(e1$obj@meta.data)[e1$ident_idx]
+        group.by = colnames(e1$obj@meta.data)[this_group_idx]
       )
     this_assay <- names(e1$obj@assays[current_assay])
     DefaultAssay(e1$obj) <- this_assay

@@ -13,7 +13,10 @@ rna_qc_list <- function() {
   this_obj <-
     as.matrix(GetAssayData(subset(e1$obj, features = vargenes), slot = "data"))
   row_min <- apply(this_obj, 1, min)
-  row_sd <- apply(this_obj, 1, stats::sd)
+  row_mean <- HVFInfo(e1$obj)[VariableFeatures(e1$obj),][, 1]
+  row_sd <- HVFInfo(e1$obj)[VariableFeatures(e1$obj),][, 2]
+  row_residual_variance <-
+    HVFInfo(e1$obj)[VariableFeatures(e1$obj),][, 3]
   row_max <- apply(this_obj, 1, max)
   n_features_per_cell <- e1$obj$nFeature_RNA
   n_reads_per_cell <- e1$obj$nCount_RNA
@@ -22,13 +25,15 @@ rna_qc_list <- function() {
   })
   pct_ribo_per_gene <- e1$obj$percent.ribo
   pct_mito_per_gene <- e1$obj$percent.mt
+  HVFInfo(e1$obj)[VariableFeatures(e1$obj),]
   gene_result <-
     data.frame(
-      gene = rownames(this_obj),
-      mean = rowMeans(this_obj),
-      std = row_sd,
-      min = row_min,
-      max = row_max,
+      gene = rownames(this_obj) ,
+      min =  format(round(row_min, 2), nsmall = 2),
+      max =  format(round(row_max, 2), nsmall = 2),
+      mean =  format(round(rowMeans(this_obj), 2), nsmall = 2),
+      std =  format(round(row_sd, 2), nsmall = 2),
+      residual_variance =  format(round(row_residual_variance, 2), nsmall = 2),
       n_cells_per_gene = n_cells_per_gene
     )
   cell_result <-
@@ -95,11 +100,9 @@ rna_qc_plot <- function() {
 
   top10 <- head(VariableFeatures(e1$obj), 10)
   plot1 <- VariableFeaturePlot(e1$obj)
-  plot2 <- LabelPoints(
-    plot = plot1,
-    points = top10,
-    repel = TRUE
-  )
+  plot2 <- LabelPoints(plot = plot1,
+                       points = top10,
+                       repel = TRUE)
   return(print(plot2))
 }
 
