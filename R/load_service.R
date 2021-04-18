@@ -224,7 +224,7 @@ load_multiome <-
     }
 
     #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
-    set_embedding(name = "umap.rna")
+    iris3api::set_embedding(name = "umap.rna")
     e1$species <- "Human"
     raw_obj <- e1$obj
     raw_percent_zero <-

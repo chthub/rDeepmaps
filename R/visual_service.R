@@ -1,6 +1,4 @@
 
-
-
 #' Gene-gene correlation static plot
 #' @param req request payload
 #' @param gene1 string gene1
@@ -134,23 +132,23 @@ violin_gene_plot <- function(req, gene = "Gad1", split = "sex", group  = "cell_t
 
 #' Complex heatmap
 #' @param req request payload
-#' @param features vector of string
+#' @param genes vector of string
 #' @param meta metadata to annotate in columns
 #' @param color color palette
 #' @return static image
 #' @export
 #'
-feature_heatmap <-
+static_heatmap <-
   function(req,
-           features = c("Gad1", "Gad2"),
+           genes = c("CD74", "CD7"),
            meta = "cell_type",
            color = NULL) {
     # ident_idx=9
     library(ComplexHeatmap)
 
     features <- VariableFeatures(e1$obj)[1:20]
-
-    Idents(e1$obj) <- e1$obj$cell_type
+    features <- genes[genes %in% rownames(e1$obj)]
+    Idents(e1$obj) <- e1$obj$hgt_cluster
 
     cell_info <- Idents(e1$obj)
     cell_label <- cbind(colnames(e1$obj), as.character(cell_info))

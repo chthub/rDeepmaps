@@ -191,11 +191,10 @@ gene_umap_plot
 violin_gene_plot
 
 #* Heatmap
-#* @param features
-#* @param split
-#* @post /heatmap
+#* @param genes
+#* @post /static-heatmap
 #* @serializer png list(width = 1000, height = 600)
-feature_heatmap
+static_heatmap
 
 #* Coverage plot
 #* @param type
