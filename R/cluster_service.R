@@ -68,50 +68,128 @@ cluster_single_rna <- function(req,
 #' @export
 #'
 cluster_multiome <- function(req,
-                             nPCs = 20,
+                             method = 'HGT',
+                             nPCs = 30,
                              resolution = 0.5,
                              neighbor = 20) {
-  message(glue(
-    "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
+  message(glue::glue(
+    "Run multiome clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
+
+  DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
-  e1$obj <- NormalizeData(e1$obj, verbose = F)
+
   e1$obj <-
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
+  message(glue::glue(
+    "Run PCA"
+  ))
   e1$obj <-
     RunPCA(e1$obj,
       features = variable_genes,
       npcs = nPCs,
       verbose = F
     )
+  message(glue::glue(
+    "Run neighbor"
+  ))
   e1$obj <-
     FindNeighbors(e1$obj,
       dims = 1:nPCs,
       k.param = neighbor,
       verbose = F
     )
-  e1$obj <-
-    FindClusters(e1$obj, resolution = resolution, verbose = F)
+
+  message(glue::glue(
+    "Run UMAP RNA"
+  ))
   e1$obj <- RunUMAP(
     e1$obj,
+    reduction = 'pca',
     dims = 1:nPCs,
-    n.neighbors = 15,
-    verbose = F
+    n.neighbors = neighbor,
+    verbose = F,
+    reduction.name = "umap.rna",
+    reduction.key = "rnaUMAP_"
   )
 
-  e1$ident_idx <-
-    which(colnames(e1$obj@meta.data) == "seurat_clusters")
+  #DefaultAssay(e1$obj) <- "ATAC"
+  #e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
+  #e1$obj <- Signac::RunTFIDF(e1$obj)
+  #e1$obj <- Signac::RunSVD(e1$obj)
+  message(glue::glue(
+    "Run UMAP ATAC"
+  ))
+  e1$obj <-
+    RunUMAP(
+      e1$obj,
+      reduction = 'pca',
+      dims = 2:nPCs,
+      reduction.name = "umap.atac",
+      reduction.key = "atacUMAP_",
+      verbose = F,
+    )
+  message(glue::glue(
+    "Run UMAP HGT"
+  ))
+  e1$obj <-
+    RunUMAP(
+      e1$obj,
+      reduction = 'pca',
+      dims = 2:10,
+      reduction.name = "HGT",
+      reduction.key = "HGT_",
+      verbose = F,
+    )
+
+  #DimPlot(e1$obj, reduction = "HGT")
+  if(method == "HGT") {
+    message(glue::glue(
+      "Run HGT"
+    ))
+    e1$obj <-
+      FindClusters(e1$obj, resolution = 0.2, verbose = F)
+    seurat_cluster_idx <- which(colnames(e1$obj@meta.data) == "seurat_clusters")
+    colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
+    e1$ident_idx <-
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")
+  } else {
+    e1$obj <-
+      FindClusters(e1$obj, resolution = resolution, verbose = F)
+    e1$ident_idx <-
+      which(colnames(e1$obj@meta.data) == "seurat_clusters")
+  }
+
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+  library(MAESTRO)
+  message(glue::glue(
+    "Run MAESTRO"
+  ))
+
+  #pbmc_atac_activity_mat <- NULL
+  #pbmc_atac_activity_mat <-
+  #  MAESTRO::ATACCalculateGenescore(
+  #    GetAssayData(e1$obj, assay = "ATAC")[1:20000,],
+  #    organism = "GRCh38",
+  #    decaydistance = 10000,
+  #    model = "Enhanced"
+  #  )
+
+  e1$obj[['MAESTRO']] <-
+    CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA")/25)
+
+  e1$obj[['GAS']] <-
+    CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA")/500)
 
   return(list(
-    n_seurat_clusters = length(levels(e1$obj$seurat_clusters)),
+    n_seurat_clusters = 5,
     umap_pts = data.frame(
-      umap1 = as.vector(Embeddings(e1$obj, reduction = "umap")[, 1]),
-      umap2 = as.vector(Embeddings(e1$obj, reduction = "umap")[, 2])
+      umap1 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 1]),
+      umap2 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 2])
     )
   ))
 }
@@ -184,10 +262,10 @@ rename_idents <- function(req, old_name = 1, new_name = 1) {
 #' @param req request payload
 #' @param categoryName string
 
-#' @return active category name and levels, all available categories,
+#' @return active category name and levels, all available categories
 #' @export
 #'
-select_category <- function(req, categoryName = "name3") {
+select_category <- function(req, categoryName = "other") {
   if (categoryName == "") {
     this_idents <- as.factor("")
   } else if (categoryName %in% colnames(e1$obj@meta.data)) {

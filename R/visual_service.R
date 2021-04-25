@@ -22,7 +22,6 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
     slot = "data"
   )
 
-
   plot1 <- ggpubr::ggscatter(
     df,
     x = gene1,
@@ -160,7 +159,6 @@ static_heatmap <-
     exp_data <- GetAssayData(e1$obj, slot = "data")
     cell_idx <- as.character(label_data[, 1])
     exp_data <- exp_data[, cell_idx]
-
 
     if (ncol(exp_data) > 500) {
       this_bin <- ncol(exp_data) %/% 500

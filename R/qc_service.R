@@ -13,10 +13,10 @@ rna_qc_list <- function() {
   this_obj <-
     as.matrix(GetAssayData(subset(e1$obj, features = vargenes), slot = "data"))
   row_min <- apply(this_obj, 1, min)
-  row_mean <- HVFInfo(e1$obj)[VariableFeatures(e1$obj),][, 1]
-  row_sd <- HVFInfo(e1$obj)[VariableFeatures(e1$obj),][, 2]
+  row_mean <- HVFInfo(e1$obj)[VariableFeatures(e1$obj), ][, 1]
+  row_sd <- HVFInfo(e1$obj)[VariableFeatures(e1$obj), ][, 2]
   row_residual_variance <-
-    HVFInfo(e1$obj)[VariableFeatures(e1$obj),][, 3]
+    HVFInfo(e1$obj)[VariableFeatures(e1$obj), ][, 3]
   row_max <- apply(this_obj, 1, max)
   n_features_per_cell <- e1$obj$nFeature_RNA
   n_reads_per_cell <- e1$obj$nCount_RNA
@@ -25,7 +25,7 @@ rna_qc_list <- function() {
   })
   pct_ribo_per_gene <- e1$obj$percent.ribo
   pct_mito_per_gene <- e1$obj$percent.mt
-  HVFInfo(e1$obj)[VariableFeatures(e1$obj),]
+  HVFInfo(e1$obj)[VariableFeatures(e1$obj), ]
   gene_result <-
     data.frame(
       gene = rownames(this_obj) ,
@@ -56,36 +56,32 @@ rna_qc_list <- function() {
     counts = hist(n_cells_per_gene, plot = F)$counts
   )
 
-  meta1_title <- "Cell type"
-  meta1_name <- names(table(e1$obj$cell_type))
-  meta1_val <- as.vector(table(e1$obj$cell_type))
 
-  meta2_title <- "Sex"
-  meta2_name <- names(table(e1$obj$sex))
-  meta2_val <- as.vector(table(e1$obj$sex))
+  meta_list <- list()
+  for (idx in seq_along(colnames(e1$meta))) {
+    this_title <- colnames(e1$meta)[idx]
+    this_name <- names(table(e1$meta[, idx]))
+    this_val <- as.vector(table(e1$meta[, idx]))
+    tmp <-
+      list(
+        title = this_title,
+        name = this_name,
+        val = data.frame(name = this_name, value = this_val)
+      )
+    meta_list <- append(meta_list, list(tmp))
+  }
 
-  meta3_title <- "Sample"
-  meta3_name <- names(table(e1$obj$sample))
-  meta3_val <- as.vector(table(e1$obj$sample))
+  #jsonlite::toJSON(meta_list)
 
-  return(
-    list(
-      gene_result = gene_result,
-      cell_result = cell_result,
-      hist_features_per_cell = hist_features_per_cell,
-      hist_reads_per_cell = hist_reads_per_cell,
-      hist_cells_per_gene = hist_cells_per_gene,
-      meta1_title = meta1_title,
-      meta1_name = meta1_name,
-      meta1_val = data.frame(name = meta1_name, value = meta1_val),
-      meta2_title = meta2_title,
-      meta2_name = meta2_name,
-      meta2_val = data.frame(name = meta2_name, value = meta2_val),
-      meta3_title = meta3_title,
-      meta3_name = meta3_name,
-      meta3_val = data.frame(name = meta3_name, value = meta3_val)
-    )
+  result <- list(
+    gene_result = gene_result,
+    cell_result = cell_result,
+    hist_features_per_cell = hist_features_per_cell,
+    hist_reads_per_cell = hist_reads_per_cell,
+    hist_cells_per_gene = hist_cells_per_gene,
+    meta_list = meta_list
   )
+  return(result)
 }
 
 #' Variable genes scatter plot
@@ -119,10 +115,17 @@ atac_qc_list <- function() {
 
   n_features_per_cell <- e1$obj$nFeature_ATAC
   n_reads_per_cell <- e1$obj$nCount_ATAC
-  pct_reads_in_peaks <- e1$obj$pct_reads_in_peaks
-  atac_peak_region_fragments <- e1$obj$atac_peak_region_fragments
-  blacklist_ratio <- e1$obj$blacklist_ratio
-  nucleosome_signal <- e1$obj$nucleosome_signal
+
+  #pct_reads_in_peaks <- e1$obj$pct_reads_in_peaks
+  #atac_peak_region_fragments <- e1$obj$atac_peak_region_fragments
+  #blacklist_ratio <- e1$obj$blacklist_ratio
+  #nucleosome_signal <- e1$obj$nucleosome_signal
+  #tss_enrichment <- e1$obj$TSS.enrichment
+  pct_reads_in_peaks <- n_features_per_cell
+  atac_peak_region_fragments <- n_features_per_cell
+  blacklist_ratio <- n_features_per_cell
+  nucleosome_signal <- n_features_per_cell
+  tss_enrichment <- n_features_per_cell
 
   cell_result <-
     data.frame(
@@ -147,38 +150,31 @@ atac_qc_list <- function() {
   )
 
   hist_tss_enrichment <- data.frame(
-    breaks = hist(e1$obj$TSS.enrichment, plot = F)$breaks[-1],
-    counts = hist(e1$obj$TSS.enrichment, plot = F)$counts
+    breaks = hist(tss_enrichment, plot = F)$breaks[-1],
+    counts = hist(tss_enrichment, plot = F)$counts
   )
 
-  meta1_title <- "Cell type"
-  meta1_name <- names(table(e1$obj$cell_type))
-  meta1_val <- as.vector(table(e1$obj$cell_type))
+  meta_list <- list()
+  for (idx in seq_along(colnames(e1$meta))) {
+    this_title <- colnames(e1$meta)[idx]
+    this_name <- names(table(e1$meta[, idx]))
+    this_val <- as.vector(table(e1$meta[, idx]))
+    tmp <-
+      list(
+        title = this_title,
+        name = this_name,
+        val = data.frame(name = this_name, value = this_val)
+      )
+    meta_list <- append(meta_list, list(tmp))
+  }
 
-  meta2_title <- "Sex"
-  meta2_name <- names(table(e1$obj$sex))
-  meta2_val <- as.vector(table(e1$obj$sex))
-
-  meta3_title <- "Sample"
-  meta3_name <- names(table(e1$obj$sample))
-  meta3_val <- as.vector(table(e1$obj$sample))
-
-  return(
-    list(
-      cell_result = cell_result,
-      hist_features_per_cell = hist_features_per_cell,
-      hist_reads_per_cell = hist_reads_per_cell,
-      hist_atac_peak_region_fragments = hist_atac_fragments,
-      hist_tss_enrichment = hist_tss_enrichment,
-      meta1_title = meta1_title,
-      meta1_name = meta1_name,
-      meta1_val = data.frame(name = meta1_name, value = meta1_val),
-      meta2_title = meta2_title,
-      meta2_name = meta2_name,
-      meta2_val = data.frame(name = meta2_name, value = meta2_val),
-      meta3_title = meta3_title,
-      meta3_name = meta3_name,
-      meta3_val = data.frame(name = meta3_name, value = meta3_val)
-    )
+  result <- list(
+    cell_result = cell_result,
+    hist_features_per_cell = hist_features_per_cell,
+    hist_reads_per_cell = hist_reads_per_cell,
+    hist_atac_peak_region_fragments = hist_atac_fragments,
+    hist_tss_enrichment = hist_tss_enrichment,
+    meta_list = meta_list
   )
+  return(result)
 }

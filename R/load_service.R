@@ -15,14 +15,37 @@
 load_single_rna <-
   function(req,
            idx = 1,
-           filename,
+           jobid = 'example',
+           type = 'eg',
            min_cells = 1,
            min_genes = 200,
-           nVariableFeatures = 3000,
+           nVariableFeatures = 2000,
            percentMt = 5,
-           removeRibosome = FALSE) {
-    raw_expr_data <- iris3api::zeisel_2015$expr
-    meta <- iris3api::zeisel_2015$meta
+           removeRibosome = FALSE,
+           expr = NULL,
+           label = NULL,
+           species = 'Human') {
+    #expr_type <- label_type <- 'application/vnd.ms-excel'
+    #label_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/fbb36e99797c313276f8bca86539cb3c"
+    #expr_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/3c0955e700b4bf2d177442236d0c2395"
+
+    # Yan: 1619284757781
+    # Zeisel: 1619291336397
+
+    if (jobid != 'example')  {
+      expr_type <- as.character(expr$mimetype[1])
+      expr_path <- as.character(expr$filename[1])
+      raw_expr_data <- read_deepmaps(expr_type, expr_path)
+
+      label_type <- as.character(label$mimetype[1])
+      label_path <- as.character(label$filename[1])
+      e1$meta <- read_deepmaps(label_type, label_path)
+
+    } else {
+      raw_expr_data <- iris3api::zeisel_2015$expr
+      e1$meta <- iris3api::zeisel_2015$meta
+    }
+
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -30,23 +53,23 @@ load_single_rna <-
         min.cells = as.numeric(min_cells),
         min.features = as.numeric(min_genes)
       )
-    e1$species <- "Mouse"
+    e1$species <- species
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
       rep("empty_ident", length(levels(empty_ident)))
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
 
-    e1$obj <-
-      AddMetaData(e1$obj, meta$Label, col.name = "cell_type")
-    e1$obj <- AddMetaData(e1$obj, meta$Sex, col.name = "sex")
-    e1$obj <- AddMetaData(e1$obj, meta$Sample, col.name = "sample")
+    for (idx in seq_along(colnames(e1$meta))) {
+      this_meta_name <- colnames(e1$meta)[idx]
+      e1$obj <-
+        AddMetaData(e1$obj, e1$meta[, idx], col.name = this_meta_name)
+    }
 
     e1$obj <-
       AddMetaData(e1$obj,
-        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-        col.name = "percent.mt"
-      )
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt")
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
@@ -113,7 +136,7 @@ load_multi_rna <-
            percentMt = 5,
            removeRibosome = FALSE) {
     raw_expr_data <- iris3api::ifnb_2800$expr
-    meta <- iris3api::ifnb_2800$meta
+    e1$meta <- iris3api::ifnb_2800$meta
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -128,10 +151,11 @@ load_multi_rna <-
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
 
-    e1$obj <-
-      AddMetaData(e1$obj, meta$cell_type, col.name = "cell_type")
-    e1$obj <- AddMetaData(e1$obj, meta$sex, col.name = "sex")
-    e1$obj <- AddMetaData(e1$obj, meta$sample, col.name = "sample")
+    for (idx in seq_along(colnames(e1$meta))) {
+      this_meta_name <- colnames(e1$meta)[idx]
+      e1$obj <-
+        AddMetaData(e1$obj, e1$meta[, idx], col.name = this_meta_name)
+    }
 
     if (idx != 0) {
       this_idx <- as.character(levels(as.factor(e1$obj$sample))[idx])
@@ -141,9 +165,8 @@ load_multi_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-        col.name = "percent.mt"
-      )
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt")
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
@@ -204,28 +227,140 @@ load_multiome <-
   function(req,
            idx = 0,
            filename,
+           jobid = 'example',
            min_cells = 1,
            min_genes = 200,
-           nVariableFeatures = 3000,
-           percentMt = 5,
-           removeRibosome = FALSE) {
-    print(getwd())
-    # rm(docker)
-    if (file.exists("/data")) {
-      e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
-      e1$obj@assays$ATAC@fragments[[1]]@path <- "/data/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+           nVariableFeatures = 2000,
+           percentMt = 25,
+           removeRibosome = FALSE,
+           expr = NULL,
+           label = NULL,
+           species = 'Human') {
+    #expr_type <- label_type <- 'application/octet-stream'
+    #label_path <- ""
+    #expr_path <- "9a9841a85c48b692e70bc03db811ccdc"
 
+    # Brain: 1619298241128
+    # PBMC 3K: 1619297987450
+    # PBMC : 1619311996943
+    if (jobid == 'example') {
+      if (file.exists("/data")) {
+        e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
+        e1$obj@assays$ATAC@fragments[[1]]@path <-
+          "/data/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+      } else {
+        e1$obj <-
+          qs::qread(
+            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
+          )
+
+        e1$obj@assays$ATAC@fragments[[1]]@path <-
+          "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+        iris3api::set_embedding(name = "umap.rna")
+        e1$meta <-e1$obj@meta.data[, c('cell_type','sex')]
+        e1$meta$disease <- rep(c("disease","control"), nrow(e1$meta)/2)
+        #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
+      }
     } else {
+      expr_type <- as.character(expr$mimetype[1])
+      expr_path <- as.character(expr$filename[1])
+      raw_expr_data <- read_deepmaps(expr_type, expr_path)
+
+      label <- list()
+      label_type <- as.character(label$mimetype[1])
+      label_path <- as.character(label$filename[1])
+      e1$meta <- NULL
+      if (length(label_type) > 0) {
+        e1$meta <- read_deepmaps(label_type, label_path)
+      }
+      rna_counts <- raw_expr_data$`Gene Expression`
+      atac_counts <- raw_expr_data$Peaks
+
+
+      # Use peaks in standard chromosomes
+      grange.counts <-
+        Signac::StringToGRanges(rownames(atac_counts), sep = c(":", "-"))
+      grange.use <-
+        as.character(GenomicRanges::seqnames(grange.counts)) %in% GenomeInfoDb::standardChromosomes(grange.counts)
+      atac_counts <- atac_counts[as.vector(grange.use), ]
+
+      #library(EnsDb.Hsapiens.v86)
+      #annotations <-
+      #  Signac::GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+      #seqlevelsStyle(annotations) <- 'UCSC'
+      #genome(annotations) <- "hg38"
+      #qs::qsave(annotations, "hg38_annotations.qsave")
+
+
+      if (file.exists("/data")) {
+        annotations <- qs::qread("/data/hg38_annotations.qsave")
+      } else {
+        annotations <- qs::qread("C:/Users/flyku/Desktop/iris3/pbmc_match/db/hg38_annotations.qsave")
+      }
+      chrom_assay <- Signac::CreateChromatinAssay(
+        counts = atac_counts,
+        sep = c(":", "-"),
+        genome = 'hg38',
+        min.cells = 5,
+        #min.feature = 200,
+        annotation = annotations,
+      )
+
+      e1$obj <- CreateSeuratObject(
+        counts = chrom_assay,
+        assay = "ATAC"
+      )
+      exp_assay <- CreateAssayObject(counts = rna_counts)
+      e1$obj[["RNA"]]<-exp_assay
+
+      # DefaultAssay(e1$obj) <- "ATAC"
+      # Need fragments
+      # e1$obj <- Signac::NucleosomeSignal(object = e1$obj)
+      # e1$obj <- Signac::TSSEnrichment(object = e1$obj, fast = FALSE)
+      # downstream plotting of the TSS enrichment signal for different groups of cells.
+      # e1$obj$high.tss <- ifelse(e1$obj$TSS.enrichment > 2, 'High', 'Low')
+      # e1$obj$pct_reads_in_peaks <-  e1$obj$atac_peak_region_fragments/ e1$obj$atac_fragments*100
+      # e1$obj$blacklist_ratio <-  e1$obj$blacklist_region_fragments / ( e1$obj$atac_peak_region_fragments+0.01)
+
+      DefaultAssay(e1$obj) <- "RNA"
       e1$obj <-
-        qs::qread(
-          "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
+        AddMetaData(e1$obj,
+                    PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                    col.name = "percent.mt")
+
+      Idents(e1$obj) <- e1$obj$orig.ident
+      rb.genes <-
+        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]|^RP[SL][[:digit:]]", rownames(e1$obj))]
+      percent.ribo <-
+        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      e1$obj <-
+        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+
+      e1$obj <-
+        subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
+
+      e1$obj <-
+        FindVariableFeatures(
+          e1$obj,
+          selection.method = "vst",
+          nfeatures = as.numeric(nVariableFeatures),
+          verbose = F
         )
-      e1$obj@assays$ATAC@fragments[[1]]@path <- "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+      e1$obj <- NormalizeData(e1$obj, verbose = F)
+      e1$obj <- SCTransform(e1$obj, verbose = F)
+      e1$obj <- ScaleData(e1$obj, verbose = F)
+      VariableFeatures(e1$obj)[1:5]
+      # END custom
     }
 
-    #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
-    iris3api::set_embedding(name = "umap.rna")
-    e1$species <- "Human"
+    # Add empety ident
+    empty_ident <- as.factor(e1$obj$orig.ident)
+    levels(empty_ident) <-
+      rep("empty_ident", length(levels(empty_ident)))
+    e1$obj <-
+      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
+
+    e1$species <- species
     raw_obj <- e1$obj
     raw_percent_zero <-
       length(which((as.matrix(

@@ -1,4 +1,4 @@
-FROM wangcankun100/deepmaps-api-base
+FROM wangcankun100/deepmaps-r-base
 LABEL maintainer="Cankun Wang <cankun.wang@osumc.edu>"
 
 WORKDIR /tmp
@@ -25,11 +25,15 @@ COPY app.R /data/app.R
 # Expose plumber API port inside docker
 EXPOSE 8000
 
-# Start R API server
-# ENTRYPOINT ["R"]
-
-ENTRYPOINT ["Rscript", "app.R"]
+# Add Tini
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+#ENTRYPOINT ["/tini", "--"]
+ENTRYPOINT ["/tini", "--"]
+# Default: Start R API server
+CMD ["Rscript", "app.R"]
 
 # Test running
 # docker build -f client.Dockerfile -t wangcankun100/deepmaps-api-client .
-# 
+

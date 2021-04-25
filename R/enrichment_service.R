@@ -1,6 +1,7 @@
 #' Run GSEA enrichment
 #'
 #' @param req request payload
+#' @param genes array
 #' @param database string
 #'
 #' @return
@@ -8,6 +9,7 @@
 #'
 calc_gsea_table <-
   function(req,
+           genes = c("CD74","CD7"),
            database = "C2") {
     print("run GSEA")
 
