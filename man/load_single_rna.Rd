@@ -7,20 +7,22 @@
 load_single_rna(
   req,
   idx = 1,
-  filename,
+  jobid = "example",
+  type = "eg",
   min_cells = 1,
   min_genes = 200,
-  nVariableFeatures = 3000,
+  nVariableFeatures = 2000,
   percentMt = 5,
-  removeRibosome = FALSE
+  removeRibosome = FALSE,
+  expr = NULL,
+  label = NULL,
+  species = "Human"
 )
 }
 \arguments{
 \item{req}{request payload}
 
 \item{idx}{sample index}
-
-\item{filename}{string}
 
 \item{min_cells}{number}
 
@@ -31,6 +33,8 @@ load_single_rna(
 \item{percentMt}{number}
 
 \item{removeRibosome}{boolean}
+
+\item{filename}{string}
 }
 \value{
 list of basic QC metrics

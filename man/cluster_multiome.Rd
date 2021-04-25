@@ -4,7 +4,13 @@
 \alias{cluster_multiome}
 \title{Run multiome clustering}
 \usage{
-cluster_multiome(req, nPCs = 20, resolution = 0.5, neighbor = 20)
+cluster_multiome(
+  req,
+  method = "HGT",
+  nPCs = 30,
+  resolution = 0.5,
+  neighbor = 20
+)
 }
 \arguments{
 \item{req}{request payload}

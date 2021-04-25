@@ -4,7 +4,7 @@
 \alias{select_category}
 \title{Set or select category to assign labels}
 \usage{
-select_category(req, categoryName = "name3")
+select_category(req, categoryName = "other")
 }
 \arguments{
 \item{req}{request payload}
@@ -12,7 +12,7 @@ select_category(req, categoryName = "name3")
 \item{categoryName}{string}
 }
 \value{
-active category name and levels, all available categories,
+active category name and levels, all available categories
 }
 \description{
 Set or select category to assign labels

@@ -4,10 +4,12 @@
 \alias{calc_gsea_table}
 \title{Run GSEA enrichment}
 \usage{
-calc_gsea_table(req, database = "C2")
+calc_gsea_table(req, genes = c("CD74", "CD7"), database = "C2")
 }
 \arguments{
 \item{req}{request payload}
+
+\item{genes}{array}
 
 \item{database}{string}
 }

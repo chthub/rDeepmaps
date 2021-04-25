@@ -4,7 +4,13 @@
 \alias{violin_gene_plot}
 \title{Plot violin gene UMAP}
 \usage{
-violin_gene_plot(req, gene = "Gad1", split = "sex", assay = "RNA")
+violin_gene_plot(
+  req,
+  gene = "Gad1",
+  split = "sex",
+  group = "cell_type",
+  assay = "RNA"
+)
 }
 \arguments{
 \item{req}{request payload}
@@ -12,6 +18,8 @@ violin_gene_plot(req, gene = "Gad1", split = "sex", assay = "RNA")
 \item{gene}{string}
 
 \item{split}{string}
+
+\item{group}{string}
 
 \item{assay}{string}
 }

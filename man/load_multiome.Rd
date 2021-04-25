@@ -8,11 +8,15 @@ load_multiome(
   req,
   idx = 0,
   filename,
+  jobid = "example",
   min_cells = 1,
   min_genes = 200,
-  nVariableFeatures = 3000,
-  percentMt = 5,
-  removeRibosome = FALSE
+  nVariableFeatures = 2000,
+  percentMt = 25,
+  removeRibosome = FALSE,
+  expr = NULL,
+  label = NULL,
+  species = "Human"
 )
 }
 \arguments{
