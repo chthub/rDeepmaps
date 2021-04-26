@@ -7,12 +7,16 @@
 load_multi_rna(
   req,
   idx = 1,
+  jobid = "example",
+  type = "example",
   filename,
   min_cells = 1,
   min_genes = 200,
   nVariableFeatures = 3000,
   percentMt = 5,
-  removeRibosome = FALSE
+  removeRibosome = FALSE,
+  label = NULL,
+  species = "Human"
 )
 }
 \arguments{

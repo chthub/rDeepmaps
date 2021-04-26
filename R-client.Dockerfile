@@ -35,5 +35,5 @@ ENTRYPOINT ["/tini", "--"]
 CMD ["Rscript", "app.R"]
 
 # Test running
-# docker build -f client.Dockerfile -t wangcankun100/deepmaps-api-client .
-
+# docker build --no-cache -f R-client.Dockerfile -t wangcankun100/deepmaps-r-client .
+# docker push wangcankun100/deepmaps-r-client

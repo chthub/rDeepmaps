@@ -129,14 +129,33 @@ load_single_rna <-
 load_multi_rna <-
   function(req,
            idx = 1,
+           jobid = 'example',
+           type = 'example',
            filename,
            min_cells = 1,
            min_genes = 200,
            nVariableFeatures = 3000,
            percentMt = 5,
-           removeRibosome = FALSE) {
-    raw_expr_data <- iris3api::ifnb_2800$expr
-    e1$meta <- iris3api::ifnb_2800$meta
+           removeRibosome = FALSE,
+           label = NULL,
+           species = 'Human') {
+
+    if (jobid == 'example1')  {
+      expr_type <- as.character(expr$mimetype[1])
+      expr_path <- as.character(expr$filename[1])
+      raw_expr_data <- read_deepmaps(expr_type, expr_path)
+
+      label_type <- as.character(label$mimetype[1])
+      label_path <- as.character(label$filename[1])
+      e1$meta <- read_deepmaps(label_type, label_path)
+
+    } else {
+      raw_expr_data <- iris3api::ifnb_2800$expr
+      e1$meta <- iris3api::ifnb_2800$meta
+      #write.csv(raw_expr_data[,1:1400],"human_ifnb_sample1_expr.csv")
+      #write.csv(raw_expr_data[,1401:2800],"human_ifnb_sample2_expr.csv")
+      #write.csv(e1$meta,"human_ifnb_label.csv")
+    }
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -151,16 +170,15 @@ load_multi_rna <-
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
 
-    for (idx in seq_along(colnames(e1$meta))) {
-      this_meta_name <- colnames(e1$meta)[idx]
+    for (index in seq_along(colnames(e1$meta))) {
+      this_meta_name <- colnames(e1$meta)[index]
       e1$obj <-
-        AddMetaData(e1$obj, e1$meta[, idx], col.name = this_meta_name)
+        AddMetaData(e1$obj, e1$meta[, index], col.name = this_meta_name)
     }
 
     if (idx != 0) {
       this_idx <- as.character(levels(as.factor(e1$obj$sample))[idx])
       e1$obj <- subset(e1$obj, sample == this_idx)
-      print(e1$obj)
     }
 
     e1$obj <-

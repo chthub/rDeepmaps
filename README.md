@@ -50,11 +50,19 @@ docker run wangcankun100/deepmaps-api-base
 This client image builds upon the deepmaps-api-base image. It will only
 install the R package itself.
 
-``` bash
+```{bash, eval=FALSE}
 # Build
-docker build -f client.Dockerfile -t wangcankun100/deepmaps-api-client .
+docker build --no-cache -f R-client.Dockerfile -t wangcankun100/deepmaps-r-client .
+docker push wangcankun100/deepmaps-r-client
 
+# Deploy
+docker pull wangcankun100/deepmaps-r-client
+docker run -d -v /var/www/nodejs/data/:/data --name deepmaps-r-client -p 8000:8000 wangcankun100/deepmaps-r-client
+docker logs deepmaps-r-client
+docker restart deepmaps-r-client
 
 # Run
-docker run --rm -p 8000:8000 wangcankun100/deepmaps-api-client
+docker run --rm -p 8000:8000 wangcankun100/deepmaps-r-client
+docker run -v /var/www/nodejs/data/:/data -p 8000:8000 wangcankun100/deepmaps-r-client
+
 ```
