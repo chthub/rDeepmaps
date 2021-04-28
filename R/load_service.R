@@ -128,7 +128,7 @@ load_single_rna <-
 #'
 load_multi_rna <-
   function(req,
-           idx = 1,
+           idx = 2,
            jobid = 'example',
            type = 'example',
            filename,

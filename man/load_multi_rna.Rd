@@ -6,7 +6,7 @@
 \usage{
 load_multi_rna(
   req,
-  idx = 1,
+  idx = 2,
   jobid = "example",
   type = "example",
   filename,
