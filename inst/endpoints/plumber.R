@@ -1,5 +1,5 @@
 # Controller for iris3api
-
+options(digits=3)
 require(iris3api, quietly = TRUE)
 
 #* @apiTitle Plumber Example API

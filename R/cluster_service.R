@@ -156,12 +156,12 @@ cluster_multiome <- function(req,
     seurat_cluster_idx <- which(colnames(e1$obj@meta.data) == "seurat_clusters")
     colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
     e1$ident_idx <-
-      which(colnames(e1$obj@meta.data) == "hgt_cluster")
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
   } else {
     e1$obj <-
       FindClusters(e1$obj, resolution = resolution, verbose = F)
     e1$ident_idx <-
-      which(colnames(e1$obj@meta.data) == "seurat_clusters")
+      which(colnames(e1$obj@meta.data) == "seurat_clusters")[1] | 12
   }
 
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]

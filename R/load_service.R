@@ -31,7 +31,7 @@ load_single_rna <-
 
     # Yan: 1619284757781
     # Zeisel: 1619291336397
-
+    send_progress("Start processing scRNA-seq dataset")
     if (jobid != 'example')  {
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
@@ -46,6 +46,7 @@ load_single_rna <-
       e1$meta <- iris3api::zeisel_2015$meta
     }
 
+    send_progress("Data loaded, creating Seurat object")
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -65,13 +66,14 @@ load_single_rna <-
       e1$obj <-
         AddMetaData(e1$obj, e1$meta[, idx], col.name = this_meta_name)
     }
-
+    send_progress("Calculating QC metric: mitocondrial genes")
     e1$obj <-
       AddMetaData(e1$obj,
                   PercentageFeatureSet(e1$obj, pattern = "^MT-"),
                   col.name = "percent.mt")
 
     Idents(e1$obj) <- e1$obj$orig.ident
+    send_progress("Calculating QC metric: ribosomal genes")
     rb.genes <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
@@ -80,6 +82,7 @@ load_single_rna <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
       subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
+    send_progress("Calculating QC metric: general data summary")
     raw_percent_zero <-
       length(which((as.matrix(
         GetAssayData(raw_obj)
@@ -90,6 +93,7 @@ load_single_rna <-
       ) > 0))) / length(GetAssayData(e1$obj))
     raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
     filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+    send_progress("Finding highly variable features")
     e1$obj <-
       FindVariableFeatures(
         e1$obj,
@@ -97,6 +101,7 @@ load_single_rna <-
         nfeatures = as.numeric(nVariableFeatures),
         verbose = F
       )
+    send_progress("Normalizing data")
     e1$obj <- NormalizeData(e1$obj, verbose = F)
     return(
       list(

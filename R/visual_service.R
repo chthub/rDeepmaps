@@ -52,17 +52,17 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
 #'
 #' @return static image
 #' @export
-umap_plot <- function(req, categoryName = "seurat_clusters") {
+umap_plot <- function(req, categoryName = "hgt_cluster") {
   print(categoryName)
   this_ident_idx <-
-    which(colnames(e1$obj@meta.data) == categoryName)
+    which(colnames(e1$obj@meta.data) == categoryName)[1]
   print(e1$embedding_idx)
   this_embedding <- names(e1$obj@reductions[e1$embedding_idx])
 
   Idents(e1$obj) <- e1$obj@meta.data[, this_ident_idx]
   plot <- DimPlot(e1$obj, reduction = this_embedding)
 
-  Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+  #Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
   return(print(plot))
 }
 

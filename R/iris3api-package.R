@@ -24,4 +24,9 @@ e1 <- rlang::env(
   new_meta_counter = 1,
   deg = NULL
 )
+
+e2<- rlang::env(
+  sio = NULL #socketio
+)
+
 NULL
