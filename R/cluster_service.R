@@ -15,6 +15,7 @@ cluster_single_rna <- function(req,
   message(glue(
     "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
+  send_progress("Start clustering")
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
@@ -23,20 +24,24 @@ cluster_single_rna <- function(req,
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
+  send_progress("Running PCA")
   e1$obj <-
     RunPCA(e1$obj,
       features = variable_genes,
       npcs = nPCs,
       verbose = F
     )
+  send_progress("Constructing shared nearest neighbor graph")
   e1$obj <-
     FindNeighbors(e1$obj,
       dims = 1:nPCs,
       k.param = neighbor,
       verbose = F
     )
+  send_progress("Running louvain clustering")
   e1$obj <-
     FindClusters(e1$obj, resolution = resolution, verbose = F)
+  send_progress("Running UMAP")
   e1$obj <- RunUMAP(
     e1$obj,
     dims = 1:nPCs,
@@ -69,13 +74,14 @@ cluster_single_rna <- function(req,
 #'
 cluster_multiome <- function(req,
                              method = 'HGT',
-                             nPCs = 30,
-                             resolution = 0.5,
-                             neighbor = 20) {
+                             nPCs = "20",
+                             resolution = "0.5",
+                             neighbor = "20") {
   message(glue::glue(
     "Run multiome clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
 
+  send_progress("Start clustering")
   DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
@@ -85,18 +91,15 @@ cluster_multiome <- function(req,
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
-  message(glue::glue(
-    "Run PCA"
-  ))
+  send_progress("Running PCA")
   e1$obj <-
     RunPCA(e1$obj,
       features = variable_genes,
       npcs = nPCs,
       verbose = F
     )
-  message(glue::glue(
-    "Run neighbor"
-  ))
+
+  send_progress("Constructing shared nearest neighbor graph")
   e1$obj <-
     FindNeighbors(e1$obj,
       dims = 1:nPCs,
@@ -104,9 +107,8 @@ cluster_multiome <- function(req,
       verbose = F
     )
 
-  message(glue::glue(
-    "Run UMAP RNA"
-  ))
+
+  send_progress("Running UMAP")
   e1$obj <- RunUMAP(
     e1$obj,
     reduction = 'pca',
@@ -146,29 +148,7 @@ cluster_multiome <- function(req,
       verbose = F,
     )
 
-  #DimPlot(e1$obj, reduction = "HGT")
-  if(method == "HGT") {
-    message(glue::glue(
-      "Run HGT"
-    ))
-    e1$obj <-
-      FindClusters(e1$obj, resolution = 0.2, verbose = F)
-    seurat_cluster_idx <- which(colnames(e1$obj@meta.data) == "seurat_clusters")
-    colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
-    e1$ident_idx <-
-      which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
-  } else {
-    e1$obj <-
-      FindClusters(e1$obj, resolution = resolution, verbose = F)
-    e1$ident_idx <-
-      which(colnames(e1$obj@meta.data) == "seurat_clusters")[1] | 12
-  }
-
-  Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
   library(MAESTRO)
-  message(glue::glue(
-    "Run MAESTRO"
-  ))
 
   #pbmc_atac_activity_mat <- NULL
   #pbmc_atac_activity_mat <-
@@ -179,11 +159,32 @@ cluster_multiome <- function(req,
   #    model = "Enhanced"
   #  )
 
+  send_progress("Running MAESTRO")
   e1$obj[['MAESTRO']] <-
     CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA")/25)
 
   e1$obj[['GAS']] <-
     CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA")/500)
+
+  #DimPlot(e1$obj, reduction = "HGT")
+  if(method == "HGT") {
+    send_progress("Running HGT")
+    Sys.sleep(15)
+    e1$obj <-
+      FindClusters(e1$obj, resolution = 0.2, verbose = F)
+    seurat_cluster_idx <- which(colnames(e1$obj@meta.data) == "seurat_clusters")
+    colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
+    e1$ident_idx <-
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+  } else {
+    send_progress("Running louvain clustering")
+    e1$obj <-
+      FindClusters(e1$obj, resolution = resolution, verbose = F)
+    e1$ident_idx <-
+      which(colnames(e1$obj@meta.data) == "seurat_clusters")[1] | 12
+  }
+
+  Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
 
   return(list(
     n_seurat_clusters = 5,
@@ -210,7 +211,7 @@ active_label <- function() {
 #' @export
 #'
 merge_idents <- function(req, newClusterIds) {
-  print(newClusterIds)
+  send_progress("Merging clusters")
   message(glue("Renaming idents: {e1$ident_idx} at ID: {newClusterIds} "))
   this_meta_name <- glue("new_merge_{e1$new_meta_counter}")
   this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
@@ -240,6 +241,7 @@ merge_idents <- function(req, newClusterIds) {
 #' @export
 #'
 rename_idents <- function(req, old_name = 1, new_name = 1) {
+  send_progress("Renaming clusters")
   message(glue("Renaming idents: {e1$ident_idx} at ID: {old_name} "))
   this_meta_name <- glue("new_merge_{e1$new_meta_counter}")
   this_idents <- as.factor(e1$obj@meta.data[, e1$ident_idx])
@@ -266,6 +268,7 @@ rename_idents <- function(req, old_name = 1, new_name = 1) {
 #' @export
 #'
 select_category <- function(req, categoryName = "other") {
+  send_progress("Setting cell category")
   if (categoryName == "") {
     this_idents <- as.factor("")
   } else if (categoryName %in% colnames(e1$obj@meta.data)) {
@@ -319,7 +322,7 @@ select_category <- function(req, categoryName = "other") {
 #' }
 #'
 select_cells <- function(req, newLevelName = "ct1", filterPayload) {
-  message(glue("Select cells..."))
+  send_progress("Filtering cells")
   list_cells <- list()
   print(filterPayload)
   for (i in seq_len(nrow(filterPayload))) {
@@ -341,7 +344,7 @@ select_cells <- function(req, newLevelName = "ct1", filterPayload) {
       } else {
         tmp_direction <- "ident.remove"
       }
-
+      send_progress("Setting new cell category")
       # Set temp ident
       Idents(e1$obj) <-
         eval(parse(text = paste0("e1$obj$", this_filter$category)))
@@ -394,7 +397,7 @@ select_cells <- function(req, newLevelName = "ct1", filterPayload) {
 #' @export
 
 subset_cells <- function(req, selectionPayload) {
-  message(glue("Subset cells..."))
+  send_progress("Subsetting cells")
   list_cells <- list()
   print(selectionPayload)
 

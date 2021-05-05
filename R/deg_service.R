@@ -21,7 +21,7 @@ calc_deg <-
            assay = "RNA",
            pvalue = 0.05
            ) {
-    print("run deg")
+    send_progress(paste0("Running differential gene expression analysis"))
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
     this_markers <-
       FindMarkers(

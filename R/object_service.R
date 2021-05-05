@@ -52,6 +52,7 @@ get_all_idents <- function() {
 #' @export
 #'
 set_idents <- function(req, name = "orig.ident") {
+  send_progress(paste0("Setting cell category: ", name))
   e1$ident_idx <- which(colnames(e1$obj@meta.data) == name)
   return(levels(as.factor(e1$obj@meta.data[, e1$ident_idx])))
 }
@@ -74,6 +75,7 @@ get_all_assays <- function() {
 #' @export
 #'
 set_assay <- function(req, name = "RNA") {
+  send_progress(paste0("Setting assay: ", name))
   e1$assay_idx <- which(names(e1$obj@assays) == name)
   this_assay <- names(e1$obj@assays[e1$assay_idx])
   DefaultAssay(e1$obj) <- this_assay
@@ -102,6 +104,7 @@ get_all_embeddings <- function() {
 #' @export
 #'
 set_embedding <- function(req, name = "pca") {
+  send_progress(paste0("Setting cell embedding: ", name))
   e1$embedding_idx <- which(names(e1$obj@reductions) == name)
   message(e1$embedding_idx)
   message(name)
@@ -118,6 +121,7 @@ set_embedding <- function(req, name = "pca") {
 #' @export
 #'
 set_obj <- function(req, type = "full") {
+  send_progress(paste0("Subsetting data: ", name))
   if (is.null(e1$full_obj)) {
     e1$full_obj <- e1$obj
   }

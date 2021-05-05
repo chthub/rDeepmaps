@@ -51,6 +51,7 @@ start_server <-
           )
       },
       interrupt = function(i) {
+        disconnect_socketio()
         message("Server Exited")
       }
     )
@@ -73,13 +74,13 @@ start_debug_server <-
            host = "127.0.0.1") {
     print(getwd())
     message(paste("Starting debug R server at host =", host, ", port =", port))
+
     tryCatch(
       {
         plumber::plumb(dir = as.character(system.file("endpoints",
           package = "iris3api"
         ))) %>%
           plumber::pr_hook("preroute", function(req, res) {
-            connect_socketio()
             tictoc::tic()
           }) %>%
           plumber::pr_hook("postroute", function(req, value) {

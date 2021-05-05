@@ -4,6 +4,7 @@
 #' @export
 #'
 rna_qc_list <- function() {
+  send_progress("Calculating scRNA-seq QC metrics")
   if (length(names(e1$obj@assays)) > 2) {
     DefaultAssay(e1$obj) <- "SCT"
   }
@@ -109,6 +110,7 @@ rna_qc_plot <- function() {
 #' @export
 #'
 atac_qc_list <- function() {
+  send_progress("Calculating scATAC-seq QC metrics")
   if (length(names(e1$obj@assays)) > 0) {
     DefaultAssay(e1$obj) <- "ATAC"
   }

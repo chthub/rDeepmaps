@@ -11,7 +11,7 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
   if ("ATAC" %in% names(e1$obj@assays)) {
     DefaultAssay(e1$obj) <- "SCT"
   }
-
+  send_progress("Calculating gene-gene correlation")
   # gene1 <- VariableFeatures(e1$obj)[1]
   # gene2 <- VariableFeatures(e1$obj)[2]
 
@@ -53,6 +53,7 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
 #' @return static image
 #' @export
 umap_plot <- function(req, categoryName = "hgt_cluster") {
+  send_progress(paste0("Plotting UMAP using cell category:", categoryName))
   print(categoryName)
   this_ident_idx <-
     which(colnames(e1$obj@meta.data) == categoryName)[1]
@@ -74,6 +75,7 @@ umap_plot <- function(req, categoryName = "hgt_cluster") {
 #' @return static image
 #' @export
 gene_umap_plot <- function(req, gene = "Gad1", assay="RNA") {
+  send_progress(paste0("Plotting UMAP gene:", gene))
   this_embedding <- names(e1$obj@reductions[e1$embedding_idx])
 
   current_assay <- e1$assay_idx
@@ -100,6 +102,7 @@ gene_umap_plot <- function(req, gene = "Gad1", assay="RNA") {
 #'
 violin_gene_plot <- function(req, gene = "Gad1", split = "sex", group  = "cell_type", assay = "RNA") {
   # ident_idx=9
+  send_progress(paste0("Plotting violin gene:", gene))
   if (split == "NULL") {
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
     plot <-
@@ -144,7 +147,7 @@ static_heatmap <-
            color = NULL) {
     # ident_idx=9
     library(ComplexHeatmap)
-
+    send_progress(paste0("Plotting heatmap"))
     features <- VariableFeatures(e1$obj)[1:20]
     features <- genes[genes %in% rownames(e1$obj)]
     Idents(e1$obj) <- e1$obj$hgt_cluster
@@ -239,7 +242,7 @@ coverage_plot <-
     } else if (type == 'region') {
       this_ranges <- paste(chr, start, end, sep = "-")
     }
-
+    send_progress(paste0("Plotting coverage"))
     cov_plot <- Signac::CoveragePlot(
       object = e1$obj,
       assay = "ATAC",
@@ -247,17 +250,19 @@ coverage_plot <-
       annotation = is_annotation,
       peaks = is_peak
     )
+    send_progress(paste0("Plotting peaks"))
     peak_plot <- Signac::PeakPlot(
       object = e1$obj,
       assay = "ATAC",
       region = this_ranges
     )
+    send_progress(paste0("Plotting tiles"))
     tile_plot <- Signac::TilePlot(
       object = e1$obj,
       assay = "ATAC",
       region = this_ranges
     )
-
+    send_progress(paste0("Combining plots"))
     combine_plot <- Signac::CombineTracks(
       plotlist = list(cov_plot, tile_plot, peak_plot)
     )

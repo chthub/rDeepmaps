@@ -46,7 +46,7 @@ load_single_rna <-
       e1$meta <- iris3api::zeisel_2015$meta
     }
 
-    send_progress("Data loaded, creating Seurat object")
+    send_progress("Creating Seurat object")
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -66,14 +66,13 @@ load_single_rna <-
       e1$obj <-
         AddMetaData(e1$obj, e1$meta[, idx], col.name = this_meta_name)
     }
-    send_progress("Calculating QC metric: mitocondrial genes")
+
     e1$obj <-
       AddMetaData(e1$obj,
                   PercentageFeatureSet(e1$obj, pattern = "^MT-"),
                   col.name = "percent.mt")
-
+    send_progress("Calculating data summary statistics")
     Idents(e1$obj) <- e1$obj$orig.ident
-    send_progress("Calculating QC metric: ribosomal genes")
     rb.genes <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
@@ -82,7 +81,6 @@ load_single_rna <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
       subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
-    send_progress("Calculating QC metric: general data summary")
     raw_percent_zero <-
       length(which((as.matrix(
         GetAssayData(raw_obj)
@@ -144,7 +142,7 @@ load_multi_rna <-
            removeRibosome = FALSE,
            label = NULL,
            species = 'Human') {
-
+    send_progress("Start processing scRNA-seq dataset")
     if (jobid == 'example1')  {
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
@@ -161,6 +159,7 @@ load_multi_rna <-
       #write.csv(raw_expr_data[,1401:2800],"human_ifnb_sample2_expr.csv")
       #write.csv(e1$meta,"human_ifnb_label.csv")
     }
+    send_progress("Creating Seurat object")
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -196,6 +195,7 @@ load_multi_rna <-
       rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
     percent.ribo <-
       Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+    send_progress("Calculating data summary statistics")
     e1$obj <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
@@ -210,6 +210,7 @@ load_multi_rna <-
       ) > 0))) / length(GetAssayData(e1$obj))
     raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
     filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+    send_progress("Finding highly variable features")
     e1$obj <-
       FindVariableFeatures(
         e1$obj,
@@ -217,6 +218,8 @@ load_multi_rna <-
         nfeatures = as.numeric(nVariableFeatures),
         verbose = F
       )
+    send_progress("Normalizing data")
+    e1$obj <- NormalizeData(e1$obj, verbose = F)
     return(
       list(
         raw_n_genes = dim(raw_obj)[1],
@@ -266,7 +269,9 @@ load_multiome <-
     # Brain: 1619298241128
     # PBMC 3K: 1619297987450
     # PBMC : 1619311996943
+
     if (jobid == 'example') {
+      send_progress("Loading example data")
       if (file.exists("/data")) {
         e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
         e1$obj@assays$ATAC@fragments[[1]]@path <-
@@ -285,6 +290,7 @@ load_multiome <-
         #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
       }
     } else {
+      send_progress("Start processing single-cell multiome dataset")
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
@@ -314,7 +320,7 @@ load_multiome <-
       #genome(annotations) <- "hg38"
       #qs::qsave(annotations, "hg38_annotations.qsave")
 
-
+      send_progress("Creating Seurat object")
       if (file.exists("/data")) {
         annotations <- qs::qread("/data/hg38_annotations.qsave")
       } else {
@@ -361,7 +367,7 @@ load_multiome <-
 
       e1$obj <-
         subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
-
+      send_progress("Finding variable features")
       e1$obj <-
         FindVariableFeatures(
           e1$obj,
@@ -369,10 +375,10 @@ load_multiome <-
           nfeatures = as.numeric(nVariableFeatures),
           verbose = F
         )
+      send_progress("Normalizing data")
       e1$obj <- NormalizeData(e1$obj, verbose = F)
       e1$obj <- SCTransform(e1$obj, verbose = F)
       e1$obj <- ScaleData(e1$obj, verbose = F)
-      VariableFeatures(e1$obj)[1:5]
       # END custom
     }
 
@@ -383,6 +389,7 @@ load_multiome <-
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
 
+    send_progress("Calculating data summary statistics")
     e1$species <- species
     raw_obj <- e1$obj
     raw_percent_zero <-
