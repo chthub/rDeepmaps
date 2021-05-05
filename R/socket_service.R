@@ -1,8 +1,6 @@
 
 #' Disconnect socket-io server
 #'
-#' @param host string
-#' @param port number
 #' @return
 #' @export
 #'
@@ -12,8 +10,7 @@ disconnect_socketio <- function() {
 
 #' Send job progress to server
 #'
-#' @param message
-#' @return
+#' @param message string
 #' @export
 #'
 send_progress <- function(message = "message from R") {

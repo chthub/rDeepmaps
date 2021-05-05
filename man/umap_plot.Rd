@@ -4,7 +4,7 @@
 \alias{umap_plot}
 \title{Plot static UMAP}
 \usage{
-umap_plot(req, categoryName = "seurat_clusters")
+umap_plot(req, categoryName = "hgt_cluster")
 }
 \arguments{
 \item{req}{request payload}

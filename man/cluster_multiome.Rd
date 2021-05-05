@@ -7,9 +7,9 @@
 cluster_multiome(
   req,
   method = "HGT",
-  nPCs = 30,
-  resolution = 0.5,
-  neighbor = 20
+  nPCs = "20",
+  resolution = "0.5",
+  neighbor = "20"
 )
 }
 \arguments{
