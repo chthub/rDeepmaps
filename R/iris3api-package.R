@@ -9,7 +9,6 @@
 #' @importFrom S4Vectors isTRUEorFALSE
 #' @import Seurat
 #' @import Signac
-#' @import coro
 ## usethis namespace: end
 e1 <- rlang::env(
   jobid = NULL, # job id
