@@ -69,12 +69,13 @@ load_single_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
                   col.name = "percent.mt")
     send_progress("Calculating data summary statistics")
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
-      rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
+      rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj), ignore.case =
+                              TRUE)]
     percent.ribo <-
       Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
     e1$obj <-
@@ -187,7 +188,7 @@ load_multi_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
                   col.name = "percent.mt")
 
     Idents(e1$obj) <- e1$obj$orig.ident
@@ -285,8 +286,9 @@ load_multiome <-
         e1$obj@assays$ATAC@fragments[[1]]@path <-
           "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
         iris3api::set_embedding(name = "umap.rna")
-        e1$meta <-e1$obj@meta.data[, c('cell_type','sex')]
-        e1$meta$disease <- rep(c("disease","control"), nrow(e1$meta)/2)
+        e1$meta <- e1$obj@meta.data[, c('cell_type', 'sex')]
+        e1$meta$disease <-
+          rep(c("disease", "control"), nrow(e1$meta) / 2)
         #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
       }
     } else {
@@ -324,7 +326,8 @@ load_multiome <-
       if (file.exists("/data")) {
         annotations <- qs::qread("/data/hg38_annotations.qsave")
       } else {
-        annotations <- qs::qread("C:/Users/flyku/Desktop/iris3/pbmc_match/db/hg38_annotations.qsave")
+        annotations <-
+          qs::qread("C:/Users/flyku/Desktop/iris3/pbmc_match/db/hg38_annotations.qsave")
       }
       chrom_assay <- Signac::CreateChromatinAssay(
         counts = atac_counts,
@@ -335,12 +338,10 @@ load_multiome <-
         annotation = annotations,
       )
 
-      e1$obj <- CreateSeuratObject(
-        counts = chrom_assay,
-        assay = "ATAC"
-      )
+      e1$obj <- CreateSeuratObject(counts = chrom_assay,
+                                   assay = "ATAC")
       exp_assay <- CreateAssayObject(counts = rna_counts)
-      e1$obj[["RNA"]]<-exp_assay
+      e1$obj[["RNA"]] <- exp_assay
 
       # DefaultAssay(e1$obj) <- "ATAC"
       # Need fragments
@@ -354,12 +355,13 @@ load_multiome <-
       DefaultAssay(e1$obj) <- "RNA"
       e1$obj <-
         AddMetaData(e1$obj,
-                    PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                    PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
                     col.name = "percent.mt")
 
       Idents(e1$obj) <- e1$obj$orig.ident
       rb.genes <-
-        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]|^RP[SL][[:digit:]]", rownames(e1$obj))]
+        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj), ignore.case =
+                                TRUE)]
       percent.ribo <-
         Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
       e1$obj <-
