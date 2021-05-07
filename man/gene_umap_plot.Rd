@@ -2,7 +2,7 @@
 % Please edit documentation in R/visual_service.R
 \name{gene_umap_plot}
 \alias{gene_umap_plot}
-\title{Plot static UMAP}
+\title{Plot static gene UMAP}
 \usage{
 gene_umap_plot(req, gene = "Gad1", assay = "RNA")
 }
@@ -17,5 +17,5 @@ gene_umap_plot(req, gene = "Gad1", assay = "RNA")
 static image
 }
 \description{
-Plot static UMAP
+Plot static gene UMAP
 }
