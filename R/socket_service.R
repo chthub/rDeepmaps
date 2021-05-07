@@ -27,7 +27,3 @@ send_progress <- function(message = "message from R") {
   #e2$sio$disconnect()
 }
 
-#library(reticulate)
-#py_install("python-socketio[client]==4.6.1", pip=T)
-#py_install("python-socketio==4.6.1", pip=T)
-#py_install("websocket-client", pip=T)

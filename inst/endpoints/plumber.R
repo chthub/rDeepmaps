@@ -44,7 +44,7 @@ load_multi_rna
 #* @post /load-multiome
 load_multiome
 
-####################################
+#################################### Clustering part
 
 #* Run RNA sample clustering
 #* @param nPCs
@@ -208,3 +208,16 @@ static_heatmap
 #* @post /coverage-plot
 #* @serializer png list(width = 1200, height = 1000)
 coverage_plot
+
+#* Return embeddings coordinates from a given embedding name
+#* @param embedding
+#* @post /embedding-coords
+#* @serializer json
+cluster_coords
+
+#* Return embeddings coordinates from a given embedding name
+#* @param gene
+#* @param assay
+#* @post /feature-coords
+#* @serializer json
+feature_coords

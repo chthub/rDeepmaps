@@ -1,4 +1,8 @@
 
+
+
+
+
 #' Gene-gene correlation static plot
 #' @param req request payload
 #' @param gene1 string gene1
@@ -46,6 +50,86 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
 }
 
 
+#' Return embeddings coordinates from a given embedding name
+#' @param req request payload
+#' @param categoryName string
+#' @param embedding string
+#'
+#' @return json
+#' @export
+cluster_coords <-
+  function(req,
+           categoryName = "Sex",
+           embedding = "umap") {
+    this_ident_idx <-
+      which(colnames(e1$obj@meta.data) == categoryName)[1]
+    embedding <- names(e1$obj@reductions[e1$embedding_idx])
+
+    Idents(e1$obj) <- e1$obj@meta.data[, this_ident_idx]
+
+    res1 <- data.frame(
+      id = rownames(Embeddings(e1$obj, reduction = embedding)),
+      dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
+      dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
+      dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
+      label = as.character(Idents(e1$obj)),
+      index = as.integer(Idents(e1$obj)) - 1
+    )
+    legend <- levels(Idents(e1$obj))
+    axis <- c(paste0(embedding, "_1"),
+              paste0(embedding, "_2"),
+              paste0(embedding, "_3"))
+    dimension <- colnames(res1)
+    coords <- as.matrix(res1)
+    coords[, 2] <- as.numeric(coords[, 2])
+    coords[, 3] <- as.numeric(coords[, 3])
+    coords[, 4] <- as.numeric(coords[, 4])
+    return(list(
+      axis = axis,
+      legend = legend,
+      dimension = dimension,
+      embedding = coords
+    ))
+  }
+
+#' Return embeddings coordinates and feature expression
+#' @param req request payload
+#' @param categoryName string
+#' @param embedding string
+#'
+#' @return json
+#' @export
+feature_coords <-
+  function(req,
+           gene = "Gad1", assay = "RNA") {
+
+    embedding <- names(e1$obj@reductions[e1$embedding_idx])
+    res1 <- data.frame(
+      id = rownames(Embeddings(e1$obj, reduction = embedding)),
+      dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
+      dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
+      dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
+      expr = FetchData(object = e1$obj,
+                       vars = c(gene))[, 1],
+      index = 1
+    )
+    legend <- c(min(res1$expr), max(res1$expr))
+    axis <- c(paste0(embedding, "_1"),
+              paste0(embedding, "_2"),
+              paste0(embedding, "_3"))
+    dimension <- colnames(res1)
+    coords <- as.matrix(res1)
+    coords[, 2] <- as.numeric(coords[, 2])
+    coords[, 3] <- as.numeric(coords[, 3])
+    coords[, 4] <- as.numeric(coords[, 4])
+    return(list(
+      axis = axis,
+      legend = legend,
+      dimension = dimension,
+      embedding = coords
+    ))
+  }
+
 #' Plot static UMAP
 #' @param req request payload
 #' @param categoryName string
@@ -54,7 +138,6 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
 #' @export
 umap_plot <- function(req, categoryName = "hgt_cluster") {
   send_progress(paste0("Plotting UMAP using cell category:", categoryName))
-  print(categoryName)
   this_ident_idx <-
     which(colnames(e1$obj@meta.data) == categoryName)[1]
   print(e1$embedding_idx)
@@ -67,14 +150,14 @@ umap_plot <- function(req, categoryName = "hgt_cluster") {
   return(print(plot))
 }
 
-#' Plot static UMAP
+#' Plot static gene UMAP
 #' @param req request payload
 #' @param gene string
 #' @param assay string
 #'
 #' @return static image
 #' @export
-gene_umap_plot <- function(req, gene = "Gad1", assay="RNA") {
+gene_umap_plot <- function(req, gene = "Gad1", assay = "RNA") {
   send_progress(paste0("Plotting UMAP gene:", gene))
   this_embedding <- names(e1$obj@reductions[e1$embedding_idx])
 
@@ -100,36 +183,41 @@ gene_umap_plot <- function(req, gene = "Gad1", assay="RNA") {
 #' @return static image
 #' @export
 #'
-violin_gene_plot <- function(req, gene = "Gad1", split = "sex", group  = "cell_type", assay = "RNA") {
-  # ident_idx=9
-  send_progress(paste0("Plotting violin gene:", gene))
-  if (split == "NULL") {
-    Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
-    plot <-
-      VlnPlot(e1$obj, gene, group.by = colnames(e1$obj@meta.data)[e1$ident_idx])
-  } else {
-    idx <- which(colnames(e1$obj@meta.data) == split)
-    Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+violin_gene_plot <-
+  function(req,
+           gene = "Gad1",
+           split = "sex",
+           group  = "cell_type",
+           assay = "RNA") {
+    # ident_idx=9
+    send_progress(paste0("Plotting violin gene:", gene))
+    if (split == "NULL") {
+      Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+      plot <-
+        VlnPlot(e1$obj, gene, group.by = colnames(e1$obj@meta.data)[e1$ident_idx])
+    } else {
+      idx <- which(colnames(e1$obj@meta.data) == split)
+      Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
 
-    current_assay <- e1$assay_idx
-    e1$assay_idx <- which(names(e1$obj@assays) == assay)
-    this_assay <- names(e1$obj@assays[e1$assay_idx])
-    DefaultAssay(e1$obj) <- this_assay
-    this_group_idx <-
-      which(colnames(e1$obj@meta.data) == group)
-    plot <-
-      VlnPlot(
-        e1$obj,
-        gene,
-        split.by = colnames(e1$obj@meta.data)[idx],
-        group.by = colnames(e1$obj@meta.data)[this_group_idx]
-      )
-    this_assay <- names(e1$obj@assays[current_assay])
-    DefaultAssay(e1$obj) <- this_assay
+      current_assay <- e1$assay_idx
+      e1$assay_idx <- which(names(e1$obj@assays) == assay)
+      this_assay <- names(e1$obj@assays[e1$assay_idx])
+      DefaultAssay(e1$obj) <- this_assay
+      this_group_idx <-
+        which(colnames(e1$obj@meta.data) == group)
+      plot <-
+        VlnPlot(
+          e1$obj,
+          gene,
+          split.by = colnames(e1$obj@meta.data)[idx],
+          group.by = colnames(e1$obj@meta.data)[this_group_idx]
+        )
+      this_assay <- names(e1$obj@assays[current_assay])
+      DefaultAssay(e1$obj) <- this_assay
+    }
+
+    return(print(plot))
   }
-
-  return(print(plot))
-}
 
 
 #' Complex heatmap
@@ -155,10 +243,10 @@ static_heatmap <-
     cell_info <- Idents(e1$obj)
     cell_label <- cbind(colnames(e1$obj), as.character(cell_info))
     colnames(cell_label) <- c("cell_name", "label")
-    cell_label <- cell_label[order(cell_label[, 1]), ]
+    cell_label <- cell_label[order(cell_label[, 1]),]
 
     cell_label <- as.data.frame(cell_label)
-    label_data <- cell_label[order(cell_label[, 2]), ]
+    label_data <- cell_label[order(cell_label[, 2]),]
     exp_data <- GetAssayData(e1$obj, slot = "data")
     cell_idx <- as.character(label_data[, 1])
     exp_data <- exp_data[, cell_idx]
@@ -169,7 +257,7 @@ static_heatmap <-
       small_exp_data <<- t(apply(exp_data, 1, function(x) {
         BinMean(x, every = this_bin)
       }))
-      small_cell_label <- label_data[small_cell_idx, ]
+      small_cell_label <- label_data[small_cell_idx,]
     }
     colnames(small_exp_data) <- small_cell_label[, 1]
     library(matrixStats)
@@ -179,7 +267,7 @@ static_heatmap <-
 
 
     mat <-
-      small_exp_data[match(features, rownames(small_exp_data)), ]
+      small_exp_data[match(features, rownames(small_exp_data)),]
 
     library(circlize)
     col_fun <- as.character(Polychrome::palette36.colors(36)[-2])
@@ -251,20 +339,15 @@ coverage_plot <-
       peaks = is_peak
     )
     send_progress(paste0("Plotting peaks"))
-    peak_plot <- Signac::PeakPlot(
-      object = e1$obj,
-      assay = "ATAC",
-      region = this_ranges
-    )
+    peak_plot <- Signac::PeakPlot(object = e1$obj,
+                                  assay = "ATAC",
+                                  region = this_ranges)
     send_progress(paste0("Plotting tiles"))
-    tile_plot <- Signac::TilePlot(
-      object = e1$obj,
-      assay = "ATAC",
-      region = this_ranges
-    )
+    tile_plot <- Signac::TilePlot(object = e1$obj,
+                                  assay = "ATAC",
+                                  region = this_ranges)
     send_progress(paste0("Combining plots"))
-    combine_plot <- Signac::CombineTracks(
-      plotlist = list(cov_plot, tile_plot, peak_plot)
-    )
+    combine_plot <-
+      Signac::CombineTracks(plotlist = list(cov_plot, tile_plot, peak_plot))
     return(print(combine_plot))
   }
