@@ -300,6 +300,23 @@ static_heatmap <-
   }
 
 
+
+#' Interactive complex heatmap
+#' @param req request payload
+#' @return html
+#' @export
+#'
+interactive_heatmap <-
+  function(req,
+           genes = c("CD74", "CD7"),
+           meta = "cell_type",
+           color = NULL) {
+
+
+    return(1)
+  }
+
+
 #' ATAC coverage static plot
 #' @importFrom Signac CoveragePlot
 #' @param req request payload

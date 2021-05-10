@@ -196,6 +196,12 @@ violin_gene_plot
 #* @serializer png list(width = 1000, height = 600)
 static_heatmap
 
+#* Heatmap
+#* @param genes
+#* @post /interactive-heatmap
+#* @serializer html
+interactive_heatmap
+
 #* Coverage plot
 #* @param type
 #* @param gene

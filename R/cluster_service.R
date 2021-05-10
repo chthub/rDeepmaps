@@ -82,7 +82,8 @@ cluster_multiome <- function(req,
     )
   )
 
-  send_progress("Start clustering")
+  TOTAL_STEPS <- 6
+  send_progress(paste0("Data normalization. 1/", TOTAL_STEPS))
   DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
@@ -92,14 +93,14 @@ cluster_multiome <- function(req,
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
-  send_progress("Running PCA")
+  send_progress(paste0("2/", TOTAL_STEPS))
   e1$obj <-
     RunPCA(e1$obj,
            features = variable_genes,
            npcs = nPCs,
            verbose = F)
 
-  send_progress("Constructing shared nearest neighbor graph")
+  send_progress(paste0("3/", TOTAL_STEPS))
   e1$obj <-
     FindNeighbors(e1$obj,
                   dims = 1:nPCs,
@@ -107,7 +108,8 @@ cluster_multiome <- function(req,
                   verbose = F)
 
 
-  send_progress("Running UMAP")
+  send_progress(paste0("4/", TOTAL_STEPS))
+
   e1$obj <- RunUMAP(
     e1$obj,
     reduction = 'pca',
@@ -123,6 +125,7 @@ cluster_multiome <- function(req,
   #e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
   #e1$obj <- Signac::RunTFIDF(e1$obj)
   #e1$obj <- Signac::RunSVD(e1$obj)
+
   message(glue::glue("Run UMAP ATAC"))
   e1$obj <-
     RunUMAP(
@@ -134,7 +137,7 @@ cluster_multiome <- function(req,
       n.components = 3L,
       verbose = F,
     )
-  message(glue::glue("Run UMAP HGT"))
+  message(glue::glue(""))
   e1$obj <-
     RunUMAP(
       e1$obj,
@@ -157,7 +160,7 @@ cluster_multiome <- function(req,
   #    model = "Enhanced"
   #  )
 
-  send_progress("Running MAESTRO")
+  send_progress(paste0("5/", TOTAL_STEPS))
   e1$obj[['MAESTRO']] <-
     CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 25)
 
@@ -166,17 +169,19 @@ cluster_multiome <- function(req,
 
   #DimPlot(e1$obj, reduction = "HGT")
   if (method == "HGT") {
-    send_progress("Running HGT")
-    Sys.sleep(15)
-    e1$obj <-
-      FindClusters(e1$obj, resolution = 0.2, verbose = F)
-    seurat_cluster_idx <-
-      which(colnames(e1$obj@meta.data) == "seurat_clusters")
-    colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
-    e1$ident_idx <-
-      which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+    send_progress(paste0("6/", TOTAL_STEPS))
+    Sys.sleep(5)
+    if(!"hgt_cluster" %in% colnames(e1$obj@meta.data)) {
+      e1$obj <-
+        FindClusters(e1$obj, resolution = 0.2, verbose = F)
+      seurat_cluster_idx <-
+        which(colnames(e1$obj@meta.data) == "seurat_clusters")
+      colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
+      e1$ident_idx <-
+        which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+    }
   } else {
-    send_progress("Running louvain clustering")
+    send_progress(paste0("Running louvain clustering. 6/", TOTAL_STEPS))
     e1$obj <-
       FindClusters(e1$obj, resolution = resolution, verbose = F)
     e1$ident_idx <-
