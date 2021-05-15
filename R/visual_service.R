@@ -42,8 +42,10 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
     # Add confidence interval
     cor.coef = TRUE,
     # Add correlation coefficient. see ?stat_cor
-    cor.coeff.args = list(method = "pearson",
-                          label.sep = "\n")
+    cor.coeff.args = list(
+      method = "pearson",
+      label.sep = "\n"
+    )
   )
   # VlnPlot(e1$obj, features = c(gene1, gene2))
   return(print(plot1))
@@ -76,9 +78,11 @@ cluster_coords <-
       index = as.integer(Idents(e1$obj)) - 1
     )
     legend <- levels(Idents(e1$obj))
-    axis <- c(paste0(embedding, "_1"),
-              paste0(embedding, "_2"),
-              paste0(embedding, "_3"))
+    axis <- c(
+      paste0(embedding, "_1"),
+      paste0(embedding, "_2"),
+      paste0(embedding, "_3")
+    )
     dimension <- colnames(res1)
     coords <- as.matrix(res1)
     coords[, 2] <- as.numeric(coords[, 2])
@@ -102,21 +106,24 @@ cluster_coords <-
 feature_coords <-
   function(req,
            gene = "Gad1", assay = "RNA") {
-
     embedding <- names(e1$obj@reductions[e1$embedding_idx])
     res1 <- data.frame(
       id = rownames(Embeddings(e1$obj, reduction = embedding)),
       dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
       dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
       dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
-      expr = FetchData(object = e1$obj,
-                       vars = c(gene))[, 1],
+      expr = FetchData(
+        object = e1$obj,
+        vars = c(gene)
+      )[, 1],
       index = 1
     )
     legend <- c(min(res1$expr), max(res1$expr))
-    axis <- c(paste0(embedding, "_1"),
-              paste0(embedding, "_2"),
-              paste0(embedding, "_3"))
+    axis <- c(
+      paste0(embedding, "_1"),
+      paste0(embedding, "_2"),
+      paste0(embedding, "_3")
+    )
     dimension <- colnames(res1)
     coords <- as.matrix(res1)
     coords[, 2] <- as.numeric(coords[, 2])
@@ -146,7 +153,7 @@ umap_plot <- function(req, categoryName = "hgt_cluster") {
   Idents(e1$obj) <- e1$obj@meta.data[, this_ident_idx]
   plot <- DimPlot(e1$obj, reduction = this_embedding)
 
-  #Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+  # Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
   return(print(plot))
 }
 
@@ -187,7 +194,7 @@ violin_gene_plot <-
   function(req,
            gene = "Gad1",
            split = "sex",
-           group  = "cell_type",
+           group = "cell_type",
            assay = "RNA") {
     # ident_idx=9
     send_progress(paste0("Plotting violin gene:", gene))
@@ -243,10 +250,10 @@ static_heatmap <-
     cell_info <- Idents(e1$obj)
     cell_label <- cbind(colnames(e1$obj), as.character(cell_info))
     colnames(cell_label) <- c("cell_name", "label")
-    cell_label <- cell_label[order(cell_label[, 1]),]
+    cell_label <- cell_label[order(cell_label[, 1]), ]
 
     cell_label <- as.data.frame(cell_label)
-    label_data <- cell_label[order(cell_label[, 2]),]
+    label_data <- cell_label[order(cell_label[, 2]), ]
     exp_data <- GetAssayData(e1$obj, slot = "data")
     cell_idx <- as.character(label_data[, 1])
     exp_data <- exp_data[, cell_idx]
@@ -257,7 +264,7 @@ static_heatmap <-
       small_exp_data <<- t(apply(exp_data, 1, function(x) {
         BinMean(x, every = this_bin)
       }))
-      small_cell_label <- label_data[small_cell_idx,]
+      small_cell_label <- label_data[small_cell_idx, ]
     }
     colnames(small_exp_data) <- small_cell_label[, 1]
     library(matrixStats)
@@ -267,7 +274,7 @@ static_heatmap <-
 
 
     mat <-
-      small_exp_data[match(features, rownames(small_exp_data)),]
+      small_exp_data[match(features, rownames(small_exp_data)), ]
 
     library(circlize)
     col_fun <- as.character(Polychrome::palette36.colors(36)[-2])
@@ -311,8 +318,6 @@ interactive_heatmap <-
            genes = c("CD74", "CD7"),
            meta = "cell_type",
            color = NULL) {
-
-
     return(1)
   }
 
@@ -342,9 +347,9 @@ coverage_plot <-
            is_annotation = T,
            is_peak = F) {
     # Idents(e1$obj) <- e1$obj$cell_type
-    if (type == 'gene') {
+    if (type == "gene") {
       this_ranges <- get_gene_range(gene = gene, flank = flank)
-    } else if (type == 'region') {
+    } else if (type == "region") {
       this_ranges <- paste(chr, start, end, sep = "-")
     }
     send_progress(paste0("Plotting coverage"))
@@ -356,13 +361,17 @@ coverage_plot <-
       peaks = is_peak
     )
     send_progress(paste0("Plotting peaks"))
-    peak_plot <- Signac::PeakPlot(object = e1$obj,
-                                  assay = "ATAC",
-                                  region = this_ranges)
+    peak_plot <- Signac::PeakPlot(
+      object = e1$obj,
+      assay = "ATAC",
+      region = this_ranges
+    )
     send_progress(paste0("Plotting tiles"))
-    tile_plot <- Signac::TilePlot(object = e1$obj,
-                                  assay = "ATAC",
-                                  region = this_ranges)
+    tile_plot <- Signac::TilePlot(
+      object = e1$obj,
+      assay = "ATAC",
+      region = this_ranges
+    )
     send_progress(paste0("Combining plots"))
     combine_plot <-
       Signac::CombineTracks(plotlist = list(cov_plot, tile_plot, peak_plot))

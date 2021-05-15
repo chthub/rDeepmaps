@@ -15,8 +15,8 @@
 load_single_rna <-
   function(req,
            idx = 1,
-           jobid = 'example',
-           type = 'eg',
+           jobid = "example",
+           type = "eg",
            min_cells = 1,
            min_genes = 200,
            nVariableFeatures = 2000,
@@ -24,16 +24,16 @@ load_single_rna <-
            removeRibosome = FALSE,
            expr = NULL,
            label = NULL,
-           species = 'Human') {
-    #expr_type <- label_type <- 'application/vnd.ms-excel'
-    #label_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/fbb36e99797c313276f8bca86539cb3c"
-    #expr_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/3c0955e700b4bf2d177442236d0c2395"
+           species = "Human") {
+    # expr_type <- label_type <- 'application/vnd.ms-excel'
+    # label_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/fbb36e99797c313276f8bca86539cb3c"
+    # expr_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/3c0955e700b4bf2d177442236d0c2395"
 
     # Yan: 1619284757781
     # Zeisel: 1619291336397
-    TOTAL_STEPS = 10
+    TOTAL_STEPS <- 10
     send_progress(paste0("Start processing scRNA-seq dataset. 1/", TOTAL_STEPS))
-    if (jobid != 'example')  {
+    if (jobid != "example") {
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
@@ -41,7 +41,6 @@ load_single_rna <-
       label_type <- as.character(label$mimetype[1])
       label_path <- as.character(label$filename[1])
       e1$meta <- read_deepmaps(label_type, label_path)
-
     } else {
       raw_expr_data <- iris3api::zeisel_2015$expr
       e1$meta <- iris3api::zeisel_2015$meta
@@ -70,13 +69,16 @@ load_single_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-                  PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
-                  col.name = "percent.mt")
+        PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
+        col.name = "percent.mt"
+      )
     send_progress("Calculating data summary statistics")
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
-      rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj), ignore.case =
-                              TRUE)]
+      rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+        ignore.case =
+          TRUE
+      )]
     percent.ribo <-
       Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
     e1$obj <-
@@ -134,8 +136,8 @@ load_single_rna <-
 load_multi_rna <-
   function(req,
            idx = 2,
-           jobid = 'example',
-           type = 'example',
+           jobid = "example",
+           type = "example",
            filename,
            min_cells = 1,
            min_genes = 200,
@@ -143,9 +145,9 @@ load_multi_rna <-
            percentMt = 5,
            removeRibosome = FALSE,
            label = NULL,
-           species = 'Human') {
+           species = "Human") {
     send_progress("Start processing scRNA-seq dataset")
-    if (jobid == 'example1')  {
+    if (jobid == "example1") {
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
@@ -153,13 +155,12 @@ load_multi_rna <-
       label_type <- as.character(label$mimetype[1])
       label_path <- as.character(label$filename[1])
       e1$meta <- read_deepmaps(label_type, label_path)
-
     } else {
       raw_expr_data <- iris3api::ifnb_2800$expr
       e1$meta <- iris3api::ifnb_2800$meta
-      #write.csv(raw_expr_data[,1:1400],"human_ifnb_sample1_expr.csv")
-      #write.csv(raw_expr_data[,1401:2800],"human_ifnb_sample2_expr.csv")
-      #write.csv(e1$meta,"human_ifnb_label.csv")
+      # write.csv(raw_expr_data[,1:1400],"human_ifnb_sample1_expr.csv")
+      # write.csv(raw_expr_data[,1401:2800],"human_ifnb_sample2_expr.csv")
+      # write.csv(e1$meta,"human_ifnb_label.csv")
     }
     send_progress("Creating Seurat object")
     raw_obj <- CreateSeuratObject(raw_expr_data)
@@ -189,8 +190,9 @@ load_multi_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-                  PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
-                  col.name = "percent.mt")
+        PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
+        col.name = "percent.mt"
+      )
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
@@ -255,7 +257,7 @@ load_multiome <-
   function(req,
            idx = 0,
            filename,
-           jobid = 'example',
+           jobid = "example",
            min_cells = 1,
            min_genes = 200,
            nVariableFeatures = 2000,
@@ -263,17 +265,17 @@ load_multiome <-
            removeRibosome = FALSE,
            expr = NULL,
            label = NULL,
-           species = 'Human') {
-    #expr_type <- label_type <- 'application/octet-stream'
-    #label_path <- ""
-    #expr_path <- "9a9841a85c48b692e70bc03db811ccdc"
+           species = "Human") {
+    # expr_type <- label_type <- 'application/octet-stream'
+    # label_path <- ""
+    # expr_path <- "9a9841a85c48b692e70bc03db811ccdc"
 
     # Brain: 1619298241128
     # PBMC 3K: 1619297987450
     # PBMC : 1619311996943
 
     TOTAL_STEPS <- 6
-    if (jobid == 'example') {
+    if (jobid == "example") {
       send_progress(paste0("Loading example data. 1/", TOTAL_STEPS))
       if (file.exists("/data")) {
         e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
@@ -288,10 +290,10 @@ load_multiome <-
         e1$obj@assays$ATAC@fragments[[1]]@path <-
           "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
         iris3api::set_embedding(name = "umap.rna")
-        e1$meta <- e1$obj@meta.data[, c('cell_type', 'sex')]
+        e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
         e1$meta$disease <-
           rep(c("disease", "control"), nrow(e1$meta) / 2)
-        #e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
+        # e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
       }
     } else {
       send_progress(paste0("Start processing single-cell multiome dataset. 1/", TOTAL_STEPS))
@@ -317,12 +319,12 @@ load_multiome <-
         as.character(GenomicRanges::seqnames(grange.counts)) %in% GenomeInfoDb::standardChromosomes(grange.counts)
       atac_counts <- atac_counts[as.vector(grange.use), ]
 
-      #library(EnsDb.Hsapiens.v86)
-      #annotations <-
+      # library(EnsDb.Hsapiens.v86)
+      # annotations <-
       #  Signac::GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
-      #seqlevelsStyle(annotations) <- 'UCSC'
-      #genome(annotations) <- "hg38"
-      #qs::qsave(annotations, "hg38_annotations.qsave")
+      # seqlevelsStyle(annotations) <- 'UCSC'
+      # genome(annotations) <- "hg38"
+      # qs::qsave(annotations, "hg38_annotations.qsave")
 
       send_progress(paste0("Creating Seurat object. 2/", TOTAL_STEPS))
 
@@ -335,14 +337,16 @@ load_multiome <-
       chrom_assay <- Signac::CreateChromatinAssay(
         counts = atac_counts,
         sep = c(":", "-"),
-        genome = 'hg38',
+        genome = "hg38",
         min.cells = 5,
-        #min.feature = 200,
+        # min.feature = 200,
         annotation = annotations,
       )
 
-      e1$obj <- CreateSeuratObject(counts = chrom_assay,
-                                   assay = "ATAC")
+      e1$obj <- CreateSeuratObject(
+        counts = chrom_assay,
+        assay = "ATAC"
+      )
       exp_assay <- CreateAssayObject(counts = rna_counts)
       e1$obj[["RNA"]] <- exp_assay
 
@@ -358,13 +362,16 @@ load_multiome <-
       DefaultAssay(e1$obj) <- "RNA"
       e1$obj <-
         AddMetaData(e1$obj,
-                    PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
-                    col.name = "percent.mt")
+          PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
+          col.name = "percent.mt"
+        )
 
       Idents(e1$obj) <- e1$obj$orig.ident
       rb.genes <-
-        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj), ignore.case =
-                                TRUE)]
+        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+          ignore.case =
+            TRUE
+        )]
       percent.ribo <-
         Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
       e1$obj <-

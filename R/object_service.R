@@ -31,12 +31,15 @@ get_all_idents <- function() {
       "blacklist*"
     )
     matches <- unique(grep(paste(pattern, collapse = "|"),
-                           this_ident,
-                           value = F))
+      this_ident,
+      value = F
+    ))
     if (length(matches) == 0) {
       this_levels <- levels(as.factor(e1$obj@meta.data[, i]))
-      tmp_list <- list(ident = this_ident,
-                       levels = this_levels)
+      tmp_list <- list(
+        ident = this_ident,
+        levels = this_levels
+      )
       all_idents <- rlist::list.append(all_idents, tmp_list)
     }
   }

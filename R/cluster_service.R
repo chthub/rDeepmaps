@@ -27,15 +27,17 @@ cluster_single_rna <- function(req,
   send_progress("Running PCA")
   e1$obj <-
     RunPCA(e1$obj,
-           features = variable_genes,
-           npcs = nPCs,
-           verbose = F)
+      features = variable_genes,
+      npcs = nPCs,
+      verbose = F
+    )
   send_progress("Constructing shared nearest neighbor graph")
   e1$obj <-
     FindNeighbors(e1$obj,
-                  dims = 1:nPCs,
-                  k.param = neighbor,
-                  verbose = F)
+      dims = 1:nPCs,
+      k.param = neighbor,
+      verbose = F
+    )
   send_progress("Running louvain clustering")
   e1$obj <-
     FindClusters(e1$obj, resolution = resolution, verbose = F)
@@ -72,7 +74,7 @@ cluster_single_rna <- function(req,
 #' @export
 #'
 cluster_multiome <- function(req,
-                             method = 'HGT',
+                             method = "HGT",
                              nPCs = "20",
                              resolution = "0.5",
                              neighbor = "20") {
@@ -83,7 +85,7 @@ cluster_multiome <- function(req,
   )
 
   TOTAL_STEPS <- 6
-  send_progress(paste0("Data normalization. 1/", TOTAL_STEPS))
+  send_progress(paste0("Loading example data.", TOTAL_STEPS))
   DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
@@ -93,26 +95,25 @@ cluster_multiome <- function(req,
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
-  send_progress(paste0("2/", TOTAL_STEPS))
   e1$obj <-
     RunPCA(e1$obj,
-           features = variable_genes,
-           npcs = nPCs,
-           verbose = F)
+      features = variable_genes,
+      npcs = nPCs,
+      verbose = F
+    )
 
-  send_progress(paste0("3/", TOTAL_STEPS))
   e1$obj <-
     FindNeighbors(e1$obj,
-                  dims = 1:nPCs,
-                  k.param = neighbor,
-                  verbose = F)
+      dims = 1:nPCs,
+      k.param = neighbor,
+      verbose = F
+    )
 
 
-  send_progress(paste0("4/", TOTAL_STEPS))
 
   e1$obj <- RunUMAP(
     e1$obj,
-    reduction = 'pca',
+    reduction = "pca",
     dims = 1:nPCs,
     n.neighbors = neighbor,
     verbose = F,
@@ -121,16 +122,16 @@ cluster_multiome <- function(req,
     n.components = 3L
   )
 
-  #DefaultAssay(e1$obj) <- "ATAC"
-  #e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
-  #e1$obj <- Signac::RunTFIDF(e1$obj)
-  #e1$obj <- Signac::RunSVD(e1$obj)
+  # DefaultAssay(e1$obj) <- "ATAC"
+  # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
+  # e1$obj <- Signac::RunTFIDF(e1$obj)
+  # e1$obj <- Signac::RunSVD(e1$obj)
 
   message(glue::glue("Run UMAP ATAC"))
   e1$obj <-
     RunUMAP(
       e1$obj,
-      reduction = 'pca',
+      reduction = "pca",
       dims = 2:nPCs,
       reduction.name = "umap.atac",
       reduction.key = "atacUMAP_",
@@ -141,7 +142,7 @@ cluster_multiome <- function(req,
   e1$obj <-
     RunUMAP(
       e1$obj,
-      reduction = 'pca',
+      reduction = "pca",
       dims = 2:10,
       reduction.name = "HGT",
       reduction.key = "HGT_",
@@ -151,8 +152,8 @@ cluster_multiome <- function(req,
 
   library(MAESTRO)
 
-  #pbmc_atac_activity_mat <- NULL
-  #pbmc_atac_activity_mat <-
+  # pbmc_atac_activity_mat <- NULL
+  # pbmc_atac_activity_mat <-
   #  MAESTRO::ATACCalculateGenescore(
   #    GetAssayData(e1$obj, assay = "ATAC")[1:20000,],
   #    organism = "GRCh38",
@@ -160,18 +161,16 @@ cluster_multiome <- function(req,
   #    model = "Enhanced"
   #  )
 
-  send_progress(paste0("5/", TOTAL_STEPS))
-  e1$obj[['MAESTRO']] <-
+  e1$obj[["MAESTRO"]] <-
     CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 25)
 
-  e1$obj[['GAS']] <-
+  e1$obj[["GAS"]] <-
     CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 500)
 
-  #DimPlot(e1$obj, reduction = "HGT")
+  # DimPlot(e1$obj, reduction = "HGT")
   if (method == "HGT") {
-    send_progress(paste0("6/", TOTAL_STEPS))
-    Sys.sleep(5)
-    if(!"hgt_cluster" %in% colnames(e1$obj@meta.data)) {
+    Sys.sleep(0.1)
+    if (!"hgt_cluster" %in% colnames(e1$obj@meta.data)) {
       e1$obj <-
         FindClusters(e1$obj, resolution = 0.2, verbose = F)
       seurat_cluster_idx <-
@@ -181,7 +180,6 @@ cluster_multiome <- function(req,
         which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
     }
   } else {
-    send_progress(paste0("Running louvain clustering. 6/", TOTAL_STEPS))
     e1$obj <-
       FindClusters(e1$obj, resolution = resolution, verbose = F)
     e1$ident_idx <-
@@ -230,8 +228,10 @@ merge_idents <- function(req, newClusterIds) {
     AddMetaData(e1$obj, this_idents, col.name = this_meta_name)
   e1$new_meta_counter <- e1$new_meta_counter + 1
 
-  return(list(new_ident = this_meta_name,
-              new_levels = levels(this_idents)))
+  return(list(
+    new_ident = this_meta_name,
+    new_levels = levels(this_idents)
+  ))
 }
 
 
@@ -329,7 +329,7 @@ select_cells <- function(req, newLevelName = "ct1", filterPayload) {
   list_cells <- list()
   print(filterPayload)
   for (i in seq_len(nrow(filterPayload))) {
-    this_filter <- filterPayload[i,]
+    this_filter <- filterPayload[i, ]
     if (this_filter$type == "gene") {
       this_cells <-
         eval(parse(
@@ -405,7 +405,7 @@ subset_cells <- function(req, selectionPayload) {
   print(selectionPayload)
 
   for (i in seq_len(nrow(selectionPayload))) {
-    this_filter <- selectionPayload[i,]
+    this_filter <- selectionPayload[i, ]
     if (this_filter$type == "gene") {
       this_cells <-
         eval(parse(

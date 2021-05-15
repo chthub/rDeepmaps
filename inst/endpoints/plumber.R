@@ -1,5 +1,5 @@
 # Controller for iris3api
-options(digits=3)
+options(digits = 3)
 require(iris3api, quietly = TRUE)
 
 #* @apiTitle Plumber Example API
@@ -120,6 +120,12 @@ calc_deg
 #* @param database
 #* @post /gsea-table
 calc_gsea_table
+
+#* Calculate GSEA table
+#* @param genes
+#* @param database
+#* @post /regulon-enrichment
+regulon_enrichment
 
 #################################### Object manipulation
 

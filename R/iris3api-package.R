@@ -25,8 +25,8 @@ e1 <- rlang::env(
   deg = NULL
 )
 
-e2<- rlang::env(
-  sio = NULL #socketio
+e2 <- rlang::env(
+  sio = NULL # socketio
 )
 
 NULL

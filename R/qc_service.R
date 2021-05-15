@@ -30,12 +30,12 @@ rna_qc_list <- function() {
   HVFInfo(e1$obj)[VariableFeatures(e1$obj), ]
   gene_result <-
     data.frame(
-      gene = rownames(this_obj) ,
-      min =  format(round(row_min, 2), nsmall = 2),
-      max =  format(round(row_max, 2), nsmall = 2),
-      mean =  format(round(rowMeans(this_obj), 2), nsmall = 2),
-      std =  format(round(row_sd, 2), nsmall = 2),
-      residual_variance =  format(round(row_residual_variance, 2), nsmall = 2),
+      gene = rownames(this_obj),
+      min = format(round(row_min, 2), nsmall = 2),
+      max = format(round(row_max, 2), nsmall = 2),
+      mean = format(round(rowMeans(this_obj), 2), nsmall = 2),
+      std = format(round(row_sd, 2), nsmall = 2),
+      residual_variance = format(round(row_residual_variance, 2), nsmall = 2),
       n_cells_per_gene = n_cells_per_gene
     )
   cell_result <-
@@ -73,7 +73,7 @@ rna_qc_list <- function() {
     meta_list <- append(meta_list, list(tmp))
   }
 
-  #jsonlite::toJSON(meta_list)
+  # jsonlite::toJSON(meta_list)
 
   result <- list(
     gene_result = gene_result,
@@ -98,9 +98,11 @@ rna_qc_plot <- function() {
 
   top10 <- head(VariableFeatures(e1$obj), 10)
   plot1 <- VariableFeaturePlot(e1$obj)
-  plot2 <- LabelPoints(plot = plot1,
-                       points = top10,
-                       repel = TRUE)
+  plot2 <- LabelPoints(
+    plot = plot1,
+    points = top10,
+    repel = TRUE
+  )
   return(print(plot2))
 }
 
@@ -120,11 +122,11 @@ atac_qc_list <- function() {
   n_features_per_cell <- e1$obj$nFeature_ATAC
   n_reads_per_cell <- e1$obj$nCount_ATAC
 
-  #pct_reads_in_peaks <- e1$obj$pct_reads_in_peaks
-  #atac_peak_region_fragments <- e1$obj$atac_peak_region_fragments
-  #blacklist_ratio <- e1$obj$blacklist_ratio
-  #nucleosome_signal <- e1$obj$nucleosome_signal
-  #tss_enrichment <- e1$obj$TSS.enrichment
+  # pct_reads_in_peaks <- e1$obj$pct_reads_in_peaks
+  # atac_peak_region_fragments <- e1$obj$atac_peak_region_fragments
+  # blacklist_ratio <- e1$obj$blacklist_ratio
+  # nucleosome_signal <- e1$obj$nucleosome_signal
+  # tss_enrichment <- e1$obj$TSS.enrichment
   pct_reads_in_peaks <- n_features_per_cell
   atac_peak_region_fragments <- n_features_per_cell
   blacklist_ratio <- n_features_per_cell

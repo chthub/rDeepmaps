@@ -8,21 +8,22 @@
 #'
 #' @references https://rviews.rstudio.com/2019/08/13/plumber-logging/
 read_deepmaps <-
-  function(mimetype = 'application/vnd.ms-excel',
-           #originalname = 'pbmc_granulocyte_sorted_3k_filtered_feature_bc_matrix.h5',
+  function(mimetype = "application/vnd.ms-excel",
+           # originalname = 'pbmc_granulocyte_sorted_3k_filtered_feature_bc_matrix.h5',
            path = "c57e41d078ce9810717de392b4451605") {
     if (!file.exists("/data")) {
-      path_prefix <- 'C:/Users/flyku/Documents/deepmaps-data/'
+      path_prefix <- "C:/Users/flyku/Documents/deepmaps-data/"
     } else {
-      path_prefix <- '/data/'
+      path_prefix <- "/data/"
     }
 
     absolute_path <- paste0(path_prefix, path)
     result <-
       switch(mimetype,
-             'application/vnd.ms-excel' = read_deepmaps_text(absolute_path),
-             'application/octet-stream' = read_deepmaps_h5(absolute_path))
-    return (result)
+        "application/vnd.ms-excel" = read_deepmaps_text(absolute_path),
+        "application/octet-stream" = read_deepmaps_h5(absolute_path)
+      )
+    return(result)
   }
 
 #' Read csv,tsv,txt format
@@ -35,10 +36,11 @@ read_deepmaps <-
 read_deepmaps_text <- function(path) {
   delim <- detect_delim(path)
   result <- read.table(path,
-                       sep = delim,
-                       header = T,
-                       row.names = 1)
-  return (result)
+    sep = delim,
+    header = T,
+    row.names = 1
+  )
+  return(result)
 }
 
 #' Read 10x hdf5 format
@@ -50,7 +52,7 @@ read_deepmaps_text <- function(path) {
 #' @references https://rviews.rstudio.com/2019/08/13/plumber-logging/
 read_deepmaps_h5 <- function(path) {
   result <- Read10X_h5(path)
-  return (result)
+  return(result)
 }
 
 
@@ -68,12 +70,14 @@ detect_delim <- function(path, nchar = 1e3) {
   # only look for delimiter if the file exists
   if (file.exists(path)) {
     # readChar() will error on non-character data so
-    chars <- tryCatch({
-      readChar(path, nchar)
-    },
-    error = function(e) {
-      NA
-    })
+    chars <- tryCatch(
+      {
+        readChar(path, nchar)
+      },
+      error = function(e) {
+        NA
+      }
+    )
 
     search <- regexpr("[,|\\t|;||]+", chars, perl = TRUE)
 

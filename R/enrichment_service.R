@@ -9,7 +9,7 @@
 #'
 calc_gsea_table <-
   function(req,
-           genes = c("CD74","CD7"),
+           genes = c("CD74", "CD7"),
            database = "C2") {
     print("run GSEA")
 
@@ -45,6 +45,38 @@ calc_gsea_table <-
       dplyr::arrange(padj) %>%
       tibble::as_data_frame()
     return(list(gseaTable))
+  }
+
+#' Run GSEA enrichment
+#'
+#' @param req request payload
+#' @param genes array
+#' @param database string
+#'
+#' @return
+#' @export
+#'
+regulon_enrichment <-
+  function(req,
+           genes = c("CD74", "CD7"),
+           database = "C2") {
+    library(enrichR)
+    if (length(e1$species == "Human")) {
+      this_species <- "Homo sapiens"
+    } else {
+      this_species <- "Mus musculus"
+    }
+    message(this_species)
+    if(database == "KEGG" && this_species == 'Homo sapiens') {
+      dbs <- "KEGG_2019_Human"
+    } else if (database == "KEGG" && this_species == 'Mus musculus'){
+      dbs <- "KEGG_2019_Mouse"
+    } else {
+      dbs <- database
+    }
+    message(dbs)
+    enriched_combined <- enrichr(genes,dbs)
+    return(list(enriched_combined[[1]][,c(-3,-5,-6,-7)]))
   }
 
 #' Generate GSEA plot
