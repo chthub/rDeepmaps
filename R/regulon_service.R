@@ -24,6 +24,11 @@ example_regulon_network <- function() {
       as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'hgt_cluster')])
   }
 
+  if (length(active_idents) == 0) {
+    active_idents <-
+      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
+  }
+
   all_network <- tibble::tibble()
   for (i in seq_along(tmp_regulon)) {
     this_tf <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[1]
@@ -37,12 +42,12 @@ example_regulon_network <- function() {
   Sys.sleep(5)
   send_progress("Calculating regulon intensity")
   all_network <- all_network %>%
-    mutate(id = group_indices(., tf)) %>%
-    group_by(ct) %>%
+    dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
+    dplyr::group_by(ct) %>%
     dplyr::filter(id %in% sample.int(150, 50)) %>%
-    group_by(tf) %>%
-    mutate(idx = seq_along(tf)) %>%
-    mutate(ct = levels(active_idents)[sample.int(length(levels(active_idents)), 1)])
+    dplyr::group_by(tf) %>%
+    dplyr::mutate(idx = seq_along(tf)) %>%
+    dplyr::mutate(ct = levels(active_idents)[sample.int(length(levels(active_idents)), 1)])
 
   g <- igraph::graph.data.frame(all_network)
 
@@ -57,41 +62,41 @@ example_regulon_network <- function() {
       name = as.character(igraph::V(g)$name),
       centrality = scales::rescale(igraph::eigen_centrality(g)$vector, to = c(0.1, 1))
     ) %>%
-    mutate(
+    dplyr::mutate(
       index = seq_along(name),
       color_index = index %% 34 + 1,
       id = name,
-      category = case_when(
+      category = dplyr::case_when(
         name %in% this_tf ~ paste0('Regulon-', name),
         !name %in% this_tf ~ "Gene"
       ),
-      color = case_when(
+      color = dplyr::case_when(
         name %in% this_tf ~ as.character(Polychrome::palette36.colors(36)[-2])[color_index],!name %in% this_tf ~ 'grey',
         TRUE ~ 'grey'
       ),
-      geneSymbol = case_when(name %in% this_tf ~ paste0(name), !name %in% this_tf ~ "Gene"),
-      type = case_when(name %in% this_tf ~ "tf", !name %in% this_tf ~ "gene")
+      geneSymbol = dplyr::case_when(name %in% this_tf ~ paste0(name), !name %in% this_tf ~ "Gene"),
+      type = dplyr::case_when(name %in% this_tf ~ "tf", !name %in% this_tf ~ "gene")
     )
 
   colnames(this_edges) <- c("source", "target")
 
   this_edges <- this_edges %>%
-    mutate(id = paste0(source, "-", target)) %>%
+    dplyr::mutate(id = paste0(source, "-", target)) %>%
     unique()
 
   this_genes <- all_network %>%
-    group_by(tf) %>%
-    mutate(genes = paste0(target, collapse = ",")) %>%
+    dplyr::group_by(tf) %>%
+    dplyr::mutate(genes = paste0(target, collapse = ",")) %>%
     dplyr::select(tf, genes, ct) %>%
     unique()
 
   this_regulon <- all_network %>%
     dplyr::select(tf) %>%
-    count() %>%
-    mutate(rss = runif(1, min = 0.01, max = 0.8)) %>%
-    left_join(this_genes, by = "tf") %>%
-    ungroup() %>%
-    mutate(index = row_number())
+    dplyr::count() %>%
+    dplyr::mutate(rss = runif(1, min = 0.01, max = 0.8)) %>%
+    dplyr::left_join(this_genes, by = "tf") %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(index = dplyr::row_number())
 
   result <- list()
   result$idents <- levels(active_idents)
