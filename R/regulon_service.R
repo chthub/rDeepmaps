@@ -2,8 +2,8 @@
 #'
 #' @param req request payload
 #'
-#' @return
-#' @export nodes and edges
+#' @return json
+#' @export
 #'
 example_regulon_network <- function() {
   data(dt)
@@ -112,7 +112,7 @@ example_regulon_network <- function() {
 #' @param gene string
 #'
 #' @return
-#' @export nodes and edges
+#' @export
 #'
 example_cluster_coords <- function() {
   if(e1$regulon_ident == 'other') {
@@ -162,7 +162,7 @@ example_cluster_coords <- function() {
 #' @param gene string
 #'
 #' @return
-#' @export nodes and edges
+#' @export
 #'
 example_ras <- function(gene = "MAFF", assay = "RNA") {
   send_progress(paste0("Loading regulon: ", gene))
@@ -208,7 +208,7 @@ example_ras <- function(gene = "MAFF", assay = "RNA") {
 #' @param gene string
 #'
 #' @return
-#' @export nodes and edges
+#' @export
 #'
 example_gas <- function(gene = "Gad1", assay = "RNA") {
   if('Gad1' %in% rownames(e1$obj)) {
