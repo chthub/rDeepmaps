@@ -25,6 +25,8 @@ disconnect_socketio <- function() {
 #' @export
 #'
 send_progress <- function(message = "message from R") {
+  io <- reticulate::import("socketio")
+  e2$sio <- io$Client(logger = F, engineio_logger = F)
   #e2$sio$connect("http://127.0.0.1:9005")
   # e2$sio$connect("https://bmbls.bmi.osumc.edu/deepmaps/api/socket.io")
   e2$sio$connect("https://bmbls.bmi.osumc.edu")
@@ -36,10 +38,10 @@ send_progress <- function(message = "message from R") {
   e2$sio$disconnect()
 }
 
- i=1
- init_socketio()
- for(i in 1:10) {
-  Sys.sleep(0.5)
-  send_progress(i)
- }
+# i=1
+# init_socketio()
+# for(i in 1:10) {
+#  Sys.sleep(0.5)
+#  send_progress(i)
+# }
 

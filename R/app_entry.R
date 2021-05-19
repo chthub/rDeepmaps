@@ -74,7 +74,6 @@ start_debug_server <-
            host = "127.0.0.1") {
     print(getwd())
     message(paste("Starting debug R server at host =", host, ", port =", port))
-    init_socketio()
     tryCatch(
       {
         plumber::plumb(dir = as.character(system.file("endpoints",
