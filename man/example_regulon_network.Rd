@@ -10,7 +10,7 @@ example_regulon_network()
 \item{req}{request payload}
 }
 \value{
-
+json
 }
 \description{
 Run Seurat clustering
