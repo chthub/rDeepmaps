@@ -9,7 +9,6 @@ example_regulon_network <- function() {
   data(dt)
   set.seed(42)
   send_progress("Start calculation")
-  library(tidyverse)
   Sys.sleep(3)
   send_progress("Calculating regulons")
   tmp_regulon <- dt$ct_regulon[sample.int(444, 400)]
