@@ -32,7 +32,7 @@ load_single_rna <-
     # Yan: 1619284757781
     # Zeisel: 1619291336397
     TOTAL_STEPS <- 10
-    send_progress(paste0("Start processing scRNA-seq dataset. 1/", TOTAL_STEPS))
+    send_progress(paste0("Start processing scRNA-seq dataset"))
     if (jobid != "example") {
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
@@ -46,7 +46,7 @@ load_single_rna <-
       e1$meta <- iris3api::zeisel_2015$meta
     }
 
-    send_progress(paste0("Creating Seurat object. 2/", TOTAL_STEPS))
+    send_progress(paste0("Creating Seurat object"))
     raw_obj <- CreateSeuratObject(raw_expr_data)
     e1$obj <-
       CreateSeuratObject(
@@ -276,7 +276,7 @@ load_multiome <-
 
     TOTAL_STEPS <- 6
     if (jobid == "example") {
-      send_progress(paste0("Loading example data. 1/", TOTAL_STEPS))
+      send_progress(paste0("Loading example data"))
       if (file.exists("/data")) {
         e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
         e1$obj@assays$ATAC@fragments[[1]]@path <-
@@ -296,7 +296,7 @@ load_multiome <-
         # e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
       }
     } else {
-      send_progress(paste0("Start processing single-cell multiome dataset. 1/", TOTAL_STEPS))
+      send_progress(paste0("Start processing single-cell multiome dataset"))
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
@@ -326,7 +326,7 @@ load_multiome <-
       # genome(annotations) <- "hg38"
       # qs::qsave(annotations, "hg38_annotations.qsave")
 
-      send_progress(paste0("Creating Seurat object. 2/", TOTAL_STEPS))
+      send_progress(paste0("Creating Seurat object"))
 
       if (file.exists("/data")) {
         annotations <- qs::qread("/data/hg38_annotations.qsave")
@@ -379,7 +379,7 @@ load_multiome <-
 
       e1$obj <-
         subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
-      send_progress(paste0("Finding variable features. 3/", TOTAL_STEPS))
+      send_progress(paste0("Finding variable features"))
 
       e1$obj <-
         FindVariableFeatures(
@@ -388,7 +388,7 @@ load_multiome <-
           nfeatures = as.numeric(nVariableFeatures),
           verbose = F
         )
-      send_progress(paste0("Normalizing data. 4/", TOTAL_STEPS))
+      send_progress(paste0("Normalizing data"))
       e1$obj <- NormalizeData(e1$obj, verbose = F)
       e1$obj <- SCTransform(e1$obj, verbose = F)
       e1$obj <- ScaleData(e1$obj, verbose = F)
@@ -402,7 +402,7 @@ load_multiome <-
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
 
-    send_progress(paste0("Calculating data summary statistics. 5/", TOTAL_STEPS))
+    send_progress(paste0("Calculating data summary statistics"))
     e1$species <- species
     raw_obj <- e1$obj
     raw_percent_zero <-

@@ -130,3 +130,19 @@ load_pbmc_match_3k <- function() {
   qs::qsave(pbmc, "pbmc_match_3k.qsave")
   usethis::use_data(pbmc, overwrite = TRUE)
 }
+
+
+#' example regulon data
+#' @description pbmc_match_3k
+#' @return null
+#'
+load_pbmc_match_3k <- function() {
+  PATH <- 'C:/Users/flyku/Desktop/iris3/pbmc_match/'
+  dt <- list()
+  dt$RAS <- as.matrix(readRDS(paste0(PATH, "RAS.rds")))
+  GAS <- as.matrix(readRDS(paste0(PATH, "GAS.rds")))
+  dt$RI_CT <- as.matrix(readRDS(paste0(PATH, "RI_CT.rds")))
+  dt$Dregulon <- readRDS(paste0(PATH, "Dregulon.rds"))
+  dt$ct_regulon <- readRDS(paste0(PATH, "ct_regulon.rds"))
+  usethis::use_data(dt, overwrite = TRUE)
+}

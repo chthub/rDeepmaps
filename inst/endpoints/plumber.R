@@ -107,6 +107,28 @@ rna_qc_plot
 atac_qc_list
 
 
+#################################### Regulon
+
+#* Calculate regulon
+#* @post /regulon
+example_regulon_network
+
+#* Calculate regulon clusters umap
+#* @post /regulon-clusters
+example_cluster_coords
+
+#* Calculate RAS
+#* @param gene
+#* @param assay
+#* @post /ras
+example_ras
+
+#* Calculate GAS
+#* @param gene
+#* @param assay
+#* @post /gas
+example_gas
+
 #################################### DEG
 
 #* Calculate DEG for two selections

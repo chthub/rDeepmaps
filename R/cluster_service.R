@@ -15,7 +15,7 @@ cluster_single_rna <- function(req,
   message(glue(
     "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
-  send_progress("Start clustering")
+  send_progress("Start calculation")
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
@@ -85,7 +85,7 @@ cluster_multiome <- function(req,
   )
 
   TOTAL_STEPS <- 6
-  send_progress(paste0("Loading example data.", TOTAL_STEPS))
+  send_progress(paste0("Start calculation"))
   DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
@@ -95,6 +95,8 @@ cluster_multiome <- function(req,
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
+  Sys.sleep(2)
+  send_progress(paste0("Calculating gene activity score"))
   e1$obj <-
     RunPCA(e1$obj,
       features = variable_genes,
@@ -126,6 +128,8 @@ cluster_multiome <- function(req,
   # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
   # e1$obj <- Signac::RunTFIDF(e1$obj)
   # e1$obj <- Signac::RunSVD(e1$obj)
+  Sys.sleep(4)
+  send_progress(paste0("Running HGT"))
 
   message(glue::glue("Run UMAP ATAC"))
   e1$obj <-
@@ -169,7 +173,8 @@ cluster_multiome <- function(req,
 
   # DimPlot(e1$obj, reduction = "HGT")
   if (method == "HGT") {
-    Sys.sleep(0.1)
+    Sys.sleep(4)
+    send_progress(paste0("Running HGT"))
     if (!"hgt_cluster" %in% colnames(e1$obj@meta.data)) {
       e1$obj <-
         FindClusters(e1$obj, resolution = 0.2, verbose = F)
@@ -180,6 +185,7 @@ cluster_multiome <- function(req,
         which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
     }
   } else {
+
     e1$obj <-
       FindClusters(e1$obj, resolution = resolution, verbose = F)
     e1$ident_idx <-
@@ -187,7 +193,9 @@ cluster_multiome <- function(req,
   }
 
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
-
+  Sys.sleep(4)
+  send_progress(paste0("Calculating clusters"))
+  e1$regulon_ident <- 'hgt_cluster'
   return(list(
     n_seurat_clusters = 5,
     umap_pts = data.frame(
@@ -287,7 +295,7 @@ select_category <- function(req, categoryName = "other") {
     e1$obj@tools$available_category <-
       unique(c(e1$obj@tools$available_category, categoryName))
   }
-
+  e1$regulon_ident <- categoryName
   return(
     list(
       active_category = categoryName,
@@ -383,6 +391,8 @@ select_cells <- function(req, newLevelName = "ct1", filterPayload) {
   tmp_ident[which(filtered_cells)] <- newLevelName
   e1$obj@meta.data[, active_cate_idx] <- as.factor(tmp_ident)
   active_cate_levels <- levels(e1$obj@meta.data[, active_cate_idx])
+
+  e1$regulon_ident <- active_cate
   return(
     list(
       active_category = active_cate,

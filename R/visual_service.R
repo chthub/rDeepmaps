@@ -61,10 +61,11 @@ gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
 #' @export
 cluster_coords <-
   function(req,
-           categoryName = "Sex",
+           categoryName = "seurat_clusters",
            embedding = "umap") {
     this_ident_idx <-
       which(colnames(e1$obj@meta.data) == categoryName)[1]
+
     embedding <- names(e1$obj@reductions[e1$embedding_idx])
 
     Idents(e1$obj) <- e1$obj@meta.data[, this_ident_idx]

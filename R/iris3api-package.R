@@ -21,6 +21,7 @@ e1 <- rlang::env(
   assay_idx = 1,
   embedding_idx = 2,
   ident_idx = 1,
+  regulon_ident = 'seurat_clusters',
   new_meta_counter = 1,
   deg = NULL
 )

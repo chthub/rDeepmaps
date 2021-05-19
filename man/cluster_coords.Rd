@@ -4,7 +4,7 @@
 \alias{cluster_coords}
 \title{Return embeddings coordinates from a given embedding name}
 \usage{
-cluster_coords(req, categoryName = "Sex", embedding = "umap")
+cluster_coords(req, categoryName = "seurat_clusters", embedding = "umap")
 }
 \arguments{
 \item{req}{request payload}
