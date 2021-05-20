@@ -264,12 +264,13 @@ example_dr <- function(tf, ct1=1, ct2=2) {
   data(dt)
   score<-dt$Dregulon[[2]]
   pvale<-dt$Dregulon[[1]]
-
+  set.seed(42)
+  rand_num <- sample.int(7,2)
   if(!ct1 %in% colnames(score[[1]])) {
-    ct1 <- colnames(score[[1]])[sample.int(5,1)]
+    ct1 <- colnames(score[[1]])[rand_num[1]]
   }
   if(!ct2 %in% colnames(score[[1]])) {
-    ct2 <- colnames(score[[1]])[sample.int(5,1)]
+    ct2 <- colnames(score[[1]])[rand_num[2]]
   }
 
   result <- data.frame()
