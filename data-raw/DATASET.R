@@ -137,12 +137,14 @@ load_pbmc_match_3k <- function() {
 #' @return null
 #'
 load_pbmc_match_3k <- function() {
+  library(qs)
   PATH <- 'C:/Users/flyku/Desktop/iris3/pbmc_match/'
   dt <- list()
-  dt$RAS <- as.matrix(readRDS(paste0(PATH, "RAS.rds")))
+  dt$RAS <- as.matrix(qread(paste0(PATH, "RAS.qsave")))
+  dt$RAS_C <- as.matrix(qread(paste0(PATH, "RAS_C.qsave")))
   GAS <- as.matrix(readRDS(paste0(PATH, "GAS.rds")))
   dt$RI_CT <- as.matrix(readRDS(paste0(PATH, "RI_CT.rds")))
-  dt$Dregulon <- readRDS(paste0(PATH, "Dregulon.rds"))
+  dt$Dregulon <- qread(paste0(PATH, "Dregulon2.qsave"))
   dt$ct_regulon <- readRDS(paste0(PATH, "ct_regulon.rds"))
   usethis::use_data(dt, overwrite = TRUE)
 }

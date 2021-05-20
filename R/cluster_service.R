@@ -129,7 +129,6 @@ cluster_multiome <- function(req,
   # e1$obj <- Signac::RunTFIDF(e1$obj)
   # e1$obj <- Signac::RunSVD(e1$obj)
   Sys.sleep(4)
-  send_progress(paste0("Running HGT"))
 
   message(glue::glue("Run UMAP ATAC"))
   e1$obj <-

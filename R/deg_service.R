@@ -37,27 +37,3 @@ calc_deg <-
     return(list(this_markers))
   }
 
-
-#' Run Seurat clustering
-#'
-#' @param req request payload
-#' @param ident1 string
-#' @param ident2 string
-#' @param min_pct string
-#' @param min_lfc string
-#' @param min_lfc string
-#' @param assay string
-#' @param pvalue string
-#'
-#' @return
-#' @export
-#'
-calc_dr <-
-  function(req,
-           ident1 = 4,
-           ident2 = 5
-           ) {
-
-    return(list(1))
-  }
-

@@ -286,7 +286,9 @@ load_multiome <-
           qs::qread(
             "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
           )
-
+        #qs::qsave(e1$obj,
+        #  "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
+        #)
         e1$obj@assays$ATAC@fragments[[1]]@path <-
           "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
         iris3api::set_embedding(name = "umap.rna")

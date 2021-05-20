@@ -129,6 +129,17 @@ example_ras
 #* @post /gas
 example_gas
 
+#* Calculate DR
+#* @param tf
+#* @param ct1
+#* @param ct2
+#* @post /dr
+example_dr
+
+#* Calculate DR
+#* @param genes
+#* @post /ri-heatmap
+example_ri_heatmap
 #################################### DEG
 
 #* Calculate DEG for two selections

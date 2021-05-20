@@ -251,3 +251,88 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
     embedding = coords
   ))
 }
+
+
+#' Run DR
+#' @param tf
+#' @param ct1
+#' @param ct2
+#' @return
+#' @export
+#'
+example_dr <- function(tf, ct1=1, ct2=2) {
+  data(dt)
+  score<-dt$Dregulon[[2]]
+  pvale<-dt$Dregulon[[1]]
+
+  if(!ct1 %in% colnames(score[[1]])) {
+    ct1 <- colnames(score[[1]])[sample.int(5,1)]
+  }
+  if(!ct2 %in% colnames(score[[1]])) {
+    ct2 <- colnames(score[[1]])[sample.int(5,1)]
+  }
+
+  result <- data.frame()
+  for(i in tf) {
+    tmp <- data.frame(tf=i, logfc=score[[i]][ct1,ct2],pvalue=pvale[[i]][ct1,ct2])
+    result <- rbind(result, tmp)
+  }
+  return (result)
+}
+
+#' Run RI heatmap
+#' @param tf
+#' @param genes
+#' @return
+#' @export
+#'
+example_ri_heatmap <- function(tf='CTCF', genes) {
+
+  #genes <- dt$ct_regulon[[1]][1:10]
+  #heatmap_rownames <- paste0(tf, "_", genes)
+  #
+  #heat_idx <- which(rownames(dt$RI_CT) %in% heatmap_rownames)
+  #heatmap_mat <-dt$RI_CT[heat_idx, ]
+
+  send_progress(paste0("Loading regulon itensity heatmap: ", tf))
+  if('Gad1' %in% rownames(e1$obj)) {
+    genes <- stringr::str_to_title(genes)
+  }
+
+  if(e1$regulon_ident == 'other') {
+    e1$regulon_ident <- 'hgt_cluster'
+  }
+  active_idents <-
+    as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)])
+  if (length(active_idents) == 0) {
+    active_idents <-
+      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'hgt_cluster')])
+  }
+  if (length(active_idents) == 0) {
+    active_idents <-
+      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
+  }
+
+  embedding <- names(e1$obj@reductions[e1$embedding_idx])
+
+  Idents(e1$obj) <- active_idents
+
+  #res1 <- data.frame(
+  #  id = rownames(Embeddings(e1$obj, reduction = embedding)),
+  #  log1p(FetchData(e1$obj, vars = genes))*4,
+  #  index = 1
+  #)[, -1]
+  res1 <- as.matrix(log1p(AverageExpression(e1$obj, features = genes)$RNA)+log1p(AverageExpression(e1$obj, features = genes)$GAS*5)*10)
+
+  legend <- c(min(res1), max(res1))
+
+  result <- list(
+    column = genes,
+    row = levels(Idents(e1$obj)),
+    data = res1,
+    legend = legend
+  )
+  return(result)
+}
+
+
