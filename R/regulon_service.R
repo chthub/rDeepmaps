@@ -295,7 +295,7 @@ example_dr <- function(tf, ct1=1, ct2=2) {
 #'
 example_ri_heatmap <- function(tf='CTCF', genes) {
 
-  #genes <- dt$ct_regulon[[1]][1:10]
+  #genes <- dt$ct_regulon[[1]][1:20]
   #heatmap_rownames <- paste0(tf, "_", genes)
   #
   #heat_idx <- which(rownames(dt$RI_CT) %in% heatmap_rownames)
@@ -329,16 +329,24 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   #  log1p(FetchData(e1$obj, vars = genes))*4,
   #  index = 1
   #)[, -1]
-  res1 <- as.matrix(scales::rescale(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)+log1p(AverageExpression(e1$obj, features = genes)$GAS*5)*3),to = c(0.01, 0.892)))
+  res1 <- as.data.frame(scales::rescale(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)),to = c(0.01, 0.892)))
 
+  res2 <- data.frame()
+  for(i in 1:ncol(res1)) {
+    for(j in 1:nrow(res1)) {
+      tmp <- data.frame(j, i, res1[j,i])
+      res2 <- rbind(res2, tmp)
+    }
+  }
   legend <- c(min(res1), max(res1))
 
   result <- list(
     column = genes,
     row = levels(Idents(e1$obj)),
-    data = res1,
+    data = res2,
     legend = legend
   )
+  #jsonlite::toJSON(result)
   return(result)
 }
 
