@@ -338,6 +338,7 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
       res2 <- rbind(res2, tmp)
     }
   }
+  res2 <- as.matrix(res2)
   legend <- c(min(res1), max(res1))
 
   result <- list(
