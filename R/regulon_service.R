@@ -33,13 +33,19 @@ example_regulon_network <- function() {
   for (i in seq_along(tmp_regulon)) {
     this_tf <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[1]
     this_ct <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
-    this_target <- as.character(tmp_regulon[[i]])[1:50]
+    if(length(tmp_regulon[[i]]) > 50) {
+      max_int  <- 50
+    } else {
+      max_int  <- length(tmp_regulon[[i]])
+    }
+
+    this_target <- as.character(tmp_regulon[[i]])[sample.int(length(tmp_regulon[[i]]), max_int)]
     this_network <-
       tibble::tibble(tf = this_tf, target = this_target, ct = this_ct)
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
-  Sys.sleep(5)
+  Sys.sleep(4)
   send_progress("Calculating regulon intensity")
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
@@ -323,7 +329,7 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   #  log1p(FetchData(e1$obj, vars = genes))*4,
   #  index = 1
   #)[, -1]
-  res1 <- as.matrix(scales::rescale(log10(log1p(AverageExpression(e1$obj, features = genes)$RNA)+log1p(AverageExpression(e1$obj, features = genes)$GAS*5)*3),to = c(0.1, 1)))
+  res1 <- as.matrix(scales::rescale(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)+log1p(AverageExpression(e1$obj, features = genes)$GAS*5)*3),to = c(0.01, 0.892)))
 
   legend <- c(min(res1), max(res1))
 
