@@ -9,7 +9,7 @@ example_regulon_network <- function() {
   data(dt)
   set.seed(42)
   send_progress("Start calculation")
-  Sys.sleep(3)
+  Sys.sleep(1)
   send_progress("Calculating regulons")
   tmp_regulon <- dt$ct_regulon[sample.int(444, 400)]
 
@@ -45,7 +45,7 @@ example_regulon_network <- function() {
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
-  Sys.sleep(4)
+  Sys.sleep(2)
   send_progress("Calculating regulon intensity")
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
@@ -60,9 +60,9 @@ example_regulon_network <- function() {
   #coords <- layout.norm(layout.auto(g))
   this_tf <- as.character(unique(all_network$tf))
   this_edges <- as.data.frame(igraph::get.edgelist(g))
-  Sys.sleep(5)
-  send_progress("Calculating regulon networks")
   Sys.sleep(3)
+  send_progress("Calculating regulon networks")
+  Sys.sleep(2)
   nodes <-
     tibble(
       name = as.character(igraph::V(g)$name),
@@ -334,7 +334,7 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   res2 <- data.frame()
   for(i in 1:ncol(res1)) {
     for(j in 1:nrow(res1)) {
-      tmp <- data.frame(i, j, res1[j,i])
+      tmp <- data.frame(i-1, j, res1[j,i])
       res2 <- rbind(res2, tmp)
     }
   }
