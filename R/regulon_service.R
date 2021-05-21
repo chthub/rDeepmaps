@@ -323,7 +323,7 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   #  log1p(FetchData(e1$obj, vars = genes))*4,
   #  index = 1
   #)[, -1]
-  res1 <- as.matrix(scales::rescale(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)+log1p(AverageExpression(e1$obj, features = genes)$GAS*5)*3),to = c(0.1, 1)))
+  res1 <- as.matrix(scales::rescale(log10(log1p(AverageExpression(e1$obj, features = genes)$RNA)+log1p(AverageExpression(e1$obj, features = genes)$GAS*5)*3),to = c(0.1, 1)))
 
   legend <- c(min(res1), max(res1))
 
