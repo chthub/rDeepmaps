@@ -334,7 +334,7 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   res2 <- data.frame()
   for(i in 1:ncol(res1)) {
     for(j in 1:nrow(res1)) {
-      tmp <- data.frame(j, i, res1[j,i])
+      tmp <- data.frame(i, j, res1[j,i])
       res2 <- rbind(res2, tmp)
     }
   }
