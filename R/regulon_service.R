@@ -45,7 +45,7 @@ example_regulon_network <- function() {
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
-  Sys.sleep(2)
+  Sys.sleep(0)
   send_progress("Calculating regulon intensity")
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
@@ -60,9 +60,9 @@ example_regulon_network <- function() {
   #coords <- layout.norm(layout.auto(g))
   this_tf <- as.character(unique(all_network$tf))
   this_edges <- as.data.frame(igraph::get.edgelist(g))
-  Sys.sleep(3)
+  Sys.sleep(0)
   send_progress("Calculating regulon networks")
-  Sys.sleep(2)
+  Sys.sleep(0)
   nodes <-
     tibble(
       name = as.character(igraph::V(g)$name),
@@ -266,7 +266,7 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
 #' @return
 #' @export
 #'
-example_dr <- function(tf, ct1=1, ct2=2) {
+example_dr <- function(tf='CTCF', ct1=1, ct2='all other cell types') {
   data(dt)
   score<-dt$Dregulon[[2]]
   pvale<-dt$Dregulon[[1]]
@@ -275,15 +275,24 @@ example_dr <- function(tf, ct1=1, ct2=2) {
   if(!ct1 %in% colnames(score[[1]])) {
     ct1 <- colnames(score[[1]])[rand_num[1]]
   }
-  if(!ct2 %in% colnames(score[[1]])) {
+  if (ct2 == 'all other cell types')
+  {
+    result <- data.frame()
+    for(i in tf) {
+      tmp <- data.frame(tf=i, logfc=score[[i]][ct1,ct2],pvalue=pvale[[i]][ct1,ct2])
+      result <- rbind(result, tmp)
+    }
+  } else if (!ct2 %in% colnames(score[[1]])) {
     ct2 <- colnames(score[[1]])[rand_num[2]]
+    result <- data.frame()
+    for(i in tf) {
+      tmp <- data.frame(tf=i, logfc=score[[i]][ct1,ct2],pvalue=pvale[[i]][ct1,ct2])
+      result <- rbind(result, tmp)
+    }
   }
 
-  result <- data.frame()
-  for(i in tf) {
-    tmp <- data.frame(tf=i, logfc=score[[i]][ct1,ct2],pvalue=pvale[[i]][ct1,ct2])
-    result <- rbind(result, tmp)
-  }
+
+
   return (result)
 }
 
@@ -319,17 +328,12 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
     active_idents <-
       as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
   }
-
   embedding <- names(e1$obj@reductions[e1$embedding_idx])
-
   Idents(e1$obj) <- active_idents
 
-  #res1 <- data.frame(
-  #  id = rownames(Embeddings(e1$obj, reduction = embedding)),
-  #  log1p(FetchData(e1$obj, vars = genes))*4,
-  #  index = 1
-  #)[, -1]
-  res1 <- as.data.frame(scales::rescale(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)),to = c(0.01, 0.892)))
+  res1 <- as.matrix(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)),to = c(0.01, 1))
+  res1 <- (res1 - rowMeans(res1)) / matrixStats::rowSds(res1)
+  res1 <- as.data.frame(res1)
 
   res2 <- data.frame()
   for(i in 1:ncol(res1)) {

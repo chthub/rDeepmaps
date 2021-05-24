@@ -146,5 +146,6 @@ load_pbmc_match_3k <- function() {
   dt$RI_CT <- as.matrix(readRDS(paste0(PATH, "RI_CT.rds")))
   dt$Dregulon <- qread(paste0(PATH, "Dregulon2.qsave"))
   dt$ct_regulon <- readRDS(paste0(PATH, "ct_regulon.rds"))
+  dt$VR <- qread(paste0(PATH, "VR.qsave"))
   usethis::use_data(dt, overwrite = TRUE)
 }
