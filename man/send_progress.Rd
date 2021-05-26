@@ -4,7 +4,7 @@
 \alias{send_progress}
 \title{Send job progress to server}
 \usage{
-send_progress(message = "message from R")
+send_progress(message = "message from R1")
 }
 \arguments{
 \item{message}{string}

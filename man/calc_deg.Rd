@@ -6,8 +6,8 @@
 \usage{
 calc_deg(
   req,
-  ident1 = 4,
-  ident2 = 5,
+  ident1 = c(0, 1),
+  ident2 = c(2, 3),
   min_pct = 0.2,
   min_lfc = 0.5,
   assay = "RNA",

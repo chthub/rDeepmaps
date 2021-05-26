@@ -4,7 +4,7 @@
 \alias{example_dr}
 \title{Run DR}
 \usage{
-example_dr(tf, ct1 = 1, ct2 = 2)
+example_dr(tf = "CTCF", ct1 = 1, ct2 = "all other cell types")
 }
 \value{
 

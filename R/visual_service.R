@@ -193,9 +193,9 @@ gene_umap_plot <- function(req, gene = "Gad1", assay = "RNA") {
 #'
 violin_gene_plot <-
   function(req,
-           gene = "Gad1",
+           gene = "CTCF",
            split = "sex",
-           group = "cell_type",
+           group = "hgt_cluster",
            assay = "RNA") {
     # ident_idx=9
     send_progress(paste0("Plotting violin gene:", gene))

@@ -94,8 +94,11 @@ cluster_multiome <- function(req,
   e1$obj <-
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
-
-  Sys.sleep(2)
+  detect_df <- as.numeric(GetAssayData(e1$obj, assay = "RNA")[1:10,])
+  if(all(detect_df%%1==0)) {
+    e1$obj <- NormalizeData(e1$obj, assay = "RNA")
+  }
+  Sys.sleep(0)
   send_progress(paste0("Calculating gene activity score"))
   e1$obj <-
     RunPCA(e1$obj,
@@ -128,7 +131,7 @@ cluster_multiome <- function(req,
   # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
   # e1$obj <- Signac::RunTFIDF(e1$obj)
   # e1$obj <- Signac::RunSVD(e1$obj)
-  Sys.sleep(4)
+  Sys.sleep(0)
 
   message(glue::glue("Run UMAP ATAC"))
   e1$obj <-
@@ -172,7 +175,7 @@ cluster_multiome <- function(req,
 
   # DimPlot(e1$obj, reduction = "HGT")
   if (method == "HGT") {
-    Sys.sleep(4)
+    Sys.sleep(0)
     send_progress(paste0("Running HGT"))
     if (!"hgt_cluster" %in% colnames(e1$obj@meta.data)) {
       e1$obj <-
@@ -192,7 +195,7 @@ cluster_multiome <- function(req,
   }
 
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
-  Sys.sleep(4)
+  Sys.sleep(0)
   send_progress(paste0("Calculating clusters"))
   e1$regulon_ident <- 'hgt_cluster'
   return(list(

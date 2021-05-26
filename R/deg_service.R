@@ -14,26 +14,28 @@
 #'
 calc_deg <-
   function(req,
-           ident1 = 4,
-           ident2 = 5,
+           ident1 = c(0, 1),
+           ident2 = c(2, 3),
            min_pct = 0.2,
            min_lfc = 0.5,
            assay = "RNA",
            pvalue = 0.05) {
     send_progress(paste0("Running differential gene expression analysis"))
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+
     this_markers <-
       FindMarkers(
         e1$obj,
-        assay = assay,
         ident.1 = ident1,
         ident.2 = ident2,
         min.pct = min_pct,
+        assay = "RNA",
         logfc.threshold = min_lfc
       ) %>%
-      dplyr::filter(p_val_adj < pvalue)
-    this_markers <- tibble::rownames_to_column(this_markers, "gene")
+      dplyr::filter(p_val_adj < pvalue) %>%
+      dplyr::arrange(dplyr::desc(avg_log2FC)) %>%
+      tibble::rownames_to_column("gene")
     e1$deg <- this_markers
-    return(list(this_markers))
+    return(this_markers)
   }
 

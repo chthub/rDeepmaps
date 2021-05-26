@@ -6,9 +6,9 @@
 \usage{
 violin_gene_plot(
   req,
-  gene = "Gad1",
+  gene = "CTCF",
   split = "sex",
-  group = "cell_type",
+  group = "hgt_cluster",
   assay = "RNA"
 )
 }
