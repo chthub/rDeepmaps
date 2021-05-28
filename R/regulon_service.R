@@ -5,15 +5,15 @@
 #' @return json
 #' @export
 #'
-example_regulon_network <- function(cluster = "sadas") {
+example_regulon_network <- function(cluster = "0") {
   data(dt)
   set.seed(42)
   send_progress("Start calculation")
   Sys.sleep(1)
   send_progress("Calculating regulons")
   tmp_regulon <- dt$ct_regulon
-  rand_num <- sample.int(8,1)
-  if(!cluster %in% 1:8) {
+  rand_num <- sample.int(8,1) - 1
+  if(!cluster %in% 0:7) {
     cluster <- rand_num
   }
   if(e1$regulon_ident == 'other') {
