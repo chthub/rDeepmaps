@@ -100,7 +100,7 @@ cluster_multiome <- function(req,
     if(all(detect_df%%1==0)) {
       e1$obj <- NormalizeData(e1$obj, assay = "RNA")
     }
-    Sys.sleep(3)
+    Sys.sleep(1)
     send_progress(paste0("Calculating gene activity score"))
     e1$obj <-
       RunPCA(e1$obj,
@@ -133,7 +133,7 @@ cluster_multiome <- function(req,
     # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
     # e1$obj <- Signac::RunTFIDF(e1$obj)
     # e1$obj <- Signac::RunSVD(e1$obj)
-    Sys.sleep(3)
+    Sys.sleep(1)
 
     message(glue::glue("Run UMAP ATAC"))
     e1$obj <-
@@ -178,7 +178,7 @@ cluster_multiome <- function(req,
 
   # DimPlot(e1$obj, reduction = "HGT")
   if (method == "Velocity weighted method") {
-    Sys.sleep(3)
+    Sys.sleep(1)
     send_progress(paste0("Running clustering using HGT result"))
     e1$obj <- FindNeighbors(e1$obj, reduction = "HGT",dims=1:ncol(Embeddings(e1$obj, reduction = 'HGT')))
     e1$obj <- FindClusters(e1$obj , resolution = resolution, verbose = F)
