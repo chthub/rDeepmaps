@@ -295,21 +295,22 @@ load_multiome <-
           "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
         iris3api::set_embedding(name = "umap.rna")
 
-        Idents(e1$obj) <- e1$obj$orig.ident
-        rb.genes <-
-          rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
-                                ignore.case =
-                                  TRUE
-          )]
-        percent.ribo <-
-          Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
-        e1$obj <-
-          AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+
         #e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
         #e1$meta$disease <-
         #  rep(c("disease", "control"), nrow(e1$meta) / 2)
         # e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
       }
+      Idents(e1$obj) <- e1$obj$orig.ident
+      rb.genes <-
+        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+                              ignore.case =
+                                TRUE
+        )]
+      percent.ribo <-
+        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      e1$obj <-
+        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     } else {
       send_progress(paste0("Start processing single-cell multiome dataset"))
       expr_type <- as.character(expr$mimetype[1])
