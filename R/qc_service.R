@@ -115,17 +115,11 @@ atac_qc_list <- function() {
 
   n_features_per_cell <- e1$obj$nFeature_ATAC
   n_reads_per_cell <- e1$obj$nCount_ATAC
-
-  # pct_reads_in_peaks <- e1$obj$pct_reads_in_peaks
-  # atac_peak_region_fragments <- e1$obj$atac_peak_region_fragments
-  # blacklist_ratio <- e1$obj$blacklist_ratio
-  # nucleosome_signal <- e1$obj$nucleosome_signal
-  # tss_enrichment <- e1$obj$TSS.enrichment
-  pct_reads_in_peaks <- n_features_per_cell
-  atac_peak_region_fragments <- n_features_per_cell
-  blacklist_ratio <- n_features_per_cell
-  nucleosome_signal <- n_features_per_cell
-  tss_enrichment <- n_features_per_cell
+  pct_reads_in_peaks <- e1$obj$nFeature_ATAC/e1$obj$atac_fragments
+  atac_peak_region_fragments <- e1$obj$atac_fragments
+  blacklist_ratio <- e1$obj$percent.ribo
+  nucleosome_signal <- e1$obj$atac_peak_region_cutsites
+  tss_enrichment <- e1$obj$atac_TSS_fragments/ mean(e1$obj$atac_TSS_fragments) * 2
 
   cell_result <-
     data.frame(

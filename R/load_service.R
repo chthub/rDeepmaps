@@ -258,6 +258,7 @@ load_multiome <-
            idx = 0,
            filename,
            jobid = "example",
+           mode = "ATAC",
            min_cells = 1,
            min_genes = 200,
            nVariableFeatures = 2000,
@@ -420,19 +421,18 @@ load_multiome <-
 
     send_progress(paste0("Calculating data summary statistics"))
     e1$species <- species
-    raw_percent_zero <-
-      length(which((as.matrix(
-        GetAssayData(raw_obj)
-      ) > 0))) / length(GetAssayData(raw_obj))
-    filter_percent_zero <-
-      length(which((as.matrix(
-        GetAssayData(e1$obj)
-      ) > 0))) / length(GetAssayData(e1$obj))
-    raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
-    filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
-
-    return(
-      list(
+    if(mode == "RNA") {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj)
+        ) > 0))) / length(GetAssayData(raw_obj))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj)
+        ) > 0))) / length(GetAssayData(e1$obj))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
         raw_n_genes = dim(raw_obj)[1],
         raw_n_cells = dim(raw_obj)[2],
         raw_percent_zero = raw_percent_zero,
@@ -442,5 +442,29 @@ load_multiome <-
         filter_percent_zero = filter_percent_zero,
         filter_mean_expr = filter_mean_expr
       )
+    } else {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj, assay="ATAC")
+        ) > 0))) / length(GetAssayData(raw_obj, assay="ATAC"))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj, assay="ATAC")
+        ) > 0))) / length(GetAssayData(e1$obj, assay="ATAC"))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = nrow(GetAssayData(raw_obj, assay="ATAC"))[1],
+        raw_n_cells = ncol(GetAssayData(raw_obj, assay="ATAC"))[1],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1],
+        filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1] - 8000,
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    }
+    return(
+      res
     )
   }
