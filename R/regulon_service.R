@@ -5,14 +5,15 @@
 #' @return json
 #' @export
 #'
-example_regulon_network <- function(cluster = "0") {
+example_regulon_network <- function(cluster = "sda") {
   data(dt)
   set.seed(42)
   send_progress("Start calculation")
-  Sys.sleep(1)
+  Sys.sleep(0.5)
   send_progress("Calculating regulons")
   tmp_regulon <- dt$ct_regulon
   rand_num <- sample.int(8,1) - 1
+  old_cluster_name <- cluster
   if(!cluster %in% 0:7) {
     cluster <- rand_num
   }
@@ -60,7 +61,8 @@ example_regulon_network <- function(cluster = "0") {
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
     dplyr::group_by(tf) %>%
     dplyr::mutate(idx = seq_along(tf)) %>%
-    dplyr::filter(ct == cluster)
+    dplyr::filter(ct == cluster) %>%
+    dplyr::mutate(ct = old_cluster_name)
 
   g <- igraph::graph.data.frame(all_network)
 
@@ -130,8 +132,12 @@ example_regulon_network <- function(cluster = "0") {
     tibble::rownames_to_column('tf')
 
   this_regulon_score <- this_regulon %>%
-    dplyr::left_join(this_dr, by="tf") %>%
-    dplyr::left_join(this_vr, by="tf")
+    dplyr::left_join(this_dr, by = "tf") %>%
+    dplyr::left_join(this_vr, by = "tf") %>%
+    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, 0))%>%
+    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , 0))
+
+
 
 
   result <- list()
