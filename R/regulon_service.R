@@ -134,10 +134,8 @@ example_regulon_network <- function(cluster = "sda") {
   this_regulon_score <- this_regulon %>%
     dplyr::left_join(this_dr, by = "tf") %>%
     dplyr::left_join(this_vr, by = "tf") %>%
-    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, 0))%>%
-    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , 0))
-
-
+    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, rnorm(1)/20))%>%
+    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , abs(rnorm(1)/5)))
 
 
   result <- list()
