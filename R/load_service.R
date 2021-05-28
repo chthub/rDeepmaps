@@ -459,8 +459,8 @@ load_multiome <-
         raw_n_cells = ncol(GetAssayData(raw_obj, assay="ATAC"))[1],
         raw_percent_zero = raw_percent_zero,
         raw_mean_expr = raw_mean_expr,
-        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1],
-        filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1] - 8000,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] - 6000,
+        filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1],
         filter_percent_zero = filter_percent_zero,
         filter_mean_expr = filter_mean_expr
       )
