@@ -305,7 +305,7 @@ select_category <- function(req, categoryName = "other") {
       which(colnames(e1$obj@meta.data) == categoryName)
     this_idents <- e1$obj@meta.data[, this_category_idx]
   } else {
-    this_idents <- as.factor(e1$obj$empty_ident)
+    this_idents <- as.factor(e1$obj$empty_category)
     levels(this_idents) <- "other"
     e1$obj <-
       AddMetaData(e1$obj, this_idents, col.name = categoryName)

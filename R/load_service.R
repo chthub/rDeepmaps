@@ -55,11 +55,11 @@ load_single_rna <-
         min.features = as.numeric(min_genes)
       )
     e1$species <- species
-    empty_ident <- as.factor(e1$obj$orig.ident)
-    levels(empty_ident) <-
-      rep("empty_category", length(levels(empty_ident)))
+    empty_category <- as.factor(e1$obj$orig.ident)
+    levels(empty_category) <-
+      rep("empty_category", length(levels(empty_category)))
     e1$obj <-
-      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_category")
+      AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
 
     for (idx in seq_along(colnames(e1$meta))) {
       this_meta_name <- colnames(e1$meta)[idx]
@@ -171,11 +171,11 @@ load_multi_rna <-
         min.features = as.numeric(min_genes)
       )
     e1$species <- "Human"
-    empty_ident <- as.factor(e1$obj$orig.ident)
-    levels(empty_ident) <-
-      rep("empty_category", length(levels(empty_ident)))
+    empty_category <- as.factor(e1$obj$orig.ident)
+    levels(empty_category) <-
+      rep("empty_category", length(levels(empty_category)))
     e1$obj <-
-      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_category")
+      AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
 
     for (index in seq_along(colnames(e1$meta))) {
       this_meta_name <- colnames(e1$meta)[index]
@@ -412,11 +412,11 @@ load_multiome <-
     }
 
     # Add empety ident
-    empty_ident <- as.factor(e1$obj$orig.ident)
-    levels(empty_ident) <-
-      rep("empty_category", length(levels(empty_ident)))
+    empty_category <- as.factor(e1$obj$orig.ident)
+    levels(empty_category) <-
+      rep("empty_category", length(levels(empty_category)))
     e1$obj <-
-      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_category")
+      AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
 
     send_progress(paste0("Calculating data summary statistics"))
     e1$species <- species

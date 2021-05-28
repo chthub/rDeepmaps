@@ -164,7 +164,7 @@ regulon_enrichment
 
 #################################### Object manipulation
 
-#* Get all  Idents names
+#* Set object to full or subset
 #* @param type
 #* @post /set-obj
 set_obj
@@ -173,16 +173,16 @@ set_obj
 #* @get /genes
 get_all_genes
 
-#* Get all  Idents names
+#* Get allIdents names
 #* @get /idents
 get_all_idents
 
-#* Get all  Idents names
+#* Set idents
 #* @param name
 #* @post /idents
 set_idents
 
-#* Get all  assay names
+#* Get all assay names
 #* @get /assays
 get_all_assays
 

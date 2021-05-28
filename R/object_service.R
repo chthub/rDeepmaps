@@ -128,7 +128,7 @@ set_embedding <- function(req, name = "pca") {
 #' @export
 #'
 set_obj <- function(req, type = "full") {
-  send_progress(paste0("Subsetting data: ", name))
+  send_progress(paste0("Subsetting data: ", type))
   if (is.null(e1$full_obj)) {
     e1$full_obj <- e1$obj
   }
