@@ -5,14 +5,17 @@
 #' @return json
 #' @export
 #'
-example_regulon_network <- function(cluster = "2") {
+example_regulon_network <- function(cluster = "sadas") {
   data(dt)
   set.seed(42)
   send_progress("Start calculation")
   Sys.sleep(1)
   send_progress("Calculating regulons")
   tmp_regulon <- dt$ct_regulon
-
+  rand_num <- sample.int(8,1)
+  if(!cluster %in% 1:8) {
+    cluster <- rand_num
+  }
   if(e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
   }
@@ -106,6 +109,7 @@ example_regulon_network <- function(cluster = "2") {
     dplyr::select(name, centrality) %>%
     dplyr::rename(tf=name)
 
+
   this_regulon <- all_network %>%
     dplyr::select(tf) %>%
     dplyr::group_by(tf) %>%
@@ -115,11 +119,26 @@ example_regulon_network <- function(cluster = "2") {
     dplyr::ungroup() %>%
     dplyr::mutate(index = dplyr::row_number())
 
+  this_dr <- dt$dr[which(dt$dr$gene %in% this_regulon$tf),] %>%
+    dplyr::rename(tf=gene) %>%
+    dplyr::group_by(tf) %>%
+    dplyr::arrange(tf) %>%
+    dplyr::filter(dplyr::row_number()==1)
+
+  this_vr <- dt$VR %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column('tf')
+
+  this_regulon_score <- this_regulon %>%
+    dplyr::left_join(this_dr, by="tf") %>%
+    dplyr::left_join(this_vr, by="tf")
+
+
   result <- list()
   result$idents <- levels(active_idents)
   result$nodes <- nodes
   result$edges <- this_edges
-  result$regulons <- this_regulon
+  result$regulons <- this_regulon_score
 
   #library(jsonlite)
   #write(toJSON(this_regulon), paste0("C:/Users/flyku/Documents/GitHub/iris3-frontend/static/json/regulon/example_regulon.json"))

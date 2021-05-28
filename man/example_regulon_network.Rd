@@ -4,7 +4,7 @@
 \alias{example_regulon_network}
 \title{Run Seurat clustering}
 \usage{
-example_regulon_network(cluster = "2")
+example_regulon_network(cluster = "sadas")
 }
 \arguments{
 \item{cluster}{string}

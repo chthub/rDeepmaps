@@ -143,7 +143,12 @@ load_pbmc_match_3k <- function() {
   dt$RAS <- as.matrix(qread(paste0(PATH, "RAS.qsave")))
   RAS_C <- as.matrix(qread(paste0(PATH, "RAS_C.qsave")))
   ras_obj <- CreateSeuratObject(RAS_C)
+  #qs::qsave(graph.out,"graph.out.qsave")
+  ras_obj <- AddMetaData(ras_obj, graph.out, col.name = "hgt_cluster")
+  Idents(ras_obj) <- ras_obj$hgt_cluster
+  dr <- FindAllMarkers(ras_obj, logfc.threshold = 0, min.pct = 0)
   dt$ras_obj <- ras_obj
+  dt$dr <- dr
   GAS <- as.matrix(readRDS(paste0(PATH, "GAS.rds")))
   dt$RI_CT <- as.matrix(readRDS(paste0(PATH, "RI_CT.rds")))
   dt$Dregulon <- qread(paste0(PATH, "Dregulon.qsave"))

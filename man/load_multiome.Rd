@@ -9,6 +9,7 @@ load_multiome(
   idx = 0,
   filename,
   jobid = "example",
+  mode = "ATAC",
   min_cells = 1,
   min_genes = 200,
   nVariableFeatures = 2000,
@@ -25,6 +26,8 @@ load_multiome(
 \item{idx}{sample index}
 
 \item{filename}{string}
+
+\item{mode}{string}
 
 \item{min_cells}{number}
 

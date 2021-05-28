@@ -244,6 +244,7 @@ load_multi_rna <-
 #' @param req request payload
 #' @param idx sample index
 #' @param filename string
+#' @param mode string
 #' @param min_cells number
 #' @param min_genes number
 #' @param nVariableFeatures number
