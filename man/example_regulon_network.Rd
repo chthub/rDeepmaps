@@ -4,10 +4,10 @@
 \alias{example_regulon_network}
 \title{Run Seurat clustering}
 \usage{
-example_regulon_network()
+example_regulon_network(cluster = "2")
 }
 \arguments{
-\item{req}{request payload}
+\item{cluster}{string}
 }
 \value{
 json

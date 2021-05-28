@@ -6,12 +6,9 @@
 rna_qc_list <- function() {
   TOTAL_STEPS <- 6
   send_progress(paste0("Calculating scRNA-seq QC metrics"))
-  if (length(names(e1$obj@assays)) > 2) {
-    DefaultAssay(e1$obj) <- "SCT"
-  }
 
   vargenes <- VariableFeatures(e1$obj)
-  Idents(e1$obj) <- e1$obj@meta.data$empty_ident
+  Idents(e1$obj) <- e1$obj@meta.data$empty_category
   this_obj <-
     as.matrix(GetAssayData(subset(e1$obj, features = vargenes), slot = "data"))
   row_min <- apply(this_obj, 1, min)
@@ -92,9 +89,6 @@ rna_qc_list <- function() {
 #' @export
 #'
 rna_qc_plot <- function() {
-  if ("ATAC" %in% names(e1$obj@assays)) {
-    DefaultAssay(e1$obj) <- "SCT"
-  }
 
   top10 <- head(VariableFeatures(e1$obj), 10)
   plot1 <- VariableFeaturePlot(e1$obj)

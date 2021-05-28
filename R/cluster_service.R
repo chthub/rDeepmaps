@@ -74,6 +74,7 @@ cluster_single_rna <- function(req,
 #' @export
 #'
 cluster_multiome <- function(req,
+                             jobid = "example",
                              method = "HGT",
                              nPCs = "20",
                              resolution = "0.5",
@@ -91,115 +92,130 @@ cluster_multiome <- function(req,
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
 
-  e1$obj <-
-    ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
-  variable_genes <- VariableFeatures(e1$obj)
-  detect_df <- as.numeric(GetAssayData(e1$obj, assay = "RNA")[1:10,])
-  if(all(detect_df%%1==0)) {
-    e1$obj <- NormalizeData(e1$obj, assay = "RNA")
-  }
-  Sys.sleep(0)
-  send_progress(paste0("Calculating gene activity score"))
-  e1$obj <-
-    RunPCA(e1$obj,
-      features = variable_genes,
-      npcs = nPCs,
-      verbose = F
-    )
-
-  e1$obj <-
-    FindNeighbors(e1$obj,
-      dims = 1:nPCs,
-      k.param = neighbor,
-      verbose = F
-    )
-
-
-
-  e1$obj <- RunUMAP(
-    e1$obj,
-    reduction = "pca",
-    dims = 1:nPCs,
-    n.neighbors = neighbor,
-    verbose = F,
-    reduction.name = "umap.rna",
-    reduction.key = "rnaUMAP_",
-    n.components = 3L
-  )
-
-  # DefaultAssay(e1$obj) <- "ATAC"
-  # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
-  # e1$obj <- Signac::RunTFIDF(e1$obj)
-  # e1$obj <- Signac::RunSVD(e1$obj)
-  Sys.sleep(0)
-
-  message(glue::glue("Run UMAP ATAC"))
-  e1$obj <-
-    RunUMAP(
-      e1$obj,
-      reduction = "pca",
-      dims = 2:nPCs,
-      reduction.name = "umap.atac",
-      reduction.key = "atacUMAP_",
-      n.components = 3L,
-      verbose = F,
-    )
-  message(glue::glue(""))
-  e1$obj <-
-    RunUMAP(
-      e1$obj,
-      reduction = "pca",
-      dims = 2:10,
-      reduction.name = "HGT",
-      reduction.key = "HGT_",
-      n.components = 3L,
-      verbose = F,
-    )
-
-  library(MAESTRO)
-
-  # pbmc_atac_activity_mat <- NULL
-  # pbmc_atac_activity_mat <-
-  #  MAESTRO::ATACCalculateGenescore(
-  #    GetAssayData(e1$obj, assay = "ATAC")[1:20000,],
-  #    organism = "GRCh38",
-  #    decaydistance = 10000,
-  #    model = "Enhanced"
-  #  )
-
-  e1$obj[["MAESTRO"]] <-
-    CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 25)
-
-  e1$obj[["GAS"]] <-
-    CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 500)
-
-  # DimPlot(e1$obj, reduction = "HGT")
-  if (method == "HGT") {
-    Sys.sleep(0)
-    send_progress(paste0("Running HGT"))
-    if (!"hgt_cluster" %in% colnames(e1$obj@meta.data)) {
-      e1$obj <-
-        FindClusters(e1$obj, resolution = 0.2, verbose = F)
-      seurat_cluster_idx <-
-        which(colnames(e1$obj@meta.data) == "seurat_clusters")
-      colnames(e1$obj@meta.data)[seurat_cluster_idx] <- "hgt_cluster"
-      e1$ident_idx <-
-        which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+  if(jobid != 'example') {
+    e1$obj <-
+      ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
+    variable_genes <- VariableFeatures(e1$obj)
+    detect_df <- as.numeric(GetAssayData(e1$obj, assay = "RNA")[1:10,])
+    if(all(detect_df%%1==0)) {
+      e1$obj <- NormalizeData(e1$obj, assay = "RNA")
     }
-  } else {
+    Sys.sleep(3)
+    send_progress(paste0("Calculating gene activity score"))
+    e1$obj <-
+      RunPCA(e1$obj,
+             features = variable_genes,
+             npcs = nPCs,
+             verbose = F
+      )
 
     e1$obj <-
-      FindClusters(e1$obj, resolution = resolution, verbose = F)
+      FindNeighbors(e1$obj,
+                    dims = 1:nPCs,
+                    k.param = neighbor,
+                    verbose = F
+      )
+
+
+
+    e1$obj <- RunUMAP(
+      e1$obj,
+      reduction = "pca",
+      dims = 1:nPCs,
+      n.neighbors = neighbor,
+      verbose = F,
+      reduction.name = "umap.rna",
+      reduction.key = "rnaUMAP_",
+      n.components = 3L
+    )
+
+    # DefaultAssay(e1$obj) <- "ATAC"
+    # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
+    # e1$obj <- Signac::RunTFIDF(e1$obj)
+    # e1$obj <- Signac::RunSVD(e1$obj)
+    Sys.sleep(3)
+
+    message(glue::glue("Run UMAP ATAC"))
+    e1$obj <-
+      RunUMAP(
+        e1$obj,
+        reduction = "pca",
+        dims = 2:nPCs,
+        reduction.name = "umap.atac",
+        reduction.key = "atacUMAP_",
+        n.components = 3L,
+        verbose = F,
+      )
+    message(glue::glue(""))
+    e1$obj <-
+      RunUMAP(
+        e1$obj,
+        reduction = "pca",
+        dims = 2:10,
+        reduction.name = "HGT",
+        reduction.key = "HGT_",
+        n.components = 3L,
+        verbose = F,
+      )
+
+    library(MAESTRO)
+
+    # pbmc_atac_activity_mat <- NULL
+    # pbmc_atac_activity_mat <-
+    #  MAESTRO::ATACCalculateGenescore(
+    #    GetAssayData(e1$obj, assay = "ATAC")[1:20000,],
+    #    organism = "GRCh38",
+    #    decaydistance = 10000,
+    #    model = "Enhanced"
+    #  )
+
+    e1$obj[["MAESTRO"]] <-
+      CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 25)
+
+    e1$obj[["GAS"]] <-
+      CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 500)
+  }
+
+  # DimPlot(e1$obj, reduction = "HGT")
+  if (method == "Velocity weighted method") {
+    Sys.sleep(3)
+    send_progress(paste0("Running clustering using HGT result"))
+    e1$obj <- FindNeighbors(e1$obj, reduction = "HGT",dims=1:ncol(Embeddings(e1$obj, reduction = 'HGT')))
+    e1$obj <- FindClusters(e1$obj , resolution = resolution, verbose = F)
+    hgt_cluster_idx <-
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")
+    if(length(hgt_cluster_idx > 0)) {
+      e1$obj@meta.data <- e1$obj@meta.data[,-hgt_cluster_idx]
+    }
+    seurat_cluster_idx <-
+      which(colnames(e1$obj@meta.data) == "seurat_clusters")
+    colnames(e1$obj@meta.data)[seurat_cluster_idx] <-
+      "hgt_cluster"
     e1$ident_idx <-
-      which(colnames(e1$obj@meta.data) == "seurat_clusters")[1] | 12
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+    e1$regulon_ident <- 'hgt_cluster'
+
+  } else {
+    e1$obj <- RunPCA(e1$obj, npcs = as.numeric(nPCs))
+    e1$obj <- FindNeighbors(e1$obj, reduction = "pca")
+    e1$obj <-
+      FindClusters(e1$obj, resolution = resolution, verbose = F)
+    hgt_cluster_idx <-
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")
+    if(length(hgt_cluster_idx > 0)) {
+      e1$obj@meta.data <- e1$obj@meta.data[,-hgt_cluster_idx]
+    }
+    e1$ident_idx <-
+      which(colnames(e1$obj@meta.data) == "seurat_clusters")[1]
+    e1$regulon_ident <- 'seurat_clusters'
   }
 
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
-  Sys.sleep(0)
+  Sys.sleep(2)
   send_progress(paste0("Calculating clusters"))
-  e1$regulon_ident <- 'hgt_cluster'
+
   return(list(
-    n_seurat_clusters = 5,
+    n_seurat_clusters = 8,
     umap_pts = data.frame(
       umap1 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 1]),
       umap2 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 2])

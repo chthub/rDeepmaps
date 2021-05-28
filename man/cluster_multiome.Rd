@@ -6,6 +6,7 @@
 \usage{
 cluster_multiome(
   req,
+  jobid = "example",
   method = "HGT",
   nPCs = "20",
   resolution = "0.5",

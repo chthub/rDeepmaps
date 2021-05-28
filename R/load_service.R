@@ -57,9 +57,9 @@ load_single_rna <-
     e1$species <- species
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
-      rep("empty_ident", length(levels(empty_ident)))
+      rep("empty_category", length(levels(empty_ident)))
     e1$obj <-
-      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
+      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_category")
 
     for (idx in seq_along(colnames(e1$meta))) {
       this_meta_name <- colnames(e1$meta)[idx]
@@ -173,9 +173,9 @@ load_multi_rna <-
     e1$species <- "Human"
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
-      rep("empty_ident", length(levels(empty_ident)))
+      rep("empty_category", length(levels(empty_ident)))
     e1$obj <-
-      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
+      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_category")
 
     for (index in seq_along(colnames(e1$meta))) {
       this_meta_name <- colnames(e1$meta)[index]
@@ -278,23 +278,36 @@ load_multiome <-
     if (jobid == "example") {
       send_progress(paste0("Loading example data"))
       if (file.exists("/data")) {
-        e1$obj <- qs::qread("/data/pbmc_match_3k.qsave")
+        e1$obj <- qs::qread("/data/pbmc_sorted_3k.qsave")
+        raw_obj <- qs::qread("/data/pbmc_match_3k.qsave")
         e1$obj@assays$ATAC@fragments[[1]]@path <-
-          "/data/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+          "/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
       } else {
         e1$obj <-
           qs::qread(
-            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
+            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_sorted_3k.qsave"
           )
+        raw_obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
         #qs::qsave(e1$obj,
         #  "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
         #)
         e1$obj@assays$ATAC@fragments[[1]]@path <-
-          "C:/Users/flyku/Desktop/iris3/pbmc_match/db/pbmc_unsorted_3k_atac_fragments.tsv.gz"
+          "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
         iris3api::set_embedding(name = "umap.rna")
-        e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
-        e1$meta$disease <-
-          rep(c("disease", "control"), nrow(e1$meta) / 2)
+
+        Idents(e1$obj) <- e1$obj$orig.ident
+        rb.genes <-
+          rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+                                ignore.case =
+                                  TRUE
+          )]
+        percent.ribo <-
+          Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+        e1$obj <-
+          AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+        #e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
+        #e1$meta$disease <-
+        #  rep(c("disease", "control"), nrow(e1$meta) / 2)
         # e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
       }
     } else {
@@ -387,7 +400,7 @@ load_multiome <-
         FindVariableFeatures(
           e1$obj,
           selection.method = "vst",
-          nfeatures = as.numeric(nVariableFeatures),
+          nfeatures = as.numeric(2000),
           verbose = F
         )
       send_progress(paste0("Normalizing data"))
@@ -400,13 +413,12 @@ load_multiome <-
     # Add empety ident
     empty_ident <- as.factor(e1$obj$orig.ident)
     levels(empty_ident) <-
-      rep("empty_ident", length(levels(empty_ident)))
+      rep("empty_category", length(levels(empty_ident)))
     e1$obj <-
-      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_ident")
+      AddMetaData(e1$obj, metadata = empty_ident, col.name = "empty_category")
 
     send_progress(paste0("Calculating data summary statistics"))
     e1$species <- species
-    raw_obj <- e1$obj
     raw_percent_zero <-
       length(which((as.matrix(
         GetAssayData(raw_obj)

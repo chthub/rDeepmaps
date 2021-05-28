@@ -110,6 +110,8 @@ atac_qc_list
 #################################### Regulon
 
 #* Calculate regulon
+#* @param cluster string
+#* @serializer unboxedJSON
 #* @post /regulon
 example_regulon_network
 

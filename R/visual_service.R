@@ -11,10 +11,8 @@
 #' @export
 #'
 #'
-gene_cor_plot <- function(req, gene1 = "Gad1", gene2 = "Gad2") {
-  if ("ATAC" %in% names(e1$obj@assays)) {
-    DefaultAssay(e1$obj) <- "SCT"
-  }
+gene_cor_plot <- function(req, gene1 = "CD74", gene2 = "CD72") {
+
   send_progress("Calculating gene-gene correlation")
   # gene1 <- VariableFeatures(e1$obj)[1]
   # gene2 <- VariableFeatures(e1$obj)[2]
@@ -74,7 +72,7 @@ cluster_coords <-
       id = rownames(Embeddings(e1$obj, reduction = embedding)),
       dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
       dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
-      dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
+      dim3 = Embeddings(e1$obj, reduction = embedding)[, 2],
       label = as.character(Idents(e1$obj)),
       index = as.integer(Idents(e1$obj)) - 1
     )
@@ -112,7 +110,7 @@ feature_coords <-
       id = rownames(Embeddings(e1$obj, reduction = embedding)),
       dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
       dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
-      dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
+      dim3 = Embeddings(e1$obj, reduction = embedding)[, 2],
       expr = FetchData(
         object = e1$obj,
         vars = c(gene)
@@ -199,7 +197,7 @@ violin_gene_plot <-
            assay = "RNA") {
     # ident_idx=9
     send_progress(paste0("Plotting violin gene:", gene))
-    if (split == "NULL") {
+    if (split == "None") {
       Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
       plot <-
         VlnPlot(e1$obj, gene, group.by = colnames(e1$obj@meta.data)[e1$ident_idx])

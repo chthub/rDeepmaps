@@ -141,11 +141,13 @@ load_pbmc_match_3k <- function() {
   PATH <- 'C:/Users/flyku/Desktop/iris3/pbmc_match/'
   dt <- list()
   dt$RAS <- as.matrix(qread(paste0(PATH, "RAS.qsave")))
-  dt$RAS_C <- as.matrix(qread(paste0(PATH, "RAS_C.qsave")))
+  RAS_C <- as.matrix(qread(paste0(PATH, "RAS_C.qsave")))
+  ras_obj <- CreateSeuratObject(RAS_C)
+  dt$ras_obj <- ras_obj
   GAS <- as.matrix(readRDS(paste0(PATH, "GAS.rds")))
   dt$RI_CT <- as.matrix(readRDS(paste0(PATH, "RI_CT.rds")))
-  dt$Dregulon <- qread(paste0(PATH, "Dregulon2.qsave"))
-  dt$ct_regulon <- readRDS(paste0(PATH, "ct_regulon.rds"))
+  dt$Dregulon <- qread(paste0(PATH, "Dregulon.qsave"))
+  dt$ct_regulon <- qread(paste0(PATH, "ct_regulon.qsave"))
   dt$VR <- qread(paste0(PATH, "VR.qsave"))
   usethis::use_data(dt, overwrite = TRUE)
 }

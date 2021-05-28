@@ -15,6 +15,10 @@ get_all_idents <- function() {
   for (i in seq_along(colnames(e1$obj@meta.data))) {
     this_ident <- colnames(e1$obj@meta.data)[i]
     pattern <- c(
+      "is_cell",
+      "excluded_reason",
+      "RNA_snn*",
+      "empty_category",
       "orig.ident",
       "nCount_*",
       "nFeature_*",

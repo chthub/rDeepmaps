@@ -1,17 +1,17 @@
 #' Run Seurat clustering
 #'
-#' @param req request payload
+#' @param cluster string
 #'
 #' @return json
 #' @export
 #'
-example_regulon_network <- function() {
+example_regulon_network <- function(cluster = "2") {
   data(dt)
   set.seed(42)
   send_progress("Start calculation")
   Sys.sleep(1)
   send_progress("Calculating regulons")
-  tmp_regulon <- dt$ct_regulon[sample.int(444, 400)]
+  tmp_regulon <- dt$ct_regulon
 
   if(e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
@@ -30,11 +30,16 @@ example_regulon_network <- function() {
   }
 
   all_network <- tibble::tibble()
+  i=1
   for (i in seq_along(tmp_regulon)) {
     this_tf <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[1]
     this_ct <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
-    if(length(tmp_regulon[[i]]) > 50) {
-      max_int  <- 50
+    this_ct <- gsub("ct","", this_ct)
+    if(this_ct == as.numeric(this_ct)) {
+      this_ct <- as.numeric(this_ct) - 1
+    }
+    if(length(tmp_regulon[[i]]) > 300) {
+      max_int  <- 300
     } else {
       max_int  <- length(tmp_regulon[[i]])
     }
@@ -45,28 +50,29 @@ example_regulon_network <- function() {
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
+
   Sys.sleep(0)
   send_progress("Calculating regulon intensity")
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
-    dplyr::group_by(ct) %>%
-    dplyr::filter(id %in% sample.int(150, 50)) %>%
     dplyr::group_by(tf) %>%
     dplyr::mutate(idx = seq_along(tf)) %>%
-    dplyr::mutate(ct = levels(active_idents)[sample.int(length(levels(active_idents)), 1)])
+    dplyr::filter(ct == cluster)
 
   g <- igraph::graph.data.frame(all_network)
 
   #coords <- layout.norm(layout.auto(g))
   this_tf <- as.character(unique(all_network$tf))
   this_edges <- as.data.frame(igraph::get.edgelist(g))
+
+
   Sys.sleep(0)
   send_progress("Calculating regulon networks")
   Sys.sleep(0)
   nodes <-
     tibble(
       name = as.character(igraph::V(g)$name),
-      centrality = scales::rescale(igraph::eigen_centrality(g)$vector, to = c(0.1, 1))
+      centrality = as.numeric(scales::rescale(igraph::eigen_centrality(g)$vector, to = c(0.1, 1)))
     ) %>%
     dplyr::mutate(
       index = seq_along(name),
@@ -96,11 +102,16 @@ example_regulon_network <- function() {
     dplyr::select(tf, genes, ct) %>%
     unique()
 
+  this_centrality <- nodes %>%
+    dplyr::select(name, centrality) %>%
+    dplyr::rename(tf=name)
+
   this_regulon <- all_network %>%
     dplyr::select(tf) %>%
+    dplyr::group_by(tf) %>%
     dplyr::count() %>%
-    dplyr::mutate(rss = runif(1, min = 0.01, max = 0.8)) %>%
     dplyr::left_join(this_genes, by = "tf") %>%
+    dplyr::left_join(this_centrality, by = "tf") %>%
     dplyr::ungroup() %>%
     dplyr::mutate(index = dplyr::row_number())
 
@@ -187,7 +198,7 @@ example_ras <- function(gene = "MAFF", assay = "RNA") {
     id = rownames(Embeddings(e1$obj, reduction = embedding)),
     dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
     dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
-    dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
+    dim3 = Embeddings(e1$obj, reduction = embedding)[, 2],
     expr = log1p(FetchData(
       object = e1$obj,
       vars = c(gene)
@@ -232,7 +243,7 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
     id = rownames(Embeddings(e1$obj, reduction = embedding)),
     dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
     dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
-    dim3 = Embeddings(e1$obj, reduction = embedding)[, 3],
+    dim3 = Embeddings(e1$obj, reduction = embedding)[, 2],
     expr = FetchData(
       object = e1$obj,
       vars = c(gene)

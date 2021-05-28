@@ -4,7 +4,7 @@
 \alias{gene_cor_plot}
 \title{Gene-gene correlation static plot}
 \usage{
-gene_cor_plot(req, gene1 = "Gad1", gene2 = "Gad2")
+gene_cor_plot(req, gene1 = "CD74", gene2 = "CD72")
 }
 \arguments{
 \item{req}{request payload}
