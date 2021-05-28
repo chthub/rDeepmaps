@@ -192,15 +192,21 @@ gene_umap_plot <- function(req, gene = "Gad1", assay = "RNA") {
 violin_gene_plot <-
   function(req,
            gene = "CTCF",
-           split = "sex",
+           split = "other",
            group = "hgt_cluster",
            assay = "RNA") {
     # ident_idx=9
     send_progress(paste0("Plotting violin gene:", gene))
-    if (split == "None") {
-      Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
+    if (split == "None" || split == "other") {
+      #Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
       plot <-
-        VlnPlot(e1$obj, gene, group.by = colnames(e1$obj@meta.data)[e1$ident_idx])
+        VlnPlot(e1$obj, gene, group.by = group)
+    } else if (group == "None" || group == "other") {
+      plot <-
+        VlnPlot(e1$obj, gene, group.by = split)
+    } else if (group == "other" & split == "other") {
+      plot <-
+        VlnPlot(e1$obj, gene, group.by = 'hgt_cluster')
     } else {
       idx <- which(colnames(e1$obj@meta.data) == split)
       Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
