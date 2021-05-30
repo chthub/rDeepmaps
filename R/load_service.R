@@ -290,18 +290,31 @@ load_multiome <-
             "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_sorted_3k.qsave"
           )
         raw_obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
-        #qs::qsave(e1$obj,
-        #  "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave"
-        #)
+
         e1$obj@assays$ATAC@fragments[[1]]@path <-
           "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
         iris3api::set_embedding(name = "umap.rna")
-
-
-        #e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
-        #e1$meta$disease <-
-        #  rep(c("disease", "control"), nrow(e1$meta) / 2)
         # e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
+        #e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
+
+
+        #e1$obj@meta.data <- e1$obj@meta.data[,c(-41,-42)]
+        #hgt_idx <- which(colnames(e1$obj@meta.data) == 'hgt_cluster')
+        #hgt_cluster <- e1$obj$hgt_cluster
+        #e1$obj@meta.data <- e1$obj@meta.data[,c(-hgt_idx)]
+#
+        #hgt_idx <- which(colnames(e1$obj@meta.data) == 'stim')
+        #hgt_cluster <- e1$obj$hgt_cluster
+        #e1$obj@meta.data <- e1$obj@meta.data[,c(-hgt_idx)]
+#
+        #e1$meta$stim <-
+        #  c('stim',rep(c("stim", "control"), nrow(e1$obj@meta.data) / 2))
+        #e1$obj <- AddMetaData(e1$obj, e1$meta$stim,col.name = 'stim')
+        #e1$obj <- AddMetaData(e1$obj, hgt_cluster,col.name = 'hgt_cluster')
+        #qs::qsave(e1$obj,
+        #          "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_sorted_3k.qsave"
+        #)
+
       }
       Idents(e1$obj) <- e1$obj$orig.ident
       rb.genes <-

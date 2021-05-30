@@ -227,6 +227,7 @@ gene_umap_plot
 #* Plot violin gene plot
 #* @param gene
 #* @param split
+#* @param group
 #* @post /violin-gene
 #* @serializer png list(width = 700, height = 600)
 violin_gene_plot
