@@ -7,7 +7,7 @@
 violin_gene_plot(
   req,
   gene = "CTCF",
-  split = "sex",
+  split = "other",
   group = "hgt_cluster",
   assay = "RNA"
 )

@@ -269,3 +269,22 @@ cluster_coords
 #* @post /feature-coords
 #* @serializer json
 feature_coords
+
+
+#################################### CellChat
+#* Run
+#* @param job
+#* @param active_idents
+#* @post /run-cellchat
+run_cellchat
+
+#* Plot
+#* @param mode
+#* @param slot
+#* @param pathway_show
+#* @param lr_show
+#* @param ident1
+#* @param ident2
+#* @post /plot-cellchat
+#* @serializer png list(width = 700, height = 600)
+plot_cellchat

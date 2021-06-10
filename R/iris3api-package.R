@@ -23,7 +23,8 @@ e1 <- rlang::env(
   ident_idx = 1,
   regulon_ident = 'seurat_clusters',
   new_meta_counter = 1,
-  deg = NULL
+  deg = NULL,
+  cellchat = NULL
 )
 
 e2 <- rlang::env(

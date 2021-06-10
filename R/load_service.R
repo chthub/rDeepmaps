@@ -44,6 +44,7 @@ load_single_rna <-
     } else {
       raw_expr_data <- iris3api::zeisel_2015$expr
       e1$meta <- iris3api::zeisel_2015$meta
+      species <- "Mouse"
     }
 
     send_progress(paste0("Creating Seurat object"))
