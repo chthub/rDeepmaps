@@ -57,7 +57,7 @@ run_cellchat <- function(job = "single_rna_example", active_idents = "hgt_cluste
   all_idents <- levels(as.factor(cellchat@idents))
   pathway_list <- cellchat@netP$pathways
   enrichedLR <-
-    extractEnrichedLR(cellchat, signaling = pathway_list, geneLR.return = FALSE)[,1]
+    CellChat::extractEnrichedLR(cellchat, signaling = pathway_list, geneLR.return = FALSE)[,1]
   df.netp <-
     CellChat::subsetCommunication(cellchat, slot.name = "netP")
   df.net <-
