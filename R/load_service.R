@@ -433,7 +433,7 @@ load_multiome <-
       rep("empty_category", length(levels(empty_category)))
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
-
+    raw_obj <- e1$obj
     send_progress(paste0("Calculating data summary statistics"))
     e1$species <- species
     if(mode == "RNA") {
