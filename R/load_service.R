@@ -70,7 +70,7 @@ load_single_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-        PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
+        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
         col.name = "percent.mt"
       )
     send_progress("Calculating data summary statistics")
@@ -191,7 +191,7 @@ load_multi_rna <-
 
     e1$obj <-
       AddMetaData(e1$obj,
-        PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
+        PercentageFeatureSet(e1$obj, pattern = "^MT-"),
         col.name = "percent.mt"
       )
 
@@ -394,7 +394,7 @@ load_multiome <-
       DefaultAssay(e1$obj) <- "RNA"
       e1$obj <-
         AddMetaData(e1$obj,
-          PercentageFeatureSet(e1$obj, pattern = "^MT-") + 0.001,
+          PercentageFeatureSet(e1$obj, pattern = "^MT-"),
           col.name = "percent.mt"
         )
 
