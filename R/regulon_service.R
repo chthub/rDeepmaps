@@ -300,34 +300,86 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
 #' @return
 #' @export
 #'
-example_dr <- function(tf='CTCF', ct1=1, ct2='all other cell types') {
+example_dr1 <- function(tf = c('CTCF','DEAF1'),
+                       ct1 = c(0, 1),
+                       ct2 = c(2, 3)) {
   data(dt)
-  score<-dt$Dregulon[[2]]
-  pvale<-dt$Dregulon[[1]]
+  score <- dt$Dregulon[[2]]
+  pvale <- dt$Dregulon[[1]]
   set.seed(42)
-  rand_num <- sample.int(7,2)
-  if(!ct1 %in% colnames(score[[1]])) {
+  rand_num <- sample.int(7, 2)
+  example_ct <- as.numeric(stringr::str_extract(colnames(score[[1]]), "\\d+"))
+
+  if (!ct1 %in% colnames(score[[1]])) {
     ct1 <- colnames(score[[1]])[rand_num[1]]
   }
+
   if (ct2 == 'all other cell types')
   {
     result <- data.frame()
-    for(i in tf) {
-      tmp <- data.frame(tf=i, logfc=score[[i]][ct1,ct2],pvalue=pvale[[i]][ct1,ct2])
+    for (i in tf) {
+      tmp <-
+        data.frame(tf = i,
+                   logfc = score[[i]][ct1, ct2],
+                   pvalue = pvale[[i]][ct1, ct2])
       result <- rbind(result, tmp)
     }
   } else if (!ct2 %in% colnames(score[[1]])) {
     ct2 <- colnames(score[[1]])[rand_num[2]]
     result <- data.frame()
-    for(i in tf) {
-      tmp <- data.frame(tf=i, logfc=score[[i]][ct1,ct2],pvalue=pvale[[i]][ct1,ct2])
+    for (i in tf) {
+      tmp <-
+        data.frame(tf = i,
+                   logfc = score[[i]][ct1, ct2],
+                   pvalue = pvale[[i]][ct1, ct2])
       result <- rbind(result, tmp)
     }
   }
 
-
-
   return (result)
+}
+
+#' Run DR
+#' @param tf
+#' @param ct1
+#' @param ct2
+#' @return
+#' @export
+#'
+example_dr <- function(tf = c('CTCF','ELF1','MEF2C'),
+                       ct1 = c(0, 1),
+                       ct2 = c(2, 3)) {
+  ras = log1p(FetchData(object = e1$obj,
+                        vars = tf)) * 2
+
+  ras_t <- as.data.frame(t(ras))
+  colnames(ras_t) <- rownames(ras)
+  rownames(ras_t) <- colnames(ras)
+  ras_obj <- CreateSeuratObject(counts = ras_t)
+  active_idents <-
+    as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)])
+  if (length(active_idents) == 0) {
+    active_idents <-
+      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'hgt_cluster')])
+  }
+  if (length(active_idents) == 0) {
+    active_idents <-
+      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
+  }
+
+  ras_obj <-
+    AddMetaData(ras_obj, active_idents, col.name = "hgt_cluster")
+  Idents(ras_obj) <- 'hgt_cluster'
+  dr <-
+    FindMarkers(
+      ras_obj,
+      ident.1 = ct1,
+      ident.2 = ct2,
+      min.pct = 0,
+      logfc.threshold = 0
+    )
+  dr <- tibble::rownames_to_column(dr, "tf")
+  return (dr)
 }
 
 #' Run RI heatmap
