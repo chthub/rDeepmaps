@@ -115,10 +115,10 @@ atac_qc_list <- function() {
 
   n_features_per_cell <- e1$obj$nFeature_ATAC
   n_reads_per_cell <- e1$obj$nCount_ATAC
-  pct_reads_in_peaks <- e1$obj$nFeature_ATAC/e1$obj$nFeature_SCT
-  atac_peak_region_fragments <- e1$obj$nFeature_SCT
+  pct_reads_in_peaks <- e1$obj$nFeature_ATAC/e1$obj$nFeature_RNA
+  atac_peak_region_fragments <- e1$obj$nFeature_RNA
   blacklist_ratio <- e1$obj$percent.ribo
-  nucleosome_signal <- e1$obj$nFeature_SCT
+  nucleosome_signal <- e1$obj$nFeature_RNA
   tss_enrichment <- e1$obj$nFeature_ATAC/ mean(e1$obj$nFeature_ATAC) * 2
 
   cell_result <-
