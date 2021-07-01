@@ -90,27 +90,33 @@ plot_gsea <-
            term) {
     library(fgsea)
     library(msigdbr)
-    term <- examplePathways[["5991130_Programmed_Cell_Death"]]
+    this_idx <- sample.int(length(examplePathways), 1)
+    term <- examplePathways[[this_idx]]
     plot1 <-
-      plotEnrichment(examplePathways[["5991130_Programmed_Cell_Death"]],
-                     exampleRanks) + ggplot2::labs(title = "Programmed Cell Death")
+      plotEnrichment(term,
+                     exampleRanks)
     return(print(plot1))
   }
 
 #' Generate enrichment dot plot
-#'
-#' @param df
-#' @param isPvalLog
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient scale_size
 #' @importFrom ggplot2 theme_bw ylab labs theme element_text scale_x_continuous
+#' @importFrom forcats fct_reorder
+#' @importFrom stringr str_split str_replace_all str_remove_all
+#' @param df
+#' @param isPvalLog
 #' @return
+
 #' @export
 #'
 plot_enrichr_dot <-
   function(df=mtcars, isPvalLog = "true2") {
+    library(ggplot2)
+    library(forcats)
+    library(stringr)
     new_df <- df %>%
       dplyr::mutate(
-        Term = as_factor(str_replace_all(Term, " \\(GO.*", "")),
+        Term = as.factor(stringr::str_replace_all(Term, " \\(GO.*", "")),
         len = lengths(str_split(Genes, ";")),
         pval = -log10(Adjusted.P.value)
       ) %>%
@@ -158,19 +164,25 @@ plot_enrichr_dot <-
 
 #' Generate enrichment bar plot
 #'
-#' @param df
-#' @param isPvalLog
+
 #' @importFrom ggplot2 ggplot aes geom_point scale_fill_gradient scale_size
 #' @importFrom ggplot2 theme_bw ylab labs theme element_text scale_x_continuous
+#' @importFrom forcats fct_reorder
+#' @importFrom stringr str_split str_replace_all str_remove_all
+#' @param df
+#' @param isPvalLog
 #' @return
 #' @export
 #'
 plot_enrichr_bar <-
   function(df, isPvalLog = "true") {
+    library(ggplot2)
+    library(forcats)
+    library(stringr)
     new_df <- df %>%
       dplyr::mutate(
-        Term = as_factor(str_replace_all(Term, " \\(GO.*", "")),
-        len = lengths(str_split(Genes, ";")),
+        Term = as.factor(stringr::str_replace_all(Term, " \\(GO.*", "")),
+        len = lengths(stringr::str_split(Genes, ";")),
         pval = -log10(Adjusted.P.value)
       ) %>%
       dplyr::rowwise() %>%
