@@ -11,7 +11,8 @@ calc_deg(
   min_pct = 0.2,
   min_lfc = 0.5,
   assay = "RNA",
-  pvalue = 0.05
+  pvalue = 0.05,
+  direction = "all"
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ calc_deg(
 \item{assay}{string}
 
 \item{pvalue}{string}
+
+\item{direction}{string}
 }
 \value{
 

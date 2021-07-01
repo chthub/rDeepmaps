@@ -303,11 +303,11 @@ load_multiome <-
         #hgt_idx <- which(colnames(e1$obj@meta.data) == 'hgt_cluster')
         #hgt_cluster <- e1$obj$hgt_cluster
         #e1$obj@meta.data <- e1$obj@meta.data[,c(-hgt_idx)]
-#
+
         #hgt_idx <- which(colnames(e1$obj@meta.data) == 'stim')
         #hgt_cluster <- e1$obj$hgt_cluster
         #e1$obj@meta.data <- e1$obj@meta.data[,c(-hgt_idx)]
-#
+
         #e1$meta$stim <-
         #  c('stim',rep(c("stim", "control"), nrow(e1$obj@meta.data) / 2))
         #e1$obj <- AddMetaData(e1$obj, e1$meta$stim,col.name = 'stim')
@@ -362,15 +362,20 @@ load_multiome <-
 
       if (file.exists("/data")) {
         annotations <- qs::qread("/data/hg38_annotations.qsave")
+        frag_path <-
+          "/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
       } else {
         annotations <-
           qs::qread("C:/Users/flyku/Desktop/iris3/pbmc_match/db/hg38_annotations.qsave")
+        frag_path <-
+          "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
       }
       chrom_assay <- Signac::CreateChromatinAssay(
         counts = atac_counts,
         sep = c(":", "-"),
         genome = "hg38",
         min.cells = 5,
+        fragments = frag_path,
         # min.feature = 200,
         annotation = annotations,
       )
@@ -422,7 +427,7 @@ load_multiome <-
         )
       send_progress(paste0("Normalizing data"))
       e1$obj <- NormalizeData(e1$obj, verbose = F)
-      e1$obj <- SCTransform(e1$obj, verbose = F)
+      #e1$obj <- SCTransform(e1$obj, verbose = F)
       e1$obj <- ScaleData(e1$obj, verbose = F)
       # END custom
     }

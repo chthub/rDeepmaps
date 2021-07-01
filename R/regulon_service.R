@@ -418,7 +418,8 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   Idents(e1$obj) <- active_idents
 
   res1 <- as.matrix(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)),to = c(0.01, 1))
-  res1 <- (res1 - rowMeans(res1)) / matrixStats::rowSds(res1)
+  #res1 <- (res1 - rowMeans(res1)) / matrixStats::rowSds(res1)
+  res1 <- as.matrix((res1>0)+0)
   res1 <- as.data.frame(res1)
 
   res2 <- data.frame()

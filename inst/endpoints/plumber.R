@@ -148,7 +148,7 @@ example_ri_heatmap
 #* @post /deg
 calc_deg
 
-#################################### Enrich
+#################################### Enrichment
 
 #* Calculate GSEA table
 #* @param genes
@@ -160,7 +160,28 @@ calc_gsea_table
 #* @param genes
 #* @param database
 #* @post /regulon-enrichment
-regulon_enrichment
+calc_enrichr_table
+
+#* Enrichr dot plot
+#* @param df
+#* @param isPvalLog
+#* @post /enrichment-dotplot
+#* @serializer png list(width = 4000, height = 2000, res = 300)
+plot_enrichr_dot
+
+#* Enrichr bar plot
+#* @param df
+#* @param isPvalLog
+#* @post /enrichment-barplot
+#* @serializer png list(width = 4000, height = 2000, res = 300)
+plot_enrichr_bar
+
+#* GSEA plot
+#* @param df
+#* @param isPvalLog
+#* @post /enrichment-gsea-plot
+#* @serializer png list(width = 3000, height = 2000, res = 300)
+plot_gsea
 
 #################################### Object manipulation
 
@@ -201,11 +222,6 @@ get_all_embeddings
 set_embedding
 
 #################################### Visualization
-#* Calculate GSEA table
-#* @param term
-#* @post /gsea-plot
-#* @serializer png list(width = 800, height = 600)
-calc_gsea_plot
 
 #* Plot gene-correlation plot
 #* @post /gene-correlation-plot

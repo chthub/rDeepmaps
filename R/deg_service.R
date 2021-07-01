@@ -8,6 +8,7 @@
 #' @param min_lfc string
 #' @param assay string
 #' @param pvalue string
+#' @param direction string
 #'
 #' @return
 #' @export
@@ -19,7 +20,8 @@ calc_deg <-
            min_pct = 0.2,
            min_lfc = 0.5,
            assay = "RNA",
-           pvalue = 0.05) {
+           pvalue = 0.05,
+           direction = 'all') {
     send_progress(paste0("Running differential gene expression analysis"))
     Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
 
@@ -35,6 +37,14 @@ calc_deg <-
       dplyr::filter(p_val_adj < pvalue) %>%
       dplyr::arrange(dplyr::desc(avg_log2FC)) %>%
       tibble::rownames_to_column("gene")
+    if(direction == 'up') {
+      this_markers <- this_markers %>%
+        dplyr::filter(avg_log2FC > 0)
+    }
+    if(direction == 'down') {
+      this_markers <- this_markers %>%
+        dplyr::filter(avg_log2FC < 0)
+    }
     e1$deg <- this_markers
     return(this_markers)
   }

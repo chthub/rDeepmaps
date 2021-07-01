@@ -33,21 +33,19 @@ calc_gsea_table <-
       tibble::deframe() %>%
       sort(decreasing = T)
 
-    fgseaRes <- fgsea(
-      pathways = m_list,
-      stats = res,
-      nperm = 500
-    )
+    fgseaRes <- fgsea(pathways = m_list,
+                      stats = res,
+                      nperm = 500)
     gseaTable <- fgseaRes %>%
       tibble::as_tibble() %>%
       dplyr::arrange(desc(NES)) %>%
-      dplyr::select(-leadingEdge, -ES, -nMoreExtreme) %>%
+      dplyr::select(-leadingEdge,-ES,-nMoreExtreme) %>%
       dplyr::arrange(padj) %>%
       tibble::as_data_frame()
-    return(list(gseaTable))
+    return(gseaTable)
   }
 
-#' Run GSEA enrichment
+#' Run Enrichr
 #'
 #' @param req request payload
 #' @param genes array
@@ -56,27 +54,28 @@ calc_gsea_table <-
 #' @return
 #' @export
 #'
-regulon_enrichment <-
+calc_enrichr_table <-
   function(req,
            genes = c("CD74", "CD7"),
-           database = "C2") {
+           database = "KEGG") {
     library(enrichR)
     if (length(e1$species == "Human")) {
       this_species <- "Homo sapiens"
     } else {
       this_species <- "Mus musculus"
     }
-    message(this_species)
-    if(database == "KEGG" && this_species == 'Homo sapiens') {
+
+    if (database == "KEGG" && this_species == 'Homo sapiens') {
       dbs <- "KEGG_2019_Human"
-    } else if (database == "KEGG" && this_species == 'Mus musculus'){
+    } else if (database == "KEGG" &&
+               this_species == 'Mus musculus') {
       dbs <- "KEGG_2019_Mouse"
     } else {
       dbs <- database
     }
-    message(dbs)
-    enriched_combined <- enrichr(genes,dbs)
-    return(list(enriched_combined[[1]][,c(-3,-5,-6,-7)]))
+
+    enriched_combined <- enrichr(genes, dbs)
+    return(enriched_combined[[1]][, c(-3, -5, -6, -7)])
   }
 
 #' Generate GSEA plot
@@ -86,17 +85,128 @@ regulon_enrichment <-
 #' @return
 #' @export
 #'
-calc_gsea_plot <-
+plot_gsea <-
   function(req,
            term) {
-    print("run GSEA")
     library(fgsea)
     library(msigdbr)
     term <- examplePathways[["5991130_Programmed_Cell_Death"]]
     plot1 <-
-      plotEnrichment(
-        examplePathways[["5991130_Programmed_Cell_Death"]],
-        exampleRanks
-      ) + ggplot2::labs(title = "Programmed Cell Death")
-    return(plot1)
+      plotEnrichment(examplePathways[["5991130_Programmed_Cell_Death"]],
+                     exampleRanks) + ggplot2::labs(title = "Programmed Cell Death")
+    return(print(plot1))
+  }
+
+#' Generate enrichment dot plot
+#'
+#' @param df
+#' @param isPvalLog
+#' @importFrom ggplot2 ggplot aes geom_point scale_color_gradient scale_size
+#' @importFrom ggplot2 theme_bw ylab labs theme element_text scale_x_continuous
+#' @return
+#' @export
+#'
+plot_enrichr_dot <-
+  function(df=mtcars, isPvalLog = "true2") {
+    new_df <- df %>%
+      dplyr::mutate(
+        Term = as_factor(str_replace_all(Term, " \\(GO.*", "")),
+        len = lengths(str_split(Genes, ";")),
+        pval = -log10(Adjusted.P.value)
+      ) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(gene_ratio = eval(parse(text = str_remove_all(Overlap, " ")))) %>%
+      dplyr::select(Term, len, pval, gene_ratio, Adjusted.P.value) %>%
+      dplyr::mutate(Term = fct_reorder(Term, Adjusted.P.value))
+
+    new_df$Term <-
+      factor(new_df$Term, levels = rev(levels(factor(new_df$Term))))
+
+    if (isPvalLog == "true") {
+      new_df$Adjusted.P.value <- -1 * log10(new_df$Adjusted.P.value)
+      pval_legend <- '-log10(adj. p-value)'
+      low_color <- "blue"
+      high_color <- "red"
+      trans_color <- 'log10'
+    } else {
+      pval_legend <- 'adj. p-value'
+      low_color <- "blue"
+      high_color <- "red"
+      trans_color <- 'reverse'
+    }
+    plot_dot <- ggplot(new_df,
+                       aes(x = gene_ratio,
+                           y = Term)) +
+      geom_point(aes(size = len, color = Adjusted.P.value)) +
+      scale_color_gradient(low = low_color,
+                           high = high_color,
+                           trans = trans_color) +
+      theme_bw() +
+      ylab("") +
+      labs(size = "Overlapping count", color = pval_legend) +
+      theme(
+        legend.title = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12)
+      ) +
+      scale_x_continuous(name = "Overlapping ratio") +
+      scale_size(range = c(4, 8))
+
+    return(print(plot_dot))
+  }
+
+#' Generate enrichment bar plot
+#'
+#' @param df
+#' @param isPvalLog
+#' @importFrom ggplot2 ggplot aes geom_point scale_fill_gradient scale_size
+#' @importFrom ggplot2 theme_bw ylab labs theme element_text scale_x_continuous
+#' @return
+#' @export
+#'
+plot_enrichr_bar <-
+  function(df, isPvalLog = "true") {
+    new_df <- df %>%
+      dplyr::mutate(
+        Term = as_factor(str_replace_all(Term, " \\(GO.*", "")),
+        len = lengths(str_split(Genes, ";")),
+        pval = -log10(Adjusted.P.value)
+      ) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(gene_ratio = eval(parse(text = str_remove_all(Overlap, " ")))) %>%
+      dplyr::select(Term, len, pval, gene_ratio, Adjusted.P.value) %>%
+      dplyr::mutate(Term = fct_reorder(Term, Adjusted.P.value))
+
+    new_df$Term <-
+      factor(new_df$Term, levels = rev(levels(factor(new_df$Term))))
+
+    if (isPvalLog == "true") {
+      new_df$Adjusted.P.value <- -1 * log10(new_df$Adjusted.P.value)
+      pval_legend <- '-log10(adj. p-value)'
+      low_color <- "#EF9A9A"
+      high_color <- "#F44336"
+    } else {
+      pval_legend <- 'adj. p-value'
+      low_color <- "#F44336"
+      high_color <- "#EF9A9A"
+    }
+
+    plot_bar <- ggplot(new_df,
+                       aes(x = Adjusted.P.value, y = Term)) +
+      geom_bar(stat = "identity", aes(fill = Adjusted.P.value)) +
+      scale_fill_gradient(low = low_color, high = high_color, name = pval_legend) +
+      theme_bw() +
+      ylab("") +
+      labs(size = "Overlapping count", color = '123') +
+      theme(
+        legend.title = element_text(size = 18, ),
+        legend.text = element_text(size = 14, ),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12)
+      ) +
+      scale_x_continuous(name = pval_legend) +
+      scale_size(range = c(4, 8))
+
+    return(print(plot_bar))
   }
