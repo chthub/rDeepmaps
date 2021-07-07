@@ -115,6 +115,11 @@ atac_qc_list
 #* @post /regulon
 example_regulon_network
 
+#* Return all regulons
+#* @serializer unboxedJSON
+#* @post /all-regulon
+list_regulon_network
+
 #* Calculate regulon clusters umap
 #* @post /regulon-clusters
 example_cluster_coords

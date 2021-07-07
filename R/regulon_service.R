@@ -12,12 +12,12 @@ example_regulon_network <- function(cluster = "sda") {
   Sys.sleep(0.5)
   send_progress("Calculating regulons")
   tmp_regulon <- dt$ct_regulon
-  rand_num <- sample.int(8,1) - 1
+  rand_num <- sample.int(8, 1) - 1
   old_cluster_name <- cluster
-  if(!cluster %in% 0:7) {
+  if (!cluster %in% 0:7) {
     cluster <- rand_num
   }
-  if(e1$regulon_ident == 'other') {
+  if (e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
   }
   #e1$regulon_ident <- 'seurat_clusters'
@@ -34,23 +34,27 @@ example_regulon_network <- function(cluster = "sda") {
   }
 
   all_network <- tibble::tibble()
-  i=1
+  i = 1
   for (i in seq_along(tmp_regulon)) {
     this_tf <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[1]
-    this_ct <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
-    this_ct <- gsub("ct","", this_ct)
-    if(this_ct == as.numeric(this_ct)) {
+    this_ct <-
+      unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
+    this_ct <- gsub("ct", "", this_ct)
+    if (this_ct == as.numeric(this_ct)) {
       this_ct <- as.numeric(this_ct) - 1
     }
-    if(length(tmp_regulon[[i]]) > 300) {
+    if (length(tmp_regulon[[i]]) > 300) {
       max_int  <- 300
     } else {
       max_int  <- length(tmp_regulon[[i]])
     }
 
-    this_target <- as.character(tmp_regulon[[i]])[sample.int(length(tmp_regulon[[i]]), max_int)]
+    this_target <-
+      as.character(tmp_regulon[[i]])[sample.int(length(tmp_regulon[[i]]), max_int)]
     this_network <-
-      tibble::tibble(tf = this_tf, target = this_target, ct = this_ct)
+      tibble::tibble(tf = this_tf,
+                     target = this_target,
+                     ct = this_ct)
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
@@ -75,24 +79,24 @@ example_regulon_network <- function(cluster = "sda") {
   send_progress("Calculating regulon networks")
   Sys.sleep(0)
   nodes <-
-    tibble(
-      name = as.character(igraph::V(g)$name),
-      centrality = as.numeric(scales::rescale(igraph::eigen_centrality(g)$vector, to = c(0.1, 1)))
-    ) %>%
+    tibble(name = as.character(igraph::V(g)$name),
+           centrality = as.numeric(scales::rescale(
+             igraph::eigen_centrality(g)$vector, to = c(0.1, 1)
+           ))) %>%
     dplyr::mutate(
       index = seq_along(name),
       color_index = index %% 34 + 1,
       id = name,
       category = dplyr::case_when(
-        name %in% this_tf ~ paste0('Regulon-', name),
-        !name %in% this_tf ~ "Gene"
+        name %in% this_tf ~ paste0('Regulon-', name),!name %in% this_tf ~ "Gene"
       ),
       color = dplyr::case_when(
-        name %in% this_tf ~ as.character(Polychrome::palette36.colors(36)[-2])[color_index],!name %in% this_tf ~ 'grey',
+        name %in% this_tf ~ as.character(Polychrome::palette36.colors(36)[-2])[color_index],
+        !name %in% this_tf ~ 'grey',
         TRUE ~ 'grey'
       ),
-      geneSymbol = dplyr::case_when(name %in% this_tf ~ paste0(name), !name %in% this_tf ~ "Gene"),
-      type = dplyr::case_when(name %in% this_tf ~ "tf", !name %in% this_tf ~ "gene")
+      geneSymbol = dplyr::case_when(name %in% this_tf ~ paste0(name),!name %in% this_tf ~ "Gene"),
+      type = dplyr::case_when(name %in% this_tf ~ "tf",!name %in% this_tf ~ "gene")
     )
 
   colnames(this_edges) <- c("source", "target")
@@ -109,7 +113,7 @@ example_regulon_network <- function(cluster = "sda") {
 
   this_centrality <- nodes %>%
     dplyr::select(name, centrality) %>%
-    dplyr::rename(tf=name)
+    dplyr::rename(tf = name)
 
 
   this_regulon <- all_network %>%
@@ -121,11 +125,11 @@ example_regulon_network <- function(cluster = "sda") {
     dplyr::ungroup() %>%
     dplyr::mutate(index = dplyr::row_number())
 
-  this_dr <- dt$dr[which(dt$dr$gene %in% this_regulon$tf),] %>%
-    dplyr::rename(tf=gene) %>%
+  this_dr <- dt$dr[which(dt$dr$gene %in% this_regulon$tf), ] %>%
+    dplyr::rename(tf = gene) %>%
     dplyr::group_by(tf) %>%
     dplyr::arrange(tf) %>%
-    dplyr::filter(dplyr::row_number()==1)
+    dplyr::filter(dplyr::row_number() == 1)
 
   this_vr <- dt$VR %>%
     as.data.frame() %>%
@@ -134,8 +138,10 @@ example_regulon_network <- function(cluster = "sda") {
   this_regulon_score <- this_regulon %>%
     dplyr::left_join(this_dr, by = "tf") %>%
     dplyr::left_join(this_vr, by = "tf") %>%
-    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, rnorm(1)/20))%>%
-    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , abs(rnorm(1)/5)))
+    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, rnorm(1) /
+                                                   20)) %>%
+    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , abs(rnorm(1) /
+                                                                   5)))
 
 
   result <- list()
@@ -151,6 +157,45 @@ example_regulon_network <- function(cluster = "sda") {
   return(result)
 }
 
+#' Run Seurat clustering
+#'
+#'
+#' @return json
+#' @export
+#'
+list_regulon_network <- function() {
+  data(dt)
+  set.seed(42)
+  tmp_regulon <- dt$ct_regulon
+  rand_num <- sample.int(8, 1) - 1
+  all_network <- tibble::tibble()
+  i = 1
+  for (i in seq_along(tmp_regulon)) {
+    this_tf <- unlist(strsplit(names(tmp_regulon[i]), split = "_"))[1]
+    this_ct <-
+      unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
+    this_ct <- gsub("ct", "", this_ct)
+    if (this_ct == as.numeric(this_ct)) {
+      this_ct <- as.numeric(this_ct) - 1
+    }
+    if (length(tmp_regulon[[i]]) > 300) {
+      max_int  <- 300
+    } else {
+      max_int  <- length(tmp_regulon[[i]])
+    }
+
+    this_target <-
+      as.character(tmp_regulon[[i]])[sample.int(length(tmp_regulon[[i]]), max_int)]
+    this_network <-
+      tibble::tibble(tf = this_tf,
+                     target = this_target,
+                     ct = this_ct)
+    all_network <- dplyr::bind_rows(all_network, this_network)
+  }
+  all_network <-  all_network %>% tibble::rowid_to_column("id")
+  return(all_network)
+}
+
 #' RAS
 #'
 #' @param gene string
@@ -159,7 +204,7 @@ example_regulon_network <- function(cluster = "sda") {
 #' @export
 #'
 example_cluster_coords <- function() {
-  if(e1$regulon_ident == 'other') {
+  if (e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
   }
   active_idents <-
@@ -185,10 +230,8 @@ example_cluster_coords <- function() {
     index = as.integer(Idents(e1$obj)) - 1
   )
   legend <- levels(Idents(e1$obj))
-  axis <- c(
-    paste0(embedding, "_1"),
-    paste0(embedding, "_2")
-  )
+  axis <- c(paste0(embedding, "_1"),
+            paste0(embedding, "_2"))
   dimension <- colnames(res1)
   coords <- as.matrix(res1)
   coords[, 2] <- as.numeric(coords[, 2])
@@ -210,10 +253,10 @@ example_cluster_coords <- function() {
 #'
 example_ras <- function(gene = "MAFF", assay = "RNA") {
   send_progress(paste0("Loading regulon: ", gene))
-  if('Gad1' %in% rownames(e1$obj)) {
+  if ('Gad1' %in% rownames(e1$obj)) {
     gene <- stringr::str_to_title(gene)
   }
-  if(!gene %in% rownames(e1$obj)) {
+  if (!gene %in% rownames(e1$obj)) {
     gene <- rownames(e1$obj)[1001]
   }
   embedding <- names(e1$obj@reductions[e1$embedding_idx])
@@ -225,15 +268,13 @@ example_ras <- function(gene = "MAFF", assay = "RNA") {
     expr = log1p(FetchData(
       object = e1$obj,
       vars = c(gene)
-    )[, 1])*2,
+    )[, 1]) * 2,
     index = 1
   )
   legend <- c(min(res1$expr), max(res1$expr))
-  axis <- c(
-    paste0(embedding, "_1"),
-    paste0(embedding, "_2"),
-    paste0(embedding, "_3")
-  )
+  axis <- c(paste0(embedding, "_1"),
+            paste0(embedding, "_2"),
+            paste0(embedding, "_3"))
   dimension <- colnames(res1)
   coords <- as.matrix(res1)
   coords[, 2] <- as.numeric(coords[, 2])
@@ -255,10 +296,10 @@ example_ras <- function(gene = "MAFF", assay = "RNA") {
 #' @export
 #'
 example_gas <- function(gene = "Gad1", assay = "RNA") {
-  if('Gad1' %in% rownames(e1$obj)) {
+  if ('Gad1' %in% rownames(e1$obj)) {
     gene <- stringr::str_to_title(gene)
   }
-  if(!gene %in% rownames(e1$obj)) {
+  if (!gene %in% rownames(e1$obj)) {
     gene <- rownames(e1$obj)[1001]
   }
   embedding <- names(e1$obj@reductions[e1$embedding_idx])
@@ -267,18 +308,14 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
     dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
     dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
     dim3 = Embeddings(e1$obj, reduction = embedding)[, 2],
-    expr = FetchData(
-      object = e1$obj,
-      vars = c(gene)
-    )[, 1],
+    expr = FetchData(object = e1$obj,
+                     vars = c(gene))[, 1],
     index = 1
   )
   legend <- c(min(res1$expr), max(res1$expr))
-  axis <- c(
-    paste0(embedding, "_1"),
-    paste0(embedding, "_2"),
-    paste0(embedding, "_3")
-  )
+  axis <- c(paste0(embedding, "_1"),
+            paste0(embedding, "_2"),
+            paste0(embedding, "_3"))
   dimension <- colnames(res1)
   coords <- as.matrix(res1)
   coords[, 2] <- as.numeric(coords[, 2])
@@ -300,15 +337,16 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
 #' @return
 #' @export
 #'
-example_dr1 <- function(tf = c('CTCF','DEAF1'),
-                       ct1 = c(0, 1),
-                       ct2 = c(2, 3)) {
+example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
+                        ct1 = c(0, 1),
+                        ct2 = c(2, 3)) {
   data(dt)
   score <- dt$Dregulon[[2]]
   pvale <- dt$Dregulon[[1]]
   set.seed(42)
   rand_num <- sample.int(7, 2)
-  example_ct <- as.numeric(stringr::str_extract(colnames(score[[1]]), "\\d+"))
+  example_ct <-
+    as.numeric(stringr::str_extract(colnames(score[[1]]), "\\d+"))
 
   if (!ct1 %in% colnames(score[[1]])) {
     ct1 <- colnames(score[[1]])[rand_num[1]]
@@ -346,7 +384,7 @@ example_dr1 <- function(tf = c('CTCF','DEAF1'),
 #' @return
 #' @export
 #'
-example_dr <- function(tf = c('CTCF','ELF1','MEF2C'),
+example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C'),
                        ct1 = c(0, 1),
                        ct2 = c(2, 3)) {
   ras = log1p(FetchData(object = e1$obj,
@@ -388,8 +426,82 @@ example_dr <- function(tf = c('CTCF','ELF1','MEF2C'),
 #' @return
 #' @export
 #'
-example_ri_heatmap <- function(tf='CTCF', genes) {
+example_ri_heatmap2 <-
+  function(tf = 'CTCF',
+           genes = c("Arhgap27", "Zbtb22", "Fam126a", "Mfsd14b")) {
+    #genes <- dt$ct_regulon[[1]][1:20]
+    #heatmap_rownames <- paste0(tf, "_", genes)
+    #
+    #heat_idx <- which(rownames(dt$RI_CT) %in% heatmap_rownames)
+    #heatmap_mat <-dt$RI_CT[heat_idx, ]
 
+    send_progress(paste0("Loading regulon itensity heatmap: ", tf))
+    if ('Gad1' %in% rownames(e1$obj)) {
+      genes <- stringr::str_to_title(genes)
+    }
+
+    if (e1$regulon_ident == 'other') {
+      e1$regulon_ident <- 'hgt_cluster'
+    }
+    active_idents <-
+      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)])
+    if (length(active_idents) == 0) {
+      active_idents <-
+        as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'hgt_cluster')])
+    }
+    if (length(active_idents) == 0) {
+      active_idents <-
+        as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
+    }
+    embedding <- names(e1$obj@reductions[e1$embedding_idx])
+    Idents(e1$obj) <- active_idents
+
+    res1 <-
+      as.matrix(log1p(log1p(
+        AverageExpression(e1$obj, features = genes)$RNA
+      )), to = c(0.01, 1))
+    #res1 <- (res1 - rowMeans(res1)) / matrixStats::rowSds(res1)
+    res1 <- as.matrix((res1 > 0) + 0)
+    res1 <- as.data.frame(res1)
+    library(tidyverse)
+    js <-
+      jsonlite::fromJSON('C:/Users/flyku/Desktop/iris3/tmp/NRF1.json')
+    js$cat_colors$row$`cat-0` <- "regulon"
+    js$row_nodes$`cat-0` <- "regulon"
+    js$col_nodes <- js$col_nodes[1:18, ]
+    js$col_nodes$name <- 1:18
+    js$col_nodes$`cat-0` <- 1:18
+    jsonlite::write_json(js, "CTCF.json", simplifyVector = T)
+
+    writeLines(toJSON(js, auto_unbox = T), "CTCF.json")
+    library(jsonlite)
+
+    js$mat <- js$mat[, 1:18]
+
+    #result <- list(
+    #  mat = as.matrix(res1),
+    #  links = list(),
+    #  views = list(
+    #    N_row_sum = c("all", NA),
+    #    dist = c("cos","cos")
+    #    nodes = list(
+    #      row_nodes = list(),
+    #      col_nodes = list
+    #    )
+    #  )
+    #)
+
+    #jsonlite::toJSON(result)
+    return(1)
+  }
+
+#' Run RI heatmap
+#' @param tf
+#' @param genes
+#' @return
+#' @export
+#'
+example_ri_heatmap <- function(tf = 'CTCF', genes) {
   #genes <- dt$ct_regulon[[1]][1:20]
   #heatmap_rownames <- paste0(tf, "_", genes)
   #
@@ -397,11 +509,11 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   #heatmap_mat <-dt$RI_CT[heat_idx, ]
 
   send_progress(paste0("Loading regulon itensity heatmap: ", tf))
-  if('Gad1' %in% rownames(e1$obj)) {
+  if ('Gad1' %in% rownames(e1$obj)) {
     genes <- stringr::str_to_title(genes)
   }
 
-  if(e1$regulon_ident == 'other') {
+  if (e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
   }
   active_idents <-
@@ -417,15 +529,18 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   embedding <- names(e1$obj@reductions[e1$embedding_idx])
   Idents(e1$obj) <- active_idents
 
-  res1 <- as.matrix(log1p(log1p(AverageExpression(e1$obj, features = genes)$RNA)),to = c(0.01, 1))
+  res1 <-
+    as.matrix(log1p(log1p(
+      AverageExpression(e1$obj, features = genes)$RNA
+    )), to = c(0.01, 1))
   #res1 <- (res1 - rowMeans(res1)) / matrixStats::rowSds(res1)
-  res1 <- as.matrix((res1>0)+0)
+  res1 <- as.matrix((res1 > 0) + 0)
   res1 <- as.data.frame(res1)
 
   res2 <- data.frame()
-  for(i in 1:ncol(res1)) {
-    for(j in 1:nrow(res1)) {
-      tmp <- data.frame(i-1, j, res1[j,i])
+  for (i in 1:ncol(res1)) {
+    for (j in 1:nrow(res1)) {
+      tmp <- data.frame(i - 1, j, res1[j, i])
       res2 <- rbind(res2, tmp)
     }
   }
@@ -441,5 +556,3 @@ example_ri_heatmap <- function(tf='CTCF', genes) {
   #jsonlite::toJSON(result)
   return(result)
 }
-
-
