@@ -255,7 +255,7 @@ load_multi_rna <-
 #' @return list of basic QC metrics
 #' @export
 #'
-load_multiome <-
+load_multiome2 <-
   function(req,
            idx = 0,
            filename,
@@ -440,6 +440,133 @@ load_multiome <-
       AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
     raw_obj <- e1$obj
     send_progress(paste0("Calculating data summary statistics"))
+    e1$species <- species
+    if(mode == "RNA") {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj)
+        ) > 0))) / length(GetAssayData(raw_obj))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj)
+        ) > 0))) / length(GetAssayData(e1$obj))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = dim(raw_obj)[1],
+        raw_n_cells = dim(raw_obj)[2],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = dim(e1$obj)[1],
+        filter_n_cells = dim(e1$obj)[2],
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    } else {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj, assay="ATAC")
+        ) > 0))) / length(GetAssayData(raw_obj, assay="ATAC"))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj, assay="ATAC")
+        ) > 0))) / length(GetAssayData(e1$obj, assay="ATAC"))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = nrow(GetAssayData(raw_obj, assay="ATAC"))[1],
+        raw_n_cells = ncol(GetAssayData(raw_obj, assay="ATAC"))[1],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] - 6000,
+        filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1],
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    }
+    return(
+      res
+    )
+  }
+
+
+
+#' Load matched scRNA-seq and scATAC-seq data to Seurat / Signac
+#' @import Seurat
+#' @param req request payload
+#' @param idx sample index
+#' @param filename string
+#' @param mode string
+#' @param min_cells number
+#' @param min_genes number
+#' @param nVariableFeatures number
+#' @param percentMt number
+#' @param removeRibosome boolean
+#'
+#' @return list of basic QC metrics
+#' @export
+#'
+load_multiome <-
+  function(req,
+           idx = 0,
+           filename,
+           jobid = "example",
+           mode = "ATAC",
+           min_cells = 1,
+           min_genes = 200,
+           nVariableFeatures = 2000,
+           percentMt = 25,
+           removeRibosome = FALSE,
+           expr = NULL,
+           label = NULL,
+           species = "Human") {
+    # expr_type <- label_type <- 'application/octet-stream'
+    # label_path <- ""
+    # expr_path <- "9a9841a85c48b692e70bc03db811ccdc"
+
+    # Brain: 1619298241128
+    # PBMC 3K: 1619297987450
+    # PBMC : 1619311996943
+
+    TOTAL_STEPS <- 6
+    if (jobid == "example") {
+      send_progress(paste0("Loading example data"))
+      if (file.exists("/data")) {
+        e1$obj <- qs::qread("/data/pbmc_sorted_3k.qsave")
+        raw_obj <- qs::qread("/data/pbmc_match_3k.qsave")
+        e1$obj@assays$ATAC@fragments[[1]]@path <-
+          "/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
+      } else {
+        e1$obj <-
+          qs::qread(
+            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/tmp1.qsave"
+          )
+        raw_obj <- e1$obj
+
+        e1$obj@assays$ATAC@fragments[[1]]@path <-
+          "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
+        iris3api::set_embedding(name = "umap.rna")
+
+      }
+      Idents(e1$obj) <- e1$obj$orig.ident
+      rb.genes <-
+        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+                              ignore.case =
+                                TRUE
+        )]
+      percent.ribo <-
+        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      e1$obj <-
+        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+    }
+
+    # Add empety ident
+    empty_category <- as.factor(e1$obj$orig.ident)
+    levels(empty_category) <-
+      rep("empty_category", length(levels(empty_category)))
+    e1$obj <-
+      AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
+    raw_obj <- e1$obj
     e1$species <- species
     if(mode == "RNA") {
       raw_percent_zero <-

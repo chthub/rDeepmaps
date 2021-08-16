@@ -4,7 +4,11 @@
 \alias{example_dr}
 \title{Run DR}
 \usage{
-example_dr(tf = c("CTCF", "ELF1", "MEF2C"), ct1 = c(0, 1), ct2 = c(2, 3))
+example_dr(
+  tf = c("CTCF", "ELF1", "MEF2C", "E2F6", "EGR1"),
+  ct1 = c(4),
+  ct2 = c(1)
+)
 }
 \value{
 

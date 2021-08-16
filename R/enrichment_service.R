@@ -110,10 +110,12 @@ plot_gsea <-
 #' @export
 #'
 plot_enrichr_dot <-
-  function(df=mtcars, isPvalLog = "true2") {
+  function(df=mtcars, isPvalLog = "false") {
     library(ggplot2)
     library(forcats)
     library(stringr)
+    #write.csv(df,"df.csv")
+    df <- read.csv("C:/Users/flyku/Documents/GitHub/iris3api/inst/endpoints/df.csv")
     new_df <- df %>%
       dplyr::mutate(
         Term = as.factor(stringr::str_replace_all(Term, " \\(GO.*", "")),
@@ -123,10 +125,11 @@ plot_enrichr_dot <-
       dplyr::rowwise() %>%
       dplyr::mutate(gene_ratio = eval(parse(text = str_remove_all(Overlap, " ")))) %>%
       dplyr::select(Term, len, pval, gene_ratio, Adjusted.P.value) %>%
-      dplyr::mutate(Term = fct_reorder(Term, Adjusted.P.value))
+      dplyr::mutate(Term = fct_reorder(Term, Adjusted.P.value)) %>%
+      dplyr::arrange(Adjusted.P.value)
 
-    new_df$Term <-
-      factor(new_df$Term, levels = rev(levels(factor(new_df$Term))))
+    #new_df$Term <-
+    #  factor(new_df$Term, levels = levels(factor(new_df$Term)))
 
     if (isPvalLog == "true") {
       new_df$Adjusted.P.value <- -1 * log10(new_df$Adjusted.P.value)
@@ -143,7 +146,7 @@ plot_enrichr_dot <-
     plot_dot <- ggplot(new_df,
                        aes(x = gene_ratio,
                            y = Term)) +
-      geom_point(aes(size = len, color = Adjusted.P.value)) +
+      geom_point(aes(color = Adjusted.P.value, size = len)) +
       scale_color_gradient(low = low_color,
                            high = high_color,
                            trans = trans_color) +

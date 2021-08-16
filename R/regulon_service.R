@@ -384,9 +384,9 @@ example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
 #' @return
 #' @export
 #'
-example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C'),
-                       ct1 = c(0, 1),
-                       ct2 = c(2, 3)) {
+example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
+                       ct1 = c(4),
+                       ct2 = c(1)) {
   ras = log1p(FetchData(object = e1$obj,
                         vars = tf)) * 2
 
@@ -419,6 +419,191 @@ example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C'),
   dr <- tibble::rownames_to_column(dr, "tf")
   return (dr)
 }
+
+#' Run DR peak-gene figure
+#' @param genes
+#' @param ct1
+#' @param ct2
+#' @return
+#' @export
+#'
+example_dr_figure <- function(genes = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
+                       ct1 = c(4),
+                       ct2 = c(1)) {
+  library(Signac)
+  library(tidyverse)
+  library(ggpubr)
+  library(GenomicRanges)
+  #ct1 = c(4)
+  #ct2 = c(1)
+  obj2<- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/example_peak_fig.qsave")
+  #genes <- dt$ct_regulon[tmp1][[4]]
+  this_tf <- strsplit(names(dt$ct_regulon), split = "_")
+  tmp1 <- sapply(this_tf, function(x){
+    if(x[1] =="PRDM1") {
+      return(T)
+    } else {
+      return(F)
+    }
+  })
+
+
+
+  this_ct <-
+    unlist(strsplit(names(dt$ct_regulon), split = "_"))
+  this_ct <- gsub("ct", "", this_ct)
+
+
+
+  DefaultAssay(obj2) <- "RNA"
+  this_obj <- subset(obj2, features = genes)
+
+  DefaultAssay(obj2) <- "ATAC"
+  gene.ranges <- GenomicFeatures::genes(EnsDb.Hsapiens.v86::EnsDb.Hsapiens.v86)
+  this_ranges <- gene.ranges[which(gene.ranges$symbol %in% genes)]
+  this_start <- IRanges::start(this_ranges) - 2000
+  this_end <- IRanges::end(this_ranges)
+  #result <- paste0("chr", this_ranges@seqnames, "-", this_start, "-", this_end)
+  levels(this_ranges@seqnames) <- paste0('chr',levels(this_ranges@seqnames))
+  gr2 <- GRanges(seqnames=this_ranges@seqnames, ranges=IRanges(start=this_start, end = this_end), strand="+")
+  overlap1 <- findOverlaps(granges(obj2), gr2)
+
+  obj1 <- Seurat::GetAssayData(
+    object = obj2, assay = 'ATAC', slot = 'data'
+  )[overlap1@from,, drop=F]
+
+  obj1 <- CreateChromatinAssay(counts = obj1, genome = "hg38")
+  obj1 <- CreateSeuratObject(counts = obj1)
+  obj1 <- AddMetaData(obj1, obj2$hgt_cluster, col.name="hgt_cluster")
+  Idents(obj1) <- obj1$hgt_cluster
+
+  deg <-
+    FindMarkers(
+      this_obj,
+      ident.1 = ct1,
+      ident.2 = ct2,
+      min.pct = 0,
+      logfc.threshold = 0,
+      assay = "RNA"
+    ) %>%
+  tibble::rownames_to_column("gene") %>%
+    dplyr::mutate(type = 'deg',
+                  isSignificant = case_when(
+                    p_val_adj < 0.05 ~ T,
+                    T ~ F
+                  ))%>%
+    dplyr::mutate(
+      isSignificant = as_factor(isSignificant))
+
+
+  DefaultAssay(obj2) <- "ATAC"
+  #gene.activities <- GeneActivity(obj2)
+  #obj2[['gas']] <- CreateAssayObject(counts = gene.activities)
+  #qs::qsave(obj2, "example_peak_fig.qsave")
+  DefaultAssay(obj2) <- 'gas'
+  this_gas_obj <- subset(obj2, features = genes)
+
+
+  dp <-
+    FindMarkers(
+      this_gas_obj,
+      ident.1 = ct1,
+      ident.2 = ct2,
+      min.pct = 0,
+      logfc.threshold = 0,
+      assay = "gas"
+    ) %>%
+    tibble::rownames_to_column("gene") %>%
+    dplyr::mutate(type = 'gas',
+                  isSignificant = case_when(p_val_adj < 0.05 ~ T,
+                                            T ~ F)) %>%
+    dplyr::mutate(
+                  isSignificant = as_factor(isSignificant))
+
+
+  dp2 <-
+    FindMarkers(
+      obj1,
+      ident.1 = ct1,
+      ident.2 = ct2,
+      min.pct = 0,
+      logfc.threshold = 0,
+      assay = "RNA"
+    ) %>%
+    tibble::rownames_to_column("peak") %>%
+    dplyr::mutate(type = 'peak',
+                  gene = genes[overlap1@to],
+                  isSignificant = case_when(p_val_adj < 0.05 ~ T,
+                                            T ~ F)) %>%
+    dplyr::mutate(
+      isSignificant = as_factor(isSignificant))
+
+
+
+
+  df <- deg %>%
+    dplyr::bind_rows(dp)
+  library(ggplot2)
+
+  p1 <- ggplot(dp,
+         aes(x = avg_log2FC,
+             y = gene)) +
+    geom_point(aes(color = isSignificant), size = 4) +
+    scale_colour_manual(values = c("grey","red")) +
+    theme_bw() +
+    ylab("") +
+    theme(
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 10),
+      axis.text = element_text(size = 14),
+      axis.title = element_text(size = 14),
+      legend.position = "none"
+    ) +
+    scale_x_continuous(name = "Peak: log2FC") +
+    scale_size(range = c(6, 14))
+
+  p2 <- ggplot(deg,
+         aes(x = avg_log2FC,
+             y = gene)) +
+    geom_point(aes(color = isSignificant), size = 4) +
+    scale_colour_manual(values = c("grey","red")) +
+    theme_bw() +
+    ylab("") +
+    theme(
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 10),
+      axis.text = element_text(size = 14),
+      axis.title = element_text(size = 14),
+      axis.text.y = element_blank(),
+      legend.position = "none"
+    ) +
+    scale_x_continuous(name = "Gene: log2FC") +
+    scale_size(range = c(6, 14))
+
+  p3 <- ggplot(dp2,
+               aes(x = avg_log2FC,
+                   y = gene)) +
+    geom_point(aes(color = isSignificant), size = 4) +
+    scale_colour_manual(values = c("grey","red")) +
+    theme_bw() +
+    ylab("") +
+    theme(
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 10),
+      axis.text = element_text(size = 14),
+      axis.title = element_text(size = 14),
+      legend.position = "none"
+    ) +
+    scale_x_continuous(name = "Peak: log2FC") +
+    scale_size(range = c(6, 14))
+
+
+
+  figure <- ggarrange(p3, p2,
+                      ncol = 2, nrow = 1)
+  return (print(figure))
+}
+
 
 #' Run RI heatmap
 #' @param tf

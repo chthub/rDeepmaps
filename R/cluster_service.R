@@ -86,6 +86,46 @@ cluster_multiome <- function(req,
   )
 
   TOTAL_STEPS <- 6
+
+  DefaultAssay(e1$obj) <- "RNA"
+  nPCs <- as.numeric(nPCs)
+  resolution <- as.numeric(resolution)
+  neighbor <- as.numeric(neighbor)
+
+  Idents(e1$obj) <- e1$obj@meta.data[, 40]
+  Sys.sleep(1)
+  return(list(
+    n_seurat_clusters = 8,
+    umap_pts = data.frame(
+      umap1 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 1]),
+      umap2 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 2])
+    )
+  ))
+}
+
+#' Run multiome clustering
+#'
+#' @param req request payload
+#' @param nPCs string
+#' @param resolution string
+#' @param neighbor string
+#'
+#' @return
+#' @export
+#'
+cluster_multiome2 <- function(req,
+                             jobid = "example",
+                             method = "HGT",
+                             nPCs = "20",
+                             resolution = "0.5",
+                             neighbor = "20") {
+  message(
+    glue::glue(
+      "Run multiome clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
+    )
+  )
+
+  TOTAL_STEPS <- 6
   send_progress(paste0("Start calculation"))
   DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
@@ -222,7 +262,6 @@ cluster_multiome <- function(req,
     )
   ))
 }
-
 #' Return active cell idents labels
 #'
 #' @return

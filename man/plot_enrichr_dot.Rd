@@ -4,7 +4,7 @@
 \alias{plot_enrichr_dot}
 \title{Generate enrichment dot plot}
 \usage{
-plot_enrichr_dot(df = mtcars, isPvalLog = "true2")
+plot_enrichr_dot(df = mtcars, isPvalLog = "false")
 }
 \value{
 

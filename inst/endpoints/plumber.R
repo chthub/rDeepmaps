@@ -147,6 +147,13 @@ example_dr
 #* @param genes
 #* @post /ri-heatmap
 example_ri_heatmap
+
+#* Calculate DR
+#* @param genes
+#* @post /dr-peak-gene
+#* @serializer png list(width = 1800, height = 1500, res = 300)
+example_dr_figure
+
 #################################### DEG
 
 #* Calculate DEG for two selections
