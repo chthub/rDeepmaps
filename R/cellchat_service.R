@@ -54,7 +54,9 @@ run_cellchat <- function(job = "single_rna_example", active_idents = "hgt_cluste
     tictoc::toc()
   }
 
-  all_idents <- levels(as.factor(cellchat@idents))
+  #all_idents <- levels(as.factor(cellchat@idents))
+  all_idents <- levels(e1$obj$hgt_cluster)
+
   pathway_list <- cellchat@netP$pathways
   enrichedLR <-
     CellChat::extractEnrichedLR(cellchat, signaling = pathway_list, geneLR.return = FALSE)[,1]

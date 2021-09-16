@@ -259,7 +259,7 @@ load_multiome2 <-
   function(req,
            idx = 0,
            filename,
-           jobid = "example",
+           jobid = "lymph",
            mode = "ATAC",
            min_cells = 1,
            min_genes = 200,
@@ -269,168 +269,52 @@ load_multiome2 <-
            expr = NULL,
            label = NULL,
            species = "Human") {
-    # expr_type <- label_type <- 'application/octet-stream'
-    # label_path <- ""
-    # expr_path <- "9a9841a85c48b692e70bc03db811ccdc"
-
-    # Brain: 1619298241128
-    # PBMC 3K: 1619297987450
-    # PBMC : 1619311996943
 
     TOTAL_STEPS <- 6
-    if (jobid == "example") {
-      send_progress(paste0("Loading example data"))
-      if (file.exists("/data")) {
-        e1$obj <- qs::qread("/data/pbmc_sorted_3k.qsave")
-        raw_obj <- qs::qread("/data/pbmc_match_3k.qsave")
-        e1$obj@assays$ATAC@fragments[[1]]@path <-
-          "/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
-      } else {
-        e1$obj <-
-          qs::qread(
-            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_sorted_3k.qsave"
-          )
-        raw_obj <- qs::qread("C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_match_3k.qsave")
 
-        e1$obj@assays$ATAC@fragments[[1]]@path <-
-          "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
-        iris3api::set_embedding(name = "umap.rna")
-        # e1$embedding_idx <- which(names(e1$obj@reductions) == 'HGT')
-        #e1$meta <- e1$obj@meta.data[, c("cell_type", "sex")]
-
-
-        #e1$obj@meta.data <- e1$obj@meta.data[,c(-41,-42)]
-        #hgt_idx <- which(colnames(e1$obj@meta.data) == 'hgt_cluster')
-        #hgt_cluster <- e1$obj$hgt_cluster
-        #e1$obj@meta.data <- e1$obj@meta.data[,c(-hgt_idx)]
-
-        #hgt_idx <- which(colnames(e1$obj@meta.data) == 'stim')
-        #hgt_cluster <- e1$obj$hgt_cluster
-        #e1$obj@meta.data <- e1$obj@meta.data[,c(-hgt_idx)]
-
-        #e1$meta$stim <-
-        #  c('stim',rep(c("stim", "control"), nrow(e1$obj@meta.data) / 2))
-        #e1$obj <- AddMetaData(e1$obj, e1$meta$stim,col.name = 'stim')
-        #e1$obj <- AddMetaData(e1$obj, hgt_cluster,col.name = 'hgt_cluster')
-        #qs::qsave(e1$obj,
-        #          "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/pbmc_sorted_3k.qsave"
-        #)
-
-      }
-      Idents(e1$obj) <- e1$obj$orig.ident
-      rb.genes <-
-        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
-                              ignore.case =
-                                TRUE
-        )]
-      percent.ribo <-
-        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
-      e1$obj <-
-        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+    if (file.exists("/data")) {
+      base_dir <- "/data/"
     } else {
-      send_progress(paste0("Start processing single-cell multiome dataset"))
-      expr_type <- as.character(expr$mimetype[1])
-      expr_path <- as.character(expr$filename[1])
-      raw_expr_data <- read_deepmaps(expr_type, expr_path)
-
-      label <- list()
-      label_type <- as.character(label$mimetype[1])
-      label_path <- as.character(label$filename[1])
-      e1$meta <- NULL
-      if (length(label_type) > 0) {
-        e1$meta <- read_deepmaps(label_type, label_path)
-      }
-      rna_counts <- raw_expr_data$`Gene Expression`
-      atac_counts <- raw_expr_data$Peaks
-
-
-      # Use peaks in standard chromosomes
-      grange.counts <-
-        Signac::StringToGRanges(rownames(atac_counts), sep = c(":", "-"))
-      grange.use <-
-        as.character(GenomicRanges::seqnames(grange.counts)) %in% GenomeInfoDb::standardChromosomes(grange.counts)
-      atac_counts <- atac_counts[as.vector(grange.use), ]
-
-      # library(EnsDb.Hsapiens.v86)
-      # annotations <-
-      #  Signac::GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
-      # seqlevelsStyle(annotations) <- 'UCSC'
-      # genome(annotations) <- "hg38"
-      # qs::qsave(annotations, "hg38_annotations.qsave")
-
-      send_progress(paste0("Creating Seurat object"))
-
-      if (file.exists("/data")) {
-        annotations <- qs::qread("/data/hg38_annotations.qsave")
-        frag_path <-
-          "/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
-      } else {
-        annotations <-
-          qs::qread("C:/Users/flyku/Desktop/iris3/pbmc_match/db/hg38_annotations.qsave")
-        frag_path <-
-          "C:/Users/flyku/Desktop/iris3/eg2/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
-      }
-      chrom_assay <- Signac::CreateChromatinAssay(
-        counts = atac_counts,
-        sep = c(":", "-"),
-        genome = "hg38",
-        min.cells = 5,
-        fragments = frag_path,
-        # min.feature = 200,
-        annotation = annotations,
-      )
-
-      e1$obj <- CreateSeuratObject(
-        counts = chrom_assay,
-        assay = "ATAC"
-      )
-      exp_assay <- CreateAssayObject(counts = rna_counts)
-      e1$obj[["RNA"]] <- exp_assay
-
-      # DefaultAssay(e1$obj) <- "ATAC"
-      # Need fragments
-      # e1$obj <- Signac::NucleosomeSignal(object = e1$obj)
-      # e1$obj <- Signac::TSSEnrichment(object = e1$obj, fast = FALSE)
-      # downstream plotting of the TSS enrichment signal for different groups of cells.
-      # e1$obj$high.tss <- ifelse(e1$obj$TSS.enrichment > 2, 'High', 'Low')
-      # e1$obj$pct_reads_in_peaks <-  e1$obj$atac_peak_region_fragments/ e1$obj$atac_fragments*100
-      # e1$obj$blacklist_ratio <-  e1$obj$blacklist_region_fragments / ( e1$obj$atac_peak_region_fragments+0.01)
-
-      DefaultAssay(e1$obj) <- "RNA"
-      e1$obj <-
-        AddMetaData(e1$obj,
-          PercentageFeatureSet(e1$obj, pattern = "^MT-"),
-          col.name = "percent.mt"
-        )
-
-      Idents(e1$obj) <- e1$obj$orig.ident
-      rb.genes <-
-        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
-          ignore.case =
-            TRUE
-        )]
-      percent.ribo <-
-        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
-      e1$obj <-
-        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
-
-      e1$obj <-
-        subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
-      send_progress(paste0("Finding variable features"))
-
-      e1$obj <-
-        FindVariableFeatures(
-          e1$obj,
-          selection.method = "vst",
-          nfeatures = as.numeric(2000),
-          verbose = F
-        )
-      send_progress(paste0("Normalizing data"))
-      e1$obj <- NormalizeData(e1$obj, verbose = F)
-      #e1$obj <- SCTransform(e1$obj, verbose = F)
-      e1$obj <- ScaleData(e1$obj, verbose = F)
-      # END custom
+      base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
     }
+    e1$obj <- qs::qread(paste0(base_dir, "lymph_obj.qsave"))
+    raw_obj <- qs::qread(paste0(base_dir, "lymph_obj.qsave"))
+
+    fragments <- CreateFragmentObject(
+      path = paste0(base_dir, "lymph_node_lymphoma_14k_atac_fragments.tsv.gz"),
+      cells = colnames(e1$obj),
+      validate.fragments = FALSE
+    )
+    e1$obj@assays$ATAC@fragments[[1]] <- fragments
+    Idents(e1$obj) <- e1$obj$orig.ident
+    rb.genes <-
+      rownames(e1$obj)[grep("^RP[SL][[:digit:]]", rownames(e1$obj),
+                            ignore.case =
+                              TRUE
+      )]
+    DefaultAssay(e1$obj) <- "RNA"
+    percent.ribo <-
+      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+    e1$obj <-
+      AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+
+
+    e1$obj <-
+      AddMetaData(e1$obj,
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt"
+      )
+    e1$obj <-
+      FindVariableFeatures(
+        e1$obj,
+        selection.method = "vst",
+        nfeatures = as.numeric(2000),
+        verbose = F
+      )
+
+    e1$obj <- NormalizeData(e1$obj, verbose = F)
+    e1$obj <- ScaleData(e1$obj, verbose = F)
+
 
     # Add empety ident
     empty_category <- as.factor(e1$obj$orig.ident)
@@ -488,7 +372,6 @@ load_multiome2 <-
       res
     )
   }
-
 
 
 #' Load matched scRNA-seq and scATAC-seq data to Seurat / Signac

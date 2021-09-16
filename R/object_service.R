@@ -33,7 +33,9 @@ get_all_idents <- function() {
       "TSS.percentile",
       "high.tss",
       "SCT.weight",
-      "blacklist*"
+      "blacklist*",
+      "rna",
+      "mito"
     )
     matches <- unique(grep(paste(pattern, collapse = "|"),
       this_ident,

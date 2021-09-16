@@ -5,18 +5,17 @@
 #' @return json
 #' @export
 #'
-example_regulon_network <- function(cluster = "sda") {
-  data(dt)
-  set.seed(42)
-  send_progress("Start calculation")
-  Sys.sleep(0.5)
-  send_progress("Calculating regulons")
-  tmp_regulon <- dt$ct_regulon
-  rand_num <- sample.int(8, 1) - 1
-  old_cluster_name <- cluster
-  if (!cluster %in% 0:7) {
-    cluster <- rand_num
+example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
+
+  if(dat == "dt_lymph") {
+    data(dt_lymph)
+    dt <- dt_lymph
   }
+
+
+  set.seed(42)
+  tmp_regulon <- dt$ct_regulon
+
   if (e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
   }
@@ -60,13 +59,11 @@ example_regulon_network <- function(cluster = "sda") {
 
 
   Sys.sleep(0)
-  send_progress("Calculating regulon intensity")
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
     dplyr::group_by(tf) %>%
     dplyr::mutate(idx = seq_along(tf)) %>%
-    dplyr::filter(ct == cluster) %>%
-    dplyr::mutate(ct = old_cluster_name)
+    dplyr::filter(ct == cluster)
 
   g <- igraph::graph.data.frame(all_network)
 
@@ -131,7 +128,7 @@ example_regulon_network <- function(cluster = "sda") {
     dplyr::arrange(tf) %>%
     dplyr::filter(dplyr::row_number() == 1)
 
-  this_vr <- dt$VR %>%
+  this_vr <- dt$VR[,1:3] %>%
     as.data.frame() %>%
     tibble::rownames_to_column('tf')
 

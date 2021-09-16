@@ -8,7 +8,7 @@ load_multiome2(
   req,
   idx = 0,
   filename,
-  jobid = "example",
+  jobid = "lymph",
   mode = "ATAC",
   min_cells = 1,
   min_genes = 200,

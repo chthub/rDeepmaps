@@ -44,6 +44,12 @@ load_multi_rna
 #* @post /load-multiome
 load_multiome
 
+#* Tmp example
+#* @param filename
+#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @post /load-multiome2
+load_multiome2
+
 #################################### Clustering part
 
 #* Run RNA sample clustering

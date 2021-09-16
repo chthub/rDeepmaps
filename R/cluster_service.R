@@ -92,10 +92,19 @@ cluster_multiome <- function(req,
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
 
-  Idents(e1$obj) <- e1$obj@meta.data[, 40]
-  Sys.sleep(1)
+
+
+  seurat_cluster_idx <-
+    which(colnames(e1$obj@meta.data) == "seurat_clusters")
+  colnames(e1$obj@meta.data)[seurat_cluster_idx] <-
+    "hgt_cluster"
+  e1$ident_idx <-
+    which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+  Idents(e1$obj) <- e1$obj@meta.data[, seurat_cluster_idx]
+  #DimPlot(e1$obj, reduction = "umap.rna")
+  #Sys.sleep(0.1)
   return(list(
-    n_seurat_clusters = 8,
+    n_seurat_clusters = length(levels(Idents(e1$obj))),
     umap_pts = data.frame(
       umap1 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 1]),
       umap2 = as.vector(Embeddings(e1$obj, reduction = "umap.rna")[, 2])
