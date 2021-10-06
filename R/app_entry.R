@@ -73,7 +73,7 @@ start_debug_server <-
   function(port = 8000,
            host = "127.0.0.1") {
     print(getwd())
-    init_socketio()
+    #init_socketio()
     message(paste("Starting debug R server at host =", host, ", port =", port))
     tryCatch(
       {
