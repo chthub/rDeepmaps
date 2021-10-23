@@ -45,7 +45,7 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
       unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
     this_ct <- gsub("ct", "", this_ct)
     if (this_ct == as.numeric(this_ct)) {
-      this_ct <- as.numeric(this_ct) - 1
+      this_ct <- as.numeric(this_ct)
     }
     if (length(tmp_regulon[[i]]) > 300) {
       max_int  <- 300
@@ -165,11 +165,22 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
 #' @return json
 #' @export
 #'
-list_regulon_network <- function() {
-  data(dt)
+list_regulon_network <- function(dat = "dt_pbmc_unsorted_10k") {
+  if(dat == "dt_lymph") {
+    data(dt_lymph)
+    dt <- dt_lymph
+  } else if(dat == "dt_pbmc_unsorted_10k") {
+    data(dt_pbmc_unsorted_10k)
+    dt <- dt_pbmc_unsorted_10k
+  } else{
+    data(dt)
+  }
+
   set.seed(42)
   tmp_regulon <- dt$ct_regulon
-  rand_num <- sample.int(8, 1) - 1
+
+  set.seed(42)
+  tmp_regulon <- dt$ct_regulon
   all_network <- tibble::tibble()
   i = 1
   for (i in seq_along(tmp_regulon)) {
@@ -178,7 +189,7 @@ list_regulon_network <- function() {
       unlist(strsplit(names(tmp_regulon[i]), split = "_"))[2]
     this_ct <- gsub("ct", "", this_ct)
     if (this_ct == as.numeric(this_ct)) {
-      this_ct <- as.numeric(this_ct) - 1
+      this_ct <- as.numeric(this_ct)
     }
     if (length(tmp_regulon[[i]]) > 300) {
       max_int  <- 300
