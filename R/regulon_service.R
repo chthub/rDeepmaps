@@ -13,6 +13,11 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
   }
 
 
+  if(dat == "dt_pbmc_unsorted_10k") {
+    data(dt_pbmc_unsorted_10k)
+    dt <- dt_pbmc_unsorted_10k
+  }
+
   set.seed(42)
   tmp_regulon <- dt$ct_regulon
 
