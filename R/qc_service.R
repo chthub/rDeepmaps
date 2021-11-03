@@ -163,7 +163,7 @@ atac_qc_list <- function() {
   }
 
   result <- list(
-    cell_result = cell_result,
+    cell_result = na.omit(cell_result),
     hist_features_per_cell = hist_features_per_cell,
     hist_reads_per_cell = hist_reads_per_cell,
     hist_atac_peak_region_fragments = hist_atac_fragments,
