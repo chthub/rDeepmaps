@@ -119,7 +119,7 @@ atac_qc_list <- function() {
   atac_peak_region_fragments <- e1$obj$nFeature_RNA
   blacklist_ratio <- e1$obj$percent.ribo
   nucleosome_signal <- e1$obj$nFeature_RNA
-  tss_enrichment <- e1$obj$nFeature_ATAC/ mean(e1$obj$nFeature_ATAC) * 2
+  tss_enrichment <- e1$obj$nFeature_ATAC/ mean(na.omit(as.numeric(e1$obj$nFeature_ATAC))) * 2
 
   cell_result <-
     data.frame(
