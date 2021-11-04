@@ -548,7 +548,7 @@ load_multiome <-
     if (jobid == "example") {
       send_progress(paste0("Loading example data"))
       if (file.exists("/data")) {
-        sleep(10000)
+        sleep(16)
         e1$obj <- qs::qread("/data/pbmc_sorted_3k.qsave")
         raw_obj <- qs::qread("/data/pbmc_match_3k.qsave")
         e1$obj@assays$ATAC@fragments[[1]]@path <-
