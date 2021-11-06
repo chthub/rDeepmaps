@@ -134,7 +134,8 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     dplyr::left_join(this_ras, by = "tf") %>%
     dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, NA_real_)) %>%
     dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , NA_real_)) %>%
-    dplyr::mutate(isCtsr = case_when(avg_log2FC > 0.25 & p_val_adj < 0.05 ~ 'yes',
+    dplyr::mutate(isCtsr = dplyr::case_when(avg_log2FC > 0.25 &
+                                       p_val_adj < 0.05 ~ 'yes',
                                      T ~ 'no'))
 
   result <- list()
@@ -489,7 +490,7 @@ example_dr_figure <- function(genes = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
     ) %>%
   tibble::rownames_to_column("gene") %>%
     dplyr::mutate(type = 'deg',
-                  isSignificant = case_when(
+                  isSignificant = dplyr::case_when(
                     p_val_adj < 0.05 ~ T,
                     T ~ F
                   ))%>%
@@ -516,7 +517,7 @@ example_dr_figure <- function(genes = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
     ) %>%
     tibble::rownames_to_column("gene") %>%
     dplyr::mutate(type = 'gas',
-                  isSignificant = case_when(p_val_adj < 0.05 ~ T,
+                  isSignificant = dplyr::case_when(p_val_adj < 0.05 ~ T,
                                             T ~ F)) %>%
     dplyr::mutate(
                   isSignificant = as_factor(isSignificant))
@@ -534,7 +535,7 @@ example_dr_figure <- function(genes = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
     tibble::rownames_to_column("peak") %>%
     dplyr::mutate(type = 'peak',
                   gene = genes[overlap1@to],
-                  isSignificant = case_when(p_val_adj < 0.05 ~ T,
+                  isSignificant = dplyr::case_when(p_val_adj < 0.05 ~ T,
                                             T ~ F)) %>%
     dplyr::mutate(
       isSignificant = as_factor(isSignificant))

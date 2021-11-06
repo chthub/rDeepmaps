@@ -52,7 +52,8 @@ Imports:
     GenomicFeatures,
     IRanges,
     S4Vectors,
-    reticulate
+    reticulate,
+    forcats
 Depends: 
     Seurat,
     R (>= 4.0.0)
