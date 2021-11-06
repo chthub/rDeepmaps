@@ -121,7 +121,7 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     dplyr::arrange(tf) %>%
     dplyr::filter(dplyr::row_number() == 1) %>%
     separate(tf, c("tf",'ct2'), "-") %>%
-    select(-ct2)
+    dplyr::select(-ct2)
 
 
   this_ras <- dt$RAS[, this_ct_idx] %>%
