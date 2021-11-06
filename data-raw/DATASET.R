@@ -173,7 +173,8 @@ load_lymph <- function() {
   RAS_C <- case_result$RAS_C
   ras_obj <- CreateSeuratObject(RAS_C)
   graph.out <- case_result$graph.out
-  dt$dr <- case_result$DR
+  dt$DR <- case_result$DR
+  dt$DR_all <- case_result$DR_all
   GAS <- case_result$GAS
   dt$RI_CT <-case_result$RI_CT
   dt$Dregulon <- case_result$DR

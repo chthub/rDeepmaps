@@ -114,14 +114,13 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     dplyr::ungroup() %>%
     dplyr::mutate(index = dplyr::row_number())
 
-  this_dr <- dt$dr %>%
-    dplyr::filter(cluster == as.numeric(clust)) %>%
-    dplyr::rename(tf = gene) %>%
+  this_dr <- dt$DR_all %>%
+    tibble::rownames_to_column("tf") %>%
+    tidyr::separate(tf, c("tf", 'from'), "-") %>%
+    dplyr::filter(from == this_ct_name) %>%
     dplyr::group_by(tf) %>%
     dplyr::arrange(tf) %>%
-    dplyr::filter(dplyr::row_number() == 1) %>%
-    tidyr::separate(tf, c("tf",'ct2'), "-") %>%
-    dplyr::select(-ct2)
+    dplyr::filter(dplyr::row_number() == 1)
 
 
   this_ras <- dt$RAS[, this_ct_idx] %>%
