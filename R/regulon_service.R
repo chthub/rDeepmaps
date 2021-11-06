@@ -126,7 +126,7 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
 
   this_ras <- dt$RAS[, this_ct_idx] %>%
     as.data.frame() %>%
-    rownames_to_column("tf") %>%
+    tibble::rownames_to_column("tf") %>%
     dplyr::rename(ras = 2)
 
   this_regulon_score <- this_regulon %>%
@@ -394,13 +394,13 @@ calc_dr <- function(dat = "lymph",
 
   this_tf_names <- paste0("ct", ct1)
   this_ras_rowid <- data.frame(rowname = rownames(dt$RAS_C)) %>%
-    separate(rowname, c("tf",'ct'), "_") %>%
-    rowid_to_column() %>%
-    filter(ct %in% this_tf_names) %>%
-    pull(rowid)
+    tidyr::separate(rowname, c("tf",'ct'), "_") %>%
+    tibble::rowid_to_column() %>%
+    dplyr::filter(ct %in% this_tf_names) %>%
+    dplyr::pull(rowid)
 
   this_ras <- dt$RAS_C[this_ras_rowid, ]
-  rownames(this_ras) <- str_remove(rownames(this_ras), "_.*")
+  rownames(this_ras) <- stringr::str_remove(rownames(this_ras), "_.*")
 
   ras_obj <- CreateSeuratObject(dt$RAS_C)
   ras_obj <-
@@ -416,7 +416,7 @@ calc_dr <- function(dat = "lymph",
       only.pos = T
     )
   dr <- tibble::rownames_to_column(dr, "tf") %>%
-    separate(tf, c("tf", "ct"), "-") %>%
+    tidyr::separate(tf, c("tf", "ct"), "-") %>%
     dplyr::filter(ct %in% this_tf_names)
   return (dr)
 }
