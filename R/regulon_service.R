@@ -241,7 +241,9 @@ example_cluster_coords <- function() {
 #' @return
 #' @export
 #'
-example_ras <- function(gene = "MAFF", assay = "RNA", clust = "0") {
+example_ras <- function(dat = "lymph", gene = "MAFF", assay = "RNA", clust = "0") {
+
+  dt <- get(dat)
   send_progress(paste0("Loading regulon: ", gene))
   if ('Gad1' %in% rownames(e1$obj)) {
     gene <- stringr::str_to_title(gene)
