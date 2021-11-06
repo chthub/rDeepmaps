@@ -120,7 +120,7 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     dplyr::group_by(tf) %>%
     dplyr::arrange(tf) %>%
     dplyr::filter(dplyr::row_number() == 1) %>%
-    separate(tf, c("tf",'ct2'), "-") %>%
+    tidyr::separate(tf, c("tf",'ct2'), "-") %>%
     dplyr::select(-ct2)
 
 
