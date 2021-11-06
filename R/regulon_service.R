@@ -243,15 +243,12 @@ example_cluster_coords <- function() {
 #' @return
 #' @export
 #'
-example_ras <- function(dat = "lymph", gene = "MAFF", assay = "RNA", clust = "0") {
+example_ras <- function(dat = "lymph", gene = "TFAP2A", assay = "RNA", clust = "2") {
 
   dt <- get(dat)
   send_progress(paste0("Loading regulon: ", gene))
   if ('Gad1' %in% rownames(e1$obj)) {
     gene <- stringr::str_to_title(gene)
-  }
-  if (!gene %in% rownames(e1$obj)) {
-    gene <- rownames(e1$obj)[1001]
   }
   this_ct_name <- paste0("ct",clust)
   this_ras_rowid <- data.frame(rowname = rownames(dt$RAS_C)) %>%
