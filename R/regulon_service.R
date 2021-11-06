@@ -133,9 +133,12 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     dplyr::left_join(this_ras, by = "tf") %>%
     dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, NA_real_)) %>%
     dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , NA_real_)) %>%
+    dplyr::mutate(avg_log2FC = dplyr::case_when(avg_log2FC > 0 ~ log2(1 + avg_log2FC),
+                                                avg_log2FC < 0 ~ -1 * log2(1 + (-1 * avg_log2FC)))) %>%
     dplyr::mutate(isCtsr = dplyr::case_when(avg_log2FC > 0.25 &
-                                       p_val_adj < 0.05 ~ 'yes',
-                                     T ~ 'no'))
+                                              p_val_adj < 0.05 ~ 'yes',
+                                            T ~ 'no')) %>%
+    dplyr::arrange(dplyr::desc(avg_log2FC))
 
   result <- list()
   result$idents <- levels(active_idents)
@@ -423,7 +426,10 @@ calc_dr <- function(dat = "lymph",
     )
   dr <- tibble::rownames_to_column(dr, "tf") %>%
     tidyr::separate(tf, c("tf", "ct"), "-") %>%
-    dplyr::filter(ct %in% this_tf_names)
+    dplyr::filter(ct %in% this_tf_names) %>%
+    dplyr::mutate(avg_log2FC = dplyr::case_when(avg_log2FC > 0 ~ log2(1 + avg_log2FC),
+                                                avg_log2FC < 0 ~ -1 * log2(1 + (-1 * avg_log2FC)))) %>%
+    dplyr::arrange(dplyr::desc(avg_log2FC))
   return (dr)
 }
 
