@@ -241,7 +241,7 @@ example_cluster_coords <- function() {
 #' @return
 #' @export
 #'
-example_ras <- function(gene = "MAFF", assay = "RNA") {
+example_ras <- function(gene = "MAFF", assay = "RNA", clust = "0") {
   send_progress(paste0("Loading regulon: ", gene))
   if ('Gad1' %in% rownames(e1$obj)) {
     gene <- stringr::str_to_title(gene)
@@ -249,16 +249,20 @@ example_ras <- function(gene = "MAFF", assay = "RNA") {
   if (!gene %in% rownames(e1$obj)) {
     gene <- rownames(e1$obj)[1001]
   }
+  this_ct_name <- paste0("ct",clust)
+  this_ras_rowid <- data.frame(rowname = rownames(dt$RAS_C)) %>%
+    tidyr::separate(rowname, c("tf",'ct'), "_") %>%
+    tibble::rowid_to_column() %>%
+    dplyr::filter(ct %in% this_ct_name & tf == gene) %>%
+    dplyr::pull(rowid)
+
   embedding <- names(e1$obj@reductions[e1$embedding_idx])
   res1 <- data.frame(
     id = rownames(Embeddings(e1$obj, reduction = embedding)),
     dim1 = Embeddings(e1$obj, reduction = embedding)[, 1],
     dim2 = Embeddings(e1$obj, reduction = embedding)[, 2],
     dim3 = Embeddings(e1$obj, reduction = embedding)[, 2],
-    expr = log1p(FetchData(
-      object = e1$obj,
-      vars = c(gene)
-    )[, 1]) * 2,
+    expr = as.numeric(dt$RAS_C[this_ras_rowid, ]),
     index = 1
   )
   legend <- c(min(res1$expr), max(res1$expr))
