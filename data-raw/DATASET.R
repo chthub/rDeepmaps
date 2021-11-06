@@ -146,7 +146,7 @@ load_pbmc_match_3k <- function() {
   #qs::qsave(graph.out,"graph.out.qsave")
   ras_obj <- AddMetaData(ras_obj, graph.out, col.name = "hgt_cluster")
   Idents(ras_obj) <- ras_obj$hgt_cluster
-  dr <- FindAllMarkers(ras_obj, logfc.threshold = 0, min.pct = 0)
+  dr <- FindAllMarkers(ras_obj, logfc.threshold = 0.25, min.pct = 0, only.pos = T)
   dt$ras_obj <- ras_obj
   dt$dr <- dr
   GAS <- as.matrix(readRDS(paste0(PATH, "GAS.rds")))
@@ -165,25 +165,24 @@ load_pbmc_match_3k <- function() {
 load_lymph <- function() {
   library(qs)
   library(Seurat)
-  PATH <- 'C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/'
+  #PATH <- 'C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/'
+  case_result <- qread("C:/Users/flyku/Desktop/iris3/pbmc_match/lymph_case_result_1102.qsave")
   dt <- list()
-  dt$RAS <- as.matrix(qread(paste0(PATH, "RAS.qsave")))
-  RAS_C <- as.matrix(qread(paste0(PATH, "RAS_C.qsave")))
+  dt$RAS <- case_result$RAS
+  dt$RAS_C <- case_result$RAS_C
+  RAS_C <- case_result$RAS_C
   ras_obj <- CreateSeuratObject(RAS_C)
-  graph.out <- qread(paste0(PATH, "graph.out.qsave"))
-
-  ras_obj <- AddMetaData(ras_obj, graph.out, col.name = "hgt_cluster")
-  Idents(ras_obj) <- ras_obj$hgt_cluster
-  dr <- FindAllMarkers(ras_obj, logfc.threshold = 0, min.pct = 0)
-  dt$ras_obj <- ras_obj
-  dt$dr <- dr
-  GAS <- as.matrix(qread(paste0(PATH, "GAS.qsave")))
-  dt$RI_CT <- as.matrix(qread(paste0(PATH, "RI_CT.qsave")))
-  dt$Dregulon <- qread(paste0(PATH, "DR.qsave"))
-  dt$ct_regulon <- qread(paste0(PATH, "ct_regulon.qsave"))
-  dt$VR <- qread(paste0(PATH, "VR.qsave"))
-  dt_lymph <- dt
-  usethis::use_data(dt_lymph, overwrite = TRUE)
+  graph.out <- case_result$graph.out
+  dt$dr <- case_result$DR
+  GAS <- case_result$GAS
+  dt$RI_CT <-case_result$RI_CT
+  dt$Dregulon <- case_result$DR
+  dt$ct_regulon <- case_result$ct_regulon
+  dt$TF_cen <- case_result$TF_cen
+  dt$gene_cen <- case_result$gene_cen
+  dt$masterTF <- case_result$masterTF
+  lymph <- dt
+  usethis::use_data(lymph, overwrite = TRUE)
 }
 
 
@@ -203,7 +202,7 @@ load_pbmc_unsorted_10k <- function() {
 
   ras_obj <- AddMetaData(ras_obj, graph.out, col.name = "hgt_cluster")
   Idents(ras_obj) <- ras_obj$hgt_cluster
-  dr <- FindAllMarkers(ras_obj, logfc.threshold = 0, min.pct = 0)
+  dr <- FindAllMarkers(ras_obj, logfc.threshold = 0.25, min.pct = 0, only.pos = T)
   dt$ras_obj <- ras_obj
   dt$dr <- dr
   GAS <- as.matrix(qread(paste0(PATH, "GAS.qsave")))

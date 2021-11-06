@@ -112,7 +112,8 @@ atac_qc_list <- function() {
   if (length(names(e1$obj@assays)) > 0) {
     DefaultAssay(e1$obj) <- "ATAC"
   }
-
+  e1$obj[, rownames(e1$obj@meta.data) ]
+  colnames(e1$obj)
   n_features_per_cell <- e1$obj$nFeature_ATAC
   n_reads_per_cell <- e1$obj$nCount_ATAC
   pct_reads_in_peaks <- e1$obj$nFeature_ATAC/e1$obj$nFeature_RNA

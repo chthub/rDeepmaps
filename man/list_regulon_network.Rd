@@ -4,7 +4,7 @@
 \alias{list_regulon_network}
 \title{Run Seurat clustering}
 \usage{
-list_regulon_network(dat = "dt_pbmc_unsorted_10k")
+list_regulon_network(dat = "lymph")
 }
 \value{
 json

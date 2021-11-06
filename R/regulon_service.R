@@ -5,20 +5,10 @@
 #' @return json
 #' @export
 #'
-example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
-
-  if(dat == "dt_lymph") {
-    data(dt_lymph)
-    dt <- dt_lymph
-  }
-
-
-  if(dat == "dt_pbmc_unsorted_10k") {
-    data(dt_pbmc_unsorted_10k)
-    dt <- dt_pbmc_unsorted_10k
-  }
-
+calc_regulon_network <- function(dat = "lymph", clust = "2") {
   set.seed(42)
+  dt <- get(dat)
+  this_ct_name <- paste0('ct', clust)
   tmp_regulon <- dt$ct_regulon
 
   if (e1$regulon_ident == 'other') {
@@ -26,17 +16,17 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
   }
   #e1$regulon_ident <- 'seurat_clusters'
   active_idents <-
-    as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)])
+    droplevels(as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)]))
   if (length(active_idents) == 0) {
     active_idents <-
-      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'hgt_cluster')])
+      droplevels(as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'hgt_cluster')]))
   }
 
   if (length(active_idents) == 0) {
     active_idents <-
-      as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
+      droplevels(as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')]))
   }
-
+  this_ct_idx <- which(levels(active_idents) == clust)
   all_network <- tibble::tibble()
   i = 1
   for (i in seq_along(tmp_regulon)) {
@@ -47,8 +37,8 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
     if (this_ct == as.numeric(this_ct)) {
       this_ct <- as.numeric(this_ct)
     }
-    if (length(tmp_regulon[[i]]) > 300) {
-      max_int  <- 300
+    if (length(tmp_regulon[[i]]) > 500) {
+      max_int  <- 500
     } else {
       max_int  <- length(tmp_regulon[[i]])
     }
@@ -62,29 +52,26 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
-
   Sys.sleep(0)
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
     dplyr::group_by(tf) %>%
     dplyr::mutate(idx = seq_along(tf)) %>%
-    dplyr::filter(ct == cluster)
+    dplyr::filter(ct == clust)
 
   g <- igraph::graph.data.frame(all_network)
-
   #coords <- layout.norm(layout.auto(g))
   this_tf <- as.character(unique(all_network$tf))
   this_edges <- as.data.frame(igraph::get.edgelist(g))
 
+  this_tf_cen <- dt$TF_cen[[this_ct_name]]
+  this_gene_cen <- dt$gene_cen[[this_ct_name]]
+  this_node_cen <- c(this_tf_cen, this_gene_cen)
+  this_node_cen <- this_node_cen[order(names(this_node_cen))]
 
-  Sys.sleep(0)
-  send_progress("Calculating regulon networks")
-  Sys.sleep(0)
   nodes <-
-    tibble(name = as.character(igraph::V(g)$name),
-           centrality = as.numeric(scales::rescale(
-             igraph::eigen_centrality(g)$vector, to = c(0.1, 1)
-           ))) %>%
+    tibble(name = names(this_node_cen),
+           centrality = this_node_cen) %>%
     dplyr::mutate(
       index = seq_along(name),
       color_index = index %% 34 + 1,
@@ -127,24 +114,28 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
     dplyr::ungroup() %>%
     dplyr::mutate(index = dplyr::row_number())
 
-  this_dr <- dt$dr[which(dt$dr$gene %in% this_regulon$tf), ] %>%
+  this_dr <- dt$dr %>%
+    dplyr::filter(cluster == as.numeric(clust)) %>%
     dplyr::rename(tf = gene) %>%
     dplyr::group_by(tf) %>%
     dplyr::arrange(tf) %>%
-    dplyr::filter(dplyr::row_number() == 1)
+    dplyr::filter(dplyr::row_number() == 1) %>%
+    separate(tf, c("tf",'ct2'), "-") %>%
+    select(-ct2)
 
-  this_vr <- dt$VR[,1:3] %>%
+
+  this_ras <- dt$RAS[, this_ct_idx] %>%
     as.data.frame() %>%
-    tibble::rownames_to_column('tf')
+    rownames_to_column("tf") %>%
+    dplyr::rename(ras = 2)
 
   this_regulon_score <- this_regulon %>%
     dplyr::left_join(this_dr, by = "tf") %>%
-    dplyr::left_join(this_vr, by = "tf") %>%
-    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, rnorm(1) /
-                                                   20)) %>%
-    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , abs(rnorm(1) /
-                                                                   5)))
-
+    dplyr::left_join(this_ras, by = "tf") %>%
+    dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, NA_real_)) %>%
+    dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , NA_real_)) %>%
+    dplyr::mutate(isCtsr = case_when(avg_log2FC > 0.25 & p_val_adj < 0.05 ~ 'yes',
+                                     T ~ 'no'))
 
   result <- list()
   result$idents <- levels(active_idents)
@@ -152,10 +143,6 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
   result$edges <- this_edges
   result$regulons <- this_regulon_score
 
-  #library(jsonlite)
-  #write(toJSON(this_regulon), paste0("C:/Users/flyku/Documents/GitHub/iris3-frontend/static/json/regulon/example_regulon.json"))
-  #write(toJSON(nodes), "C:/Users/flyku/Documents/GitHub/iris3-frontend/static/json/regulon/example_cyto_nodes.json")
-  #write(toJSON(this_edges), "C:/Users/flyku/Documents/GitHub/iris3-frontend/static/json/regulon/example_cyto_edges.json")
   return(result)
 }
 
@@ -165,22 +152,11 @@ example_regulon_network <- function(dat = "dt_lymph", cluster = "0") {
 #' @return json
 #' @export
 #'
-list_regulon_network <- function(dat = "dt_pbmc_unsorted_10k") {
-  if(dat == "dt_lymph") {
-    data(dt_lymph)
-    dt <- dt_lymph
-  } else if(dat == "dt_pbmc_unsorted_10k") {
-    data(dt_pbmc_unsorted_10k)
-    dt <- dt_pbmc_unsorted_10k
-  } else{
-    data(dt)
-  }
-
+list_regulon_network <- function(dat = "lymph") {
   set.seed(42)
+  dt <- get(dat)
   tmp_regulon <- dt$ct_regulon
 
-  set.seed(42)
-  tmp_regulon <- dt$ct_regulon
   all_network <- tibble::tibble()
   i = 1
   for (i in seq_along(tmp_regulon)) {
@@ -191,8 +167,8 @@ list_regulon_network <- function(dat = "dt_pbmc_unsorted_10k") {
     if (this_ct == as.numeric(this_ct)) {
       this_ct <- as.numeric(this_ct)
     }
-    if (length(tmp_regulon[[i]]) > 300) {
-      max_int  <- 300
+    if (length(tmp_regulon[[i]]) > 500) {
+      max_int  <- 500
     } else {
       max_int  <- length(tmp_regulon[[i]])
     }
@@ -397,16 +373,13 @@ example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
 #' @return
 #' @export
 #'
-example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
+calc_dr <- function(dat = "lymph",
+                       tf = c('CTCF', 'ELF1', 'MEF2C', 'E2F6', 'EGR1'),
                        ct1 = c(4),
                        ct2 = c(1)) {
-  ras = log1p(FetchData(object = e1$obj,
-                        vars = tf)) * 2
 
-  ras_t <- as.data.frame(t(ras))
-  colnames(ras_t) <- rownames(ras)
-  rownames(ras_t) <- colnames(ras)
-  ras_obj <- CreateSeuratObject(counts = ras_t)
+  dt <- get(dat)
+
   active_idents <-
     as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)])
   if (length(active_idents) == 0) {
@@ -418,6 +391,18 @@ example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
       as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == 'seurat_clusters')])
   }
 
+
+  this_tf_names <- paste0("ct", ct1)
+  this_ras_rowid <- data.frame(rowname = rownames(dt$RAS_C)) %>%
+    separate(rowname, c("tf",'ct'), "_") %>%
+    rowid_to_column() %>%
+    filter(ct %in% this_tf_names) %>%
+    pull(rowid)
+
+  this_ras <- dt$RAS_C[this_ras_rowid, ]
+  rownames(this_ras) <- str_remove(rownames(this_ras), "_.*")
+
+  ras_obj <- CreateSeuratObject(dt$RAS_C)
   ras_obj <-
     AddMetaData(ras_obj, active_idents, col.name = "hgt_cluster")
   Idents(ras_obj) <- 'hgt_cluster'
@@ -426,10 +411,13 @@ example_dr <- function(tf = c('CTCF', 'ELF1', 'MEF2C','E2F6','EGR1'),
       ras_obj,
       ident.1 = ct1,
       ident.2 = ct2,
-      min.pct = 0,
-      logfc.threshold = 0
+      logfc.threshold = 0.25,
+      min.pct = 0.25,
+      only.pos = T
     )
-  dr <- tibble::rownames_to_column(dr, "tf")
+  dr <- tibble::rownames_to_column(dr, "tf") %>%
+    separate(tf, c("tf", "ct"), "-") %>%
+    dplyr::filter(ct %in% this_tf_names)
   return (dr)
 }
 

@@ -142,3 +142,14 @@ BinMean <- function(vec, every, na.rm = FALSE) {
   if (r) x <- c(x, mean.default(vec[(n - r + 1):n], na.rm = na.rm))
   x
 }
+
+#' Load dataset from "R" package using data(), assign it directly to a variable
+#'
+#' @return
+#'
+#'
+getdata <- function(...) {
+  e <- new.env()
+  name <- data(..., envir = e)[1]
+  e[[name]]
+}

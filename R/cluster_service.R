@@ -84,7 +84,6 @@ cluster_multiome <- function(req,
       "Run multiome clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
     )
   )
-  sleep(20)
   TOTAL_STEPS <- 6
 
   DefaultAssay(e1$obj) <- "RNA"

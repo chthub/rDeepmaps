@@ -42,7 +42,7 @@ get_all_idents <- function() {
       value = F
     ))
     if (length(matches) == 0) {
-      this_levels <- levels(as.factor(e1$obj@meta.data[, i]))
+      this_levels <- levels(droplevels(as.factor(e1$obj@meta.data[, i])))
       tmp_list <- list(
         ident = this_ident,
         levels = this_levels

@@ -45,6 +45,50 @@ calc_gsea_table <-
     return(gseaTable)
   }
 
+#' Run GSEA enrichment
+#'
+#' @param req request payload
+#' @param genes array
+#' @param database string
+#'
+#' @return
+#' @export
+#'
+calc_regulon_gsea_table <-
+  function(req,
+           genes = c("CD74", "CD7"),
+           database = "C7") {
+    print("run GSEA")
+
+    library(fgsea)
+    library(msigdbr)
+    if (e1$species == "Human") {
+      this_species <- "Homo sapiens"
+    } else {
+      this_species <- "Mus musculus"
+    }
+    print(this_species)
+
+    m_df <- msigdbr(species = this_species, category = database)
+    m_list <- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
+
+    #genes = rownames(e1$obj)[1:200]
+    res <- seq_along(genes)
+    names(res) <- genes
+
+    fgseaRes <- fgsea(pathways = m_list,
+                      stats = res,
+                      scoreType="pos")
+    gseaTable <- fgseaRes %>%
+      tibble::as_tibble() %>%
+      dplyr::arrange(desc(NES)) %>%
+      dplyr::select(-leadingEdge,-ES,-nMoreExtreme) %>%
+      dplyr::arrange(padj) %>%
+      tibble::as_data_frame()
+    return(gseaTable)
+  }
+
+
 #' Run Enrichr
 #'
 #' @param req request payload

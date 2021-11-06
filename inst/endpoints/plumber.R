@@ -125,7 +125,7 @@ atac_qc_list
 #* @param cluster string
 #* @serializer unboxedJSON
 #* @post /regulon
-example_regulon_network
+calc_regulon_network
 
 #* Return all regulons
 #* @serializer unboxedJSON
@@ -153,7 +153,7 @@ example_gas
 #* @param ct1
 #* @param ct2
 #* @post /dr
-example_dr
+calc_dr
 
 #* Calculate DR
 #* @param genes
@@ -179,6 +179,12 @@ calc_deg
 #* @param database
 #* @post /gsea-table
 calc_gsea_table
+
+#* Calculate regulon GSEA table
+#* @param genes
+#* @param database
+#* @post /regulon-gsea-table
+calc_regulon_gsea_table
 
 #* Calculate GSEA table
 #* @param genes
