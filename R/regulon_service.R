@@ -426,7 +426,8 @@ calc_dr <- function(dat = "lymph",
     dplyr::filter(ct %in% this_tf_names) %>%
     dplyr::mutate(avg_log2FC = dplyr::case_when(avg_log2FC > 0 ~ log2(1 + avg_log2FC),
                                                 avg_log2FC < 0 ~ -1 * log2(1 + (-1 * avg_log2FC)))) %>%
-    dplyr::arrange(dplyr::desc(avg_log2FC))
+    dplyr::arrange(dplyr::desc(avg_log2FC)) %>%
+    dplyr::select(-pct.1, -pct.2)
   return (dr)
 }
 

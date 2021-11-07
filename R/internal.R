@@ -18,5 +18,5 @@ get_gene_range <- function(gene = "GAD1", flank = "10000") {
   this_start <- IRanges::start(this_ranges) - as.numeric(flank)
   this_end <- IRanges::end(this_ranges) + as.numeric(flank)
   result <- paste0("chr", this_ranges@seqnames, "-", this_start, "-", this_end)
-  return(result)
+  return(result[1])
 }
