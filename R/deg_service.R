@@ -69,8 +69,9 @@ calc_deg <-
         dplyr::arrange(dplyr::desc(avg_log2FC)) %>%
         tibble::rownames_to_column("gene")
     }
-    e1$deg <- this_markers %>%
+    this_markers <- this_markers %>%
       dplyr::rename(pct_1=pct.1, pct_2=pct.2)
+    e1$deg <- this_markers
     return(this_markers)
   }
 
