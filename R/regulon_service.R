@@ -381,8 +381,8 @@ example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
 #'
 calc_dr <- function(dat = "lymph",
                        tf = c('CTCF', 'ELF1', 'MEF2C', 'E2F6', 'EGR1'),
-                       ct1 = c(4),
-                       ct2 = c(1)) {
+                       ct1 = c(0),
+                       ct2 = c(2)) {
 
   dt <- get(dat)
 
@@ -412,15 +412,20 @@ calc_dr <- function(dat = "lymph",
   ras_obj <-
     AddMetaData(ras_obj, active_idents, col.name = "hgt_cluster")
   Idents(ras_obj) <- 'hgt_cluster'
+  Idents(ras_obj) <- case_result$graph.out
   dr <-
     FindMarkers(
       ras_obj,
       ident.1 = ct1,
       ident.2 = ct2,
-      logfc.threshold = 0.25,
-      min.pct = 0.25,
+      logfc.threshold = 0.0,
+      min.pct = 0,
       only.pos = T
     )
+  mean.fxn <- function(x) {
+    print(x)
+    return(log(x = rowMeans(x = x) + 0.5, base = 2))
+  }
   dr <- tibble::rownames_to_column(dr, "tf") %>%
     tidyr::separate(tf, c("tf", "ct"), "-") %>%
     dplyr::filter(ct %in% this_tf_names) %>%

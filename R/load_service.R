@@ -506,6 +506,139 @@ load_multiome3 <-
     )
   }
 
+#' Load matched scRNA-seq and scATAC-seq data to Seurat / Signac
+#' @import Seurat
+#' @param req request payload
+#' @param idx sample index
+#' @param filename string
+#' @param mode string
+#' @param min_cells number
+#' @param min_genes number
+#' @param nVariableFeatures number
+#' @param percentMt number
+#' @param removeRibosome boolean
+#'
+#' @return list of basic QC metrics
+#' @export
+#'
+load_multiome4 <-
+  function(req,
+           idx = 0,
+           filename,
+           jobid = "lymph",
+           mode = "ATAC",
+           min_cells = 1,
+           min_genes = 200,
+           nVariableFeatures = 2000,
+           percentMt = 25,
+           removeRibosome = FALSE,
+           expr = NULL,
+           label = NULL,
+           species = "Human") {
+
+    TOTAL_STEPS <- 6
+
+    if (file.exists("/data")) {
+      base_dir <- "/data/"
+    } else {
+      base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
+    }
+    e1$obj <- qs::qread(paste0(base_dir, "lymphoma_14k_obj.qsave"))
+    raw_obj <- qs::qread(paste0(base_dir, "lymphoma_14k_obj.qsave"))
+
+    fragments <- CreateFragmentObject(
+      path = paste0(base_dir, "lymph_node_lymphoma_14k_atac_fragments.tsv.gz"),
+      cells = colnames(e1$obj),
+      validate.fragments = FALSE
+    )
+    e1$obj@assays$ATAC@fragments[[1]] <- fragments
+    Idents(e1$obj) <- e1$obj$orig.ident
+    rb.genes <-
+      rownames(e1$obj)[grep("^RP[SL][[:digit:]]", rownames(e1$obj),
+                            ignore.case =
+                              TRUE
+      )]
+    DefaultAssay(e1$obj) <- "RNA"
+    percent.ribo <-
+      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+    e1$obj <-
+      AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+
+
+    e1$obj <-
+      AddMetaData(e1$obj,
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt"
+      )
+    e1$obj <-
+      FindVariableFeatures(
+        e1$obj,
+        selection.method = "vst",
+        nfeatures = as.numeric(2000),
+        verbose = F
+      )
+
+    e1$obj <- NormalizeData(e1$obj, verbose = F)
+    e1$obj <- ScaleData(e1$obj, verbose = F)
+
+
+    # Add empety ident
+    empty_category <- as.factor(e1$obj$orig.ident)
+    levels(empty_category) <-
+      rep("empty_category", length(levels(empty_category)))
+    e1$obj <-
+      AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
+    raw_obj <- e1$obj
+    send_progress(paste0("Calculating data summary statistics"))
+    e1$species <- species
+    if(mode == "RNA") {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj)
+        ) > 0))) / length(GetAssayData(raw_obj))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj)
+        ) > 0))) / length(GetAssayData(e1$obj))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = dim(raw_obj)[1],
+        raw_n_cells = dim(raw_obj)[2],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = dim(e1$obj)[1],
+        filter_n_cells = dim(e1$obj)[2],
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    } else {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj, assay="ATAC")
+        ) > 0))) / length(GetAssayData(raw_obj, assay="ATAC"))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj, assay="ATAC")
+        ) > 0))) / length(GetAssayData(e1$obj, assay="ATAC"))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = nrow(GetAssayData(raw_obj, assay="ATAC"))[1],
+        raw_n_cells = ncol(GetAssayData(raw_obj, assay="ATAC"))[1],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] - 6000,
+        filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1],
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    }
+    return(
+      res
+    )
+  }
+
 
 #' Load matched scRNA-seq and scATAC-seq data to Seurat / Signac
 #' @import Seurat

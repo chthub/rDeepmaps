@@ -7,8 +7,8 @@
 calc_dr(
   dat = "lymph",
   tf = c("CTCF", "ELF1", "MEF2C", "E2F6", "EGR1"),
-  ct1 = c(4),
-  ct2 = c(1)
+  ct1 = c(0),
+  ct2 = c(2)
 )
 }
 \value{

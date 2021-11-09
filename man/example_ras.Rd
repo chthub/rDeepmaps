@@ -4,7 +4,7 @@
 \alias{example_ras}
 \title{RAS}
 \usage{
-example_ras(gene = "MAFF", assay = "RNA")
+example_ras(dat = "lymph", gene = "TFAP2A", assay = "RNA", clust = "2")
 }
 \arguments{
 \item{gene}{string}

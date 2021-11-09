@@ -186,6 +186,34 @@ load_lymph <- function() {
   usethis::use_data(lymph, overwrite = TRUE)
 }
 
+#' example regulon data
+#' @description lymp
+#' @return null
+#'
+load_lymphoma_14k <- function() {
+  library(qs)
+  library(Seurat)
+  #PATH <- 'C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/'
+  case_result <- qread("C:/Users/flyku/Desktop/iris3/pbmc_match/lymphoma_14k_case_result_1109.qsave")
+  dt <- list()
+  dt$RAS <- case_result$RAS
+  dt$RAS_C <- case_result$RAS_C
+  RAS_C <- case_result$RAS_C
+  ras_obj <- CreateSeuratObject(RAS_C)
+  graph.out <- case_result$graph.out
+  dt$DR <- case_result$DR
+  dt$DR_all <- case_result$DR_all
+  GAS <- case_result$GAS
+  dt$RI_CT <-case_result$RI_CT
+  dt$Dregulon <- case_result$DR
+  dt$ct_regulon <- case_result$ct_regulon
+  dt$TF_cen <- case_result$TF_cen
+  dt$gene_cen <- case_result$gene_cen
+  dt$masterTF <- case_result$masterTF
+  lymphoma_14k <- dt
+  usethis::use_data(lymphoma_14k, overwrite = TRUE)
+}
+
 
 #' example regulon data
 #' @description lymp
