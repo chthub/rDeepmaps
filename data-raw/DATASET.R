@@ -209,7 +209,7 @@ load_lymphoma_14k <- function() {
   dt$ct_regulon <- case_result$ct_regulon
   dt$TF_cen <- case_result$TF_cen
   dt$gene_cen <- case_result$gene_cen
-  dt$masterTF <- case_result$masterTF
+  #dt$masterTF <- case_result$masterTF
   lymphoma_14k <- dt
   usethis::use_data(lymphoma_14k, overwrite = TRUE)
 }
