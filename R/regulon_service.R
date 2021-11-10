@@ -117,11 +117,10 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
   this_dr <- dt$DR_all %>%
     tibble::rownames_to_column("tf") %>%
     tidyr::separate(tf, c("tf", 'from'), "-") %>%
-    dplyr::filter(from == this_ct_name) %>%
+    dplyr::filter(cluster == clust) %>%
     dplyr::group_by(tf) %>%
     dplyr::arrange(tf) %>%
     dplyr::filter(dplyr::row_number() == 1)
-
 
   this_ras <- dt$RAS[, this_ct_idx] %>%
     as.data.frame() %>%
@@ -133,8 +132,6 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     dplyr::left_join(this_ras, by = "tf") %>%
     dplyr::mutate(avg_log2FC = tidyr::replace_na(avg_log2FC, NA_real_)) %>%
     dplyr::mutate(p_val_adj  = tidyr::replace_na(p_val_adj , NA_real_)) %>%
-    dplyr::mutate(avg_log2FC = dplyr::case_when(avg_log2FC > 0 ~ log2(1 + avg_log2FC),
-                                                avg_log2FC < 0 ~ -1 * log2(1 + (-1 * avg_log2FC)))) %>%
     dplyr::mutate(isCtsr = dplyr::case_when(avg_log2FC > 0.25 &
                                               p_val_adj < 0.05 ~ 'yes',
                                             T ~ 'no')) %>%
@@ -335,41 +332,8 @@ example_gas <- function(gene = "Gad1", assay = "RNA") {
 example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
                         ct1 = c(0, 1),
                         ct2 = c(2, 3)) {
-  data(dt)
-  score <- dt$Dregulon[[2]]
-  pvale <- dt$Dregulon[[1]]
-  set.seed(42)
-  rand_num <- sample.int(7, 2)
-  example_ct <-
-    as.numeric(stringr::str_extract(colnames(score[[1]]), "\\d+"))
 
-  if (!ct1 %in% colnames(score[[1]])) {
-    ct1 <- colnames(score[[1]])[rand_num[1]]
-  }
-
-  if (ct2 == 'all other cell types')
-  {
-    result <- data.frame()
-    for (i in tf) {
-      tmp <-
-        data.frame(tf = i,
-                   logfc = score[[i]][ct1, ct2],
-                   pvalue = pvale[[i]][ct1, ct2])
-      result <- rbind(result, tmp)
-    }
-  } else if (!ct2 %in% colnames(score[[1]])) {
-    ct2 <- colnames(score[[1]])[rand_num[2]]
-    result <- data.frame()
-    for (i in tf) {
-      tmp <-
-        data.frame(tf = i,
-                   logfc = score[[i]][ct1, ct2],
-                   pvalue = pvale[[i]][ct1, ct2])
-      result <- rbind(result, tmp)
-    }
-  }
-
-  return (result)
+  return (1)
 }
 
 #' Run DR
@@ -379,7 +343,7 @@ example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
 #' @return
 #' @export
 #'
-calc_dr <- function(dat = "lymph",
+calc_dr <- function(dat = "lymphoma_14k",
                        tf = c('CTCF', 'ELF1', 'MEF2C', 'E2F6', 'EGR1'),
                        ct1 = c(0),
                        ct2 = c(2)) {
@@ -412,25 +376,28 @@ calc_dr <- function(dat = "lymph",
   ras_obj <-
     AddMetaData(ras_obj, active_idents, col.name = "hgt_cluster")
   Idents(ras_obj) <- 'hgt_cluster'
-  Idents(ras_obj) <- case_result$graph.out
+
+  mean.fxn <- function(x) {
+    return(log(x = rowMeans(x = x) + 1, base = 2))
+  }
+
   dr <-
     FindMarkers(
       ras_obj,
       ident.1 = ct1,
       ident.2 = ct2,
-      logfc.threshold = 0.0,
       min.pct = 0,
-      only.pos = T
+      only.pos = T,
+      logfc.threshold = 0,
+      min.cells.feature = 0,
+      min.cells.group = 0,
+      return.thresh = 1,
+      mean.fxn = mean.fxn
     )
-  mean.fxn <- function(x) {
-    print(x)
-    return(log(x = rowMeans(x = x) + 0.5, base = 2))
-  }
+
   dr <- tibble::rownames_to_column(dr, "tf") %>%
     tidyr::separate(tf, c("tf", "ct"), "-") %>%
     dplyr::filter(ct %in% this_tf_names) %>%
-    dplyr::mutate(avg_log2FC = dplyr::case_when(avg_log2FC > 0 ~ log2(1 + avg_log2FC),
-                                                avg_log2FC < 0 ~ -1 * log2(1 + (-1 * avg_log2FC)))) %>%
     dplyr::arrange(dplyr::desc(avg_log2FC)) %>%
     dplyr::select(-pct.1, -pct.2)
   return (dr)
