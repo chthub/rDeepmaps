@@ -75,7 +75,7 @@ cluster_single_rna <- function(req,
 #'
 cluster_multiome <- function(req,
                              jobid = "example",
-                             method = "HGT",
+                             method = "Velocity weighted method",
                              nPCs = "20",
                              resolution = "0.5",
                              neighbor = "20") {
@@ -95,13 +95,15 @@ cluster_multiome <- function(req,
 
   seurat_cluster_idx <-
     which(colnames(e1$obj@meta.data) == "seurat_clusters")
-  colnames(e1$obj@meta.data)[seurat_cluster_idx] <-
-    "hgt_cluster"
-  e1$ident_idx <-
-    which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
-  Idents(e1$obj) <- e1$obj@meta.data[, seurat_cluster_idx]
-  #DimPlot(e1$obj, reduction = "umap.rna")
-  #Sys.sleep(0.1)
+
+  if(length(seurat_cluster_idx)) {
+    colnames(e1$obj@meta.data)[seurat_cluster_idx] <-
+      "hgt_cluster"
+    e1$ident_idx <-
+      which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
+    Idents(e1$obj) <- e1$obj@meta.data[, seurat_cluster_idx]
+  }
+
   return(list(
     n_seurat_clusters = length(levels(Idents(e1$obj))),
     umap_pts = data.frame(
@@ -163,8 +165,6 @@ cluster_multiome2 <- function(req,
                     k.param = neighbor,
                     verbose = F
       )
-
-
 
     e1$obj <- RunUMAP(
       e1$obj,

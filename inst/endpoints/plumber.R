@@ -306,7 +306,7 @@ interactive_heatmap
 #* @param is_annotation
 #* @param is_peak
 #* @post /coverage-plot
-#* @serializer png list(width = 1200, height = 1000)
+#* @serializer png list(width = 2400, height = 2000)
 coverage_plot
 
 #* Return embeddings coordinates from a given embedding name

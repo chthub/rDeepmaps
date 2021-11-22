@@ -159,7 +159,7 @@ plot_enrichr_dot <-
     library(forcats)
     library(stringr)
     #write.csv(df,"df.csv")
-    df <- read.csv("C:/Users/flyku/Documents/GitHub/iris3api/inst/endpoints/df.csv")
+    #df <- read.csv("C:/Users/flyku/Documents/GitHub/iris3api/inst/endpoints/df.csv")
     new_df <- df %>%
       dplyr::mutate(
         Term = as.factor(stringr::str_replace_all(Term, " \\(GO.*", "")),

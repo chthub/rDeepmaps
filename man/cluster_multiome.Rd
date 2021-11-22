@@ -7,7 +7,7 @@
 cluster_multiome(
   req,
   jobid = "example",
-  method = "HGT",
+  method = "Velocity weighted method",
   nPCs = "20",
   resolution = "0.5",
   neighbor = "20"
