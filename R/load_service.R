@@ -27,7 +27,7 @@ load_single_rna <-
            species = "Human") {
     # expr_type <- label_type <- 'application/vnd.ms-excel'
     # label_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/fbb36e99797c313276f8bca86539cb3c"
-    # expr_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/3c0955e700b4bf2d177442236d0c2395"
+    # expr_path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/b16af116a67fc89ec0991170f99b7503"
 
     # Yan: 1619284757781
     # Zeisel: 1619291336397
@@ -38,9 +38,11 @@ load_single_rna <-
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
 
-      label_type <- as.character(label$mimetype[1])
-      label_path <- as.character(label$filename[1])
-      e1$meta <- read_deepmaps(label_type, label_path)
+      if(length(label) > 0 ){
+        label_type <- as.character(label$mimetype[1])
+        label_path <- as.character(label$filename[1])
+        e1$meta <- read_deepmaps(label_type, label_path)
+      }
     } else {
       raw_expr_data <- iris3api::zeisel_2015$expr
       e1$meta <- iris3api::zeisel_2015$meta
@@ -152,10 +154,11 @@ load_multi_rna <-
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
-
-      label_type <- as.character(label$mimetype[1])
-      label_path <- as.character(label$filename[1])
-      e1$meta <- read_deepmaps(label_type, label_path)
+      if(length(label) > 0 ){
+        label_type <- as.character(label$mimetype[1])
+        label_path <- as.character(label$filename[1])
+        e1$meta <- read_deepmaps(label_type, label_path)
+      }
     } else {
       raw_expr_data <- iris3api::ifnb_2800$expr
       e1$meta <- iris3api::ifnb_2800$meta
@@ -647,10 +650,11 @@ load_multiome4 <-
 #' @param filename string
 #' @param mode string
 #' @param min_cells number
-#' @param min_genes number
+#' @param min_counts number
 #' @param nVariableFeatures number
 #' @param percentMt number
-#' @param removeRibosome boolean
+#' @param percentMt number
+#' @param removeOutlier boolean
 #'
 #' @return list of basic QC metrics
 #' @export
@@ -660,12 +664,13 @@ load_multiome <-
            idx = 0,
            filename,
            jobid = "example",
-           mode = "ATAC",
-           min_cells = 1,
-           min_genes = 200,
+           mode = "RNA",
+           min_cells = 0.001,
+           min_counts = 20000,
+           removeOutlier = T,
            nVariableFeatures = 2000,
-           percentMt = 10,
-           removeRibosome = FALSE,
+           percentMt = 0.25,
+           percentRb = 0.5,
            expr = NULL,
            label = NULL,
            species = "Human",
@@ -702,26 +707,26 @@ load_multiome <-
       }
       Idents(e1$obj) <- e1$obj$orig.ident
       rb.genes <-
-        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+        rownames(e1$obj)[grep("^R[Pp][slSL][[:digit:]]", rownames(e1$obj),
                               ignore.case =
-                                TRUE
-        )]
+                                TRUE)]
       percent.ribo <-
         Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
       e1$obj <-
         AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     } else {
       #path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/0cc4610f4c9b4c0f97ec5a84c2e19e30"
+      #0cc4610f4c9b4c0f97ec5a84c2e19e30
+      #
+      #path <- gsub("/mnt/c","c:/",as.character(path))
       path <- gsub("/mnt/c","c:/",as.character(expr$path))
       print(path)
       raw_expr_data <- Read10X_h5(paste0(path))
       raw_obj <- CreateSeuratObject(raw_expr_data$`Gene Expression`)
-
       e1$obj <-
         CreateSeuratObject(
-          raw_expr_data$`Gene Expression`
-          #,min.cells = as.numeric(min_cells),
-          #min.features = as.numeric(min_genes)
+          raw_expr_data$`Gene Expression`,
+          min.cells = as.numeric(0.001) *  ncol(raw_expr_data$`Gene Expression`)
         )
       atac_obj <- CreateChromatinAssay(counts = raw_expr_data$Peaks[,colnames(e1$obj)],
                                        sep = c(":", "-"))
@@ -732,20 +737,22 @@ load_multiome <-
                     PercentageFeatureSet(e1$obj, pattern = "^MT-"),
                     col.name = "percent.mt"
         )
+
       Idents(e1$obj) <- e1$obj$orig.ident
       rb.genes <-
-        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+        rownames(e1$obj)[grep("^R[p][sl][[:digit:]]", rownames(e1$obj),
                               ignore.case =
-                                TRUE
-        )]
+                                TRUE)]
       percent.ribo <-
         Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
       e1$obj <-
         AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
-      e1$obj <-
-        subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
-    }
 
+    }
+    e1$obj <-
+      subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt) * 100)
+    #e1$obj <-
+    #  subset(e1$obj, subset = `percent.ribo` < as.numeric(percentRb) * 100)
     # Add empety ident
     empty_category <- as.factor(e1$obj$orig.ident)
     levels(empty_category) <-

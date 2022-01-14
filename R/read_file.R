@@ -18,6 +18,7 @@ read_deepmaps <-
     }
 
     absolute_path <- paste0(path_prefix, path)
+    #absolute_path <- "C:/Users/flyku/Documents/deepmaps-data/b16af116a67fc89ec0991170f99b7503"
     result <-
       switch(mimetype,
         "application/vnd.ms-excel" = read_deepmaps_text(absolute_path),

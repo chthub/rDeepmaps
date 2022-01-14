@@ -5,8 +5,13 @@
 #' @return json
 #' @export
 #'
-calc_regulon_network <- function(dat = "lymph", clust = "2") {
+calc_regulon_network <- function(dat = "lymphoma_14k", clust = "2") {
   set.seed(42)
+  if(dat == '1642131295448' | dat == "lymphoma_14k") {
+    dat <- "lymphoma_14k"
+  } else {
+    dat <- "lymph"
+  }
   dt <- get(dat)
   this_ct_name <- paste0('ct', clust)
   tmp_regulon <- dt$ct_regulon
@@ -52,7 +57,7 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
-  Sys.sleep(0)
+  Sys.sleep(10)
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
     dplyr::group_by(tf) %>%
@@ -154,6 +159,11 @@ calc_regulon_network <- function(dat = "lymph", clust = "2") {
 #'
 list_regulon_network <- function(dat = "lymph") {
   set.seed(42)
+  if(dat == '1642131295448' | dat == "lymphoma_14k") {
+    dat <- "lymphoma_14k"
+  } else {
+    dat <- "lymph"
+  }
   dt <- get(dat)
   tmp_regulon <- dt$ct_regulon
 
@@ -241,7 +251,11 @@ example_cluster_coords <- function() {
 #' @export
 #'
 example_ras <- function(dat = "lymph", gene = "TFAP2A", assay = "RNA", clust = "2") {
-
+  if(dat == '1642131295448'| dat == "lymphoma_14k") {
+    dat <- "lymphoma_14k"
+  } else {
+    dat <- "lymph"
+  }
   dt <- get(dat)
   send_progress(paste0("Loading regulon: ", gene))
   if ('Gad1' %in% rownames(e1$obj)) {
@@ -348,6 +362,11 @@ calc_dr <- function(dat = "lymphoma_14k",
                        ct1 = c(0),
                        ct2 = c(2)) {
 
+  if(dat == '1642131295448'| dat == "lymphoma_14k") {
+    dat <- "lymphoma_14k"
+  } else {
+    dat <- "lymph"
+  }
   dt <- get(dat)
 
   active_idents <-

@@ -9,12 +9,13 @@ load_multiome(
   idx = 0,
   filename,
   jobid = "example",
-  mode = "ATAC",
-  min_cells = 1,
-  min_genes = 200,
+  mode = "RNA",
+  min_cells = 0.001,
+  min_counts = 20000,
+  removeOutlier = T,
   nVariableFeatures = 2000,
-  percentMt = 10,
-  removeRibosome = FALSE,
+  percentMt = 0.25,
+  percentRb = 0.5,
   expr = NULL,
   label = NULL,
   species = "Human",
@@ -32,13 +33,13 @@ load_multiome(
 
 \item{min_cells}{number}
 
-\item{min_genes}{number}
+\item{min_counts}{number}
+
+\item{removeOutlier}{boolean}
 
 \item{nVariableFeatures}{number}
 
 \item{percentMt}{number}
-
-\item{removeRibosome}{boolean}
 }
 \value{
 list of basic QC metrics

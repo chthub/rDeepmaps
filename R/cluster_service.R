@@ -124,6 +124,7 @@ cluster_multiome <- function(req,
     e1$obj <- NormalizeData(e1$obj, verbose = F)
     e1$obj <- ScaleData(e1$obj, verbose = F)
     e1$obj@meta.data$cell_type <- NULL
+    Sys.sleep(10)
   }
 
   if(length(e1$obj@reductions) < 2) {
@@ -166,7 +167,8 @@ cluster_multiome <- function(req,
     # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
     # e1$obj <- Signac::RunTFIDF(e1$obj)
     # e1$obj <- Signac::RunSVD(e1$obj)
-    Sys.sleep(1)
+
+    Sys.sleep(round(ncol(e1$obj)/600))
 
     message(glue::glue("Run UMAP ATAC"))
     e1$obj <-
