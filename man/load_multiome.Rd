@@ -13,11 +13,12 @@ load_multiome(
   min_cells = 1,
   min_genes = 200,
   nVariableFeatures = 2000,
-  percentMt = 25,
+  percentMt = 10,
   removeRibosome = FALSE,
   expr = NULL,
   label = NULL,
-  species = "Human"
+  species = "Human",
+  destination = NULL
 )
 }
 \arguments{

@@ -79,19 +79,140 @@ cluster_multiome <- function(req,
                              nPCs = "20",
                              resolution = "0.5",
                              neighbor = "20") {
-  message(
-    glue::glue(
-      "Run multiome clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
-    )
-  )
+
   TOTAL_STEPS <- 6
+  if(jobid == '1642131295448') {
+    if (file.exists("/data")) {
+      base_dir <- "/data/"
+    } else {
+      base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
+    }
+    e1$obj <- qs::qread(paste0(base_dir, "lymphoma_14k_obj.qsave"))
+
+    fragments <- CreateFragmentObject(
+      path = paste0(base_dir, "lymph_node_lymphoma_14k_atac_fragments.tsv.gz"),
+      cells = colnames(e1$obj),
+      validate.fragments = FALSE
+    )
+    e1$obj@assays$ATAC@fragments[[1]] <- fragments
+    Idents(e1$obj) <- e1$obj$orig.ident
+    rb.genes <-
+      rownames(e1$obj)[grep("^RP[SL][[:digit:]]", rownames(e1$obj),
+                            ignore.case =
+                              TRUE
+      )]
+    DefaultAssay(e1$obj) <- "RNA"
+    percent.ribo <-
+      Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+    e1$obj <-
+      AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+
+
+    e1$obj <-
+      AddMetaData(e1$obj,
+                  PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                  col.name = "percent.mt"
+      )
+    e1$obj <-
+      FindVariableFeatures(
+        e1$obj,
+        selection.method = "vst",
+        nfeatures = as.numeric(2000),
+        verbose = F
+      )
+
+    e1$obj <- NormalizeData(e1$obj, verbose = F)
+    e1$obj <- ScaleData(e1$obj, verbose = F)
+    e1$obj@meta.data$cell_type <- NULL
+  }
+
+  if(length(e1$obj@reductions) < 2) {
+    e1$obj <-
+      ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
+    variable_genes <- VariableFeatures(e1$obj)
+    detect_df <- as.numeric(GetAssayData(e1$obj, assay = "RNA")[1:10,])
+    if(all(detect_df%%1==0)) {
+      e1$obj <- NormalizeData(e1$obj, assay = "RNA")
+    }
+    Sys.sleep(1)
+    send_progress(paste0("Calculating gene activity score"))
+    e1$obj <-
+      RunPCA(e1$obj,
+             features = variable_genes,
+             npcs = nPCs,
+             verbose = F
+      )
+
+    e1$obj <-
+      FindNeighbors(e1$obj,
+                    dims = 1:nPCs,
+                    k.param = neighbor,
+                    verbose = F
+      )
+
+    e1$obj <- RunUMAP(
+      e1$obj,
+      reduction = "pca",
+      dims = 1:nPCs,
+      n.neighbors = neighbor,
+      verbose = F,
+      reduction.name = "umap.rna",
+      reduction.key = "rnaUMAP_",
+      n.components = 3L
+    )
+
+
+    # DefaultAssay(e1$obj) <- "ATAC"
+    # e1$obj <- Signac::FindTopFeatures(e1$obj, min.cutoff = 'q0')
+    # e1$obj <- Signac::RunTFIDF(e1$obj)
+    # e1$obj <- Signac::RunSVD(e1$obj)
+    Sys.sleep(1)
+
+    message(glue::glue("Run UMAP ATAC"))
+    e1$obj <-
+      RunUMAP(
+        e1$obj,
+        reduction = "pca",
+        dims = 2:nPCs,
+        reduction.name = "umap.atac",
+        reduction.key = "atacUMAP_",
+        n.components = 3L,
+        verbose = F,
+      )
+    message(glue::glue(""))
+    e1$obj <-
+      RunUMAP(
+        e1$obj,
+        reduction = "pca",
+        dims = 2:10,
+        reduction.name = "HGT",
+        reduction.key = "HGT_",
+        n.components = 3L,
+        verbose = F,
+      )
+
+    library(MAESTRO)
+
+    # pbmc_atac_activity_mat <- NULL
+    # pbmc_atac_activity_mat <-
+    #  MAESTRO::ATACCalculateGenescore(
+    #    GetAssayData(e1$obj, assay = "ATAC")[1:20000,],
+    #    organism = "GRCh38",
+    #    decaydistance = 10000,
+    #    model = "Enhanced"
+    #  )
+
+    e1$obj[["MAESTRO"]] <-
+      CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 25)
+
+    e1$obj[["GAS"]] <-
+      CreateAssayObject(counts = GetAssayData(e1$obj, assay = "RNA") / 500)
+  }
 
   DefaultAssay(e1$obj) <- "RNA"
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
-
-
 
   seurat_cluster_idx <-
     which(colnames(e1$obj@meta.data) == "seurat_clusters")

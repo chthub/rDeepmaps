@@ -664,11 +664,13 @@ load_multiome <-
            min_cells = 1,
            min_genes = 200,
            nVariableFeatures = 2000,
-           percentMt = 25,
+           percentMt = 10,
            removeRibosome = FALSE,
            expr = NULL,
            label = NULL,
-           species = "Human") {
+           species = "Human",
+           destination = NULL
+           ) {
     # expr_type <- label_type <- 'application/octet-stream'
     # label_path <- ""
     # expr_path <- "9a9841a85c48b692e70bc03db811ccdc"
@@ -708,6 +710,40 @@ load_multiome <-
         Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
       e1$obj <-
         AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+    } else {
+      #path <- "/mnt/c/Users/flyku/Documents/deepmaps-data/0cc4610f4c9b4c0f97ec5a84c2e19e30"
+      path <- gsub("/mnt/c","c:/",as.character(expr$path))
+      print(path)
+      raw_expr_data <- Read10X_h5(paste0(path))
+      raw_obj <- CreateSeuratObject(raw_expr_data$`Gene Expression`)
+
+      e1$obj <-
+        CreateSeuratObject(
+          raw_expr_data$`Gene Expression`
+          #,min.cells = as.numeric(min_cells),
+          #min.features = as.numeric(min_genes)
+        )
+      atac_obj <- CreateChromatinAssay(counts = raw_expr_data$Peaks[,colnames(e1$obj)],
+                                       sep = c(":", "-"))
+
+      e1$obj[["ATAC"]] <- atac_obj
+      e1$obj <-
+        AddMetaData(e1$obj,
+                    PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                    col.name = "percent.mt"
+        )
+      Idents(e1$obj) <- e1$obj$orig.ident
+      rb.genes <-
+        rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj),
+                              ignore.case =
+                                TRUE
+        )]
+      percent.ribo <-
+        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      e1$obj <-
+        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+      e1$obj <-
+        subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
     }
 
     # Add empety ident
@@ -755,7 +791,7 @@ load_multiome <-
         raw_n_cells = ncol(GetAssayData(raw_obj, assay="ATAC"))[1],
         raw_percent_zero = raw_percent_zero,
         raw_mean_expr = raw_mean_expr,
-        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] - 6000,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] * 0.8,
         filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1],
         filter_percent_zero = filter_percent_zero,
         filter_mean_expr = filter_mean_expr

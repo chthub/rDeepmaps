@@ -7,6 +7,7 @@ rna_qc_list <- function() {
   TOTAL_STEPS <- 6
   send_progress(paste0("Calculating scRNA-seq QC metrics"))
 
+  e1$obj <- FindVariableFeatures(e1$obj, verbose = F)
   vargenes <- VariableFeatures(e1$obj)
   Idents(e1$obj) <- e1$obj@meta.data$empty_category
   this_obj <-
