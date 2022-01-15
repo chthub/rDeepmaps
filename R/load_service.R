@@ -142,15 +142,15 @@ load_multi_rna <-
            jobid = "example",
            type = "example",
            filename,
-           min_cells = 1,
-           min_genes = 200,
+           min_cells = 20000,
+           min_genes = 0.001,
            nVariableFeatures = 3000,
            percentMt = 5,
            removeRibosome = FALSE,
            label = NULL,
            species = "Human") {
     send_progress("Start processing scRNA-seq dataset")
-    if (jobid == "example1") {
+    if (jobid != "example") {
       expr_type <- as.character(expr$mimetype[1])
       expr_path <- as.character(expr$filename[1])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
@@ -171,9 +171,9 @@ load_multi_rna <-
     e1$obj <-
       CreateSeuratObject(
         raw_expr_data,
-        min.cells = as.numeric(min_cells),
-        min.features = as.numeric(min_genes)
+        min.cells = as.numeric(min_genes) * ncol(raw_expr_data),
       )
+
     e1$species <- "Human"
     empty_category <- as.factor(e1$obj$orig.ident)
     levels(empty_category) <-
@@ -200,14 +200,14 @@ load_multi_rna <-
 
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
-      rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj))]
+      rownames(e1$obj)[grep("^Rp[sl][[:digit:]]", rownames(e1$obj), ignore.case = T)]
     percent.ribo <-
       Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
     send_progress("Calculating data summary statistics")
     e1$obj <-
       AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     e1$obj <-
-      subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt))
+      subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt) * 100)
     raw_percent_zero <-
       length(which((as.matrix(
         GetAssayData(raw_obj)
