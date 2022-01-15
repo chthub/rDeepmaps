@@ -15,7 +15,11 @@ cluster_single_rna <- function(req,
   message(glue(
     "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
-  send_progress("Start calculation")
+
+  if(jobid == '1642225634954') {
+    e1$obj@meta.data$cell_type <- NULL
+  }
+
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
   neighbor <- as.numeric(neighbor)
@@ -24,21 +28,21 @@ cluster_single_rna <- function(req,
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
 
-  send_progress("Running PCA")
+
   e1$obj <-
     RunPCA(e1$obj,
       features = variable_genes,
       npcs = nPCs,
       verbose = F
     )
-  send_progress("Constructing shared nearest neighbor graph")
+
   e1$obj <-
     FindNeighbors(e1$obj,
       dims = 1:nPCs,
       k.param = neighbor,
       verbose = F
     )
-  send_progress("Running louvain clustering")
+
   e1$obj <-
     FindClusters(e1$obj, resolution = resolution, verbose = F)
   send_progress("Running UMAP")
