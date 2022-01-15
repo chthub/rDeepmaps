@@ -872,6 +872,7 @@ load_citeseq <-
     } else {
 
       path <- gsub("/mnt/c","c:/",as.character(expr$path))
+      path <- gsub("/scratch/deepmaps","",as.character(expr$path))
       print(path)
       raw_expr_data <- Read10X_h5(paste0(path))
       raw_obj <- CreateSeuratObject(raw_expr_data$`Gene Expression`)
