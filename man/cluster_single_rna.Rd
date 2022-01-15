@@ -4,10 +4,18 @@
 \alias{cluster_single_rna}
 \title{Run Seurat clustering}
 \usage{
-cluster_single_rna(req, nPCs = 15, resolution = 0.5, neighbor = 20)
+cluster_single_rna(
+  req,
+  jobid = "example",
+  nPCs = 15,
+  resolution = 0.5,
+  neighbor = 20
+)
 }
 \arguments{
 \item{req}{request payload}
+
+\item{jobid}{string}
 
 \item{nPCs}{string}
 

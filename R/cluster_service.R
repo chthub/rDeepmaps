@@ -1,6 +1,7 @@
 #' Run Seurat clustering
 #'
 #' @param req request payload
+#' @param jobid string
 #' @param nPCs string
 #' @param resolution string
 #' @param neighbor string
@@ -9,6 +10,7 @@
 #' @export
 #'
 cluster_single_rna <- function(req,
+                               jobid = "example",
                                nPCs = 15,
                                resolution = 0.5,
                                neighbor = 20) {
