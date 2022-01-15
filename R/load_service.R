@@ -156,6 +156,7 @@ load_multi_rna <-
     expr$mimetype <- "application/vnd.ms-excel"
     expr$filename <- "c6c13e15a1f1dd3f0fdcba2ae3c65d20"
     if (jobid == "example1") {
+      path <- gsub("/scratch/deepmaps","",as.character(expr$path))
       expr_type <- as.character(expr$mimetype[idx])
       expr_path <- as.character(expr$filename[idx])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
@@ -725,6 +726,7 @@ load_multiome <-
       #
       #path <- gsub("/mnt/c","c:/",as.character(path))
       path <- gsub("/mnt/c","c:/",as.character(expr$path))
+      path <- gsub("/scratch/deepmaps","",as.character(expr$path))
       print(path)
       raw_expr_data <- Read10X_h5(paste0(path))
       raw_obj <- CreateSeuratObject(raw_expr_data$`Gene Expression`)
