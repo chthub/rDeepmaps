@@ -44,23 +44,29 @@ load_multi_rna
 #* @post /load-multiome
 load_multiome
 
-#* Tmp example
+
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
 #* @post /load-multiome2
 load_multiome2
 
-#* Tmp example
+
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
 #* @post /load-multiome3
 load_multiome3
 
-#* Tmp example
+
 #* @param filename
 #* @param type Upload expression file type, CellGene, 10X h5, 10X folder
 #* @post /load-multiome4
 load_multiome4
+
+
+#* @param filename
+#* @param type Upload expression file type, CellGene, 10X h5, 10X folder
+#* @post /load-citeseq
+load_citeseq
 
 #################################### Clustering part
 

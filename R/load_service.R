@@ -138,21 +138,26 @@ load_single_rna <-
 #'
 load_multi_rna <-
   function(req,
-           idx = 2,
-           jobid = "example",
-           type = "example",
+           idx = 1,
+           jobid = "1642208223822",
+           type = "multiRna",
+           mode = "RNA",
            filename,
            min_cells = 20000,
            min_genes = 0.001,
-           nVariableFeatures = 3000,
-           percentMt = 5,
-           removeRibosome = FALSE,
+           nVariableFeatures = 2000,
+           percentMt = 0.1,
+           percentRb = 0.5,
+           removeOutlier = FALSE,
            label = NULL,
            species = "Human") {
     send_progress("Start processing scRNA-seq dataset")
-    if (jobid != "example") {
-      expr_type <- as.character(expr$mimetype[1])
-      expr_path <- as.character(expr$filename[1])
+    expr <- data.frame(jobid = "1642208223822")
+    expr$mimetype <- "application/vnd.ms-excel"
+    expr$filename <- "c6c13e15a1f1dd3f0fdcba2ae3c65d20"
+    if (jobid == "example1") {
+      expr_type <- as.character(expr$mimetype[idx])
+      expr_path <- as.character(expr$filename[idx])
       raw_expr_data <- read_deepmaps(expr_type, expr_path)
       if(length(label) > 0 ){
         label_type <- as.character(label$mimetype[1])
@@ -800,6 +805,153 @@ load_multiome <-
         raw_mean_expr = raw_mean_expr,
         filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] * 0.8,
         filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1],
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    }
+    return(
+      res
+    )
+  }
+
+#' Load CITE-seq data
+#' @import Seurat
+#' @param req request payload
+#' @param idx sample index
+#' @param filename string
+#' @param mode string
+#' @param min_cells number
+#' @param min_counts number
+#' @param nVariableFeatures number
+#' @param percentMt number
+#' @param percentMt number
+#' @param removeOutlier boolean
+#'
+#' @return list of basic QC metrics
+#' @export
+#'
+load_citeseq <-
+  function(req,
+           idx = 0,
+           filename,
+           jobid = "example",
+           mode = "RNA",
+           min_cells = 0.001,
+           min_counts = 20000,
+           removeOutlier = T,
+           nVariableFeatures = 2000,
+           percentMt = 0.25,
+           percentRb = 0.5,
+           expr = NULL,
+           label = NULL,
+           species = "Human",
+           destination = NULL
+  ) {
+    if (jobid !="example1") {
+      if (file.exists("/data")) {
+        e1$obj <- qs::qread("/data/PBMCandLung_obj.qsave")
+        raw_obj <- qs::qread("/data/PBMCandLung_obj.qsave")
+      } else {
+        e1$obj <-
+          qs::qread(
+            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/PBMCandLung_obj.qsave"
+          )
+        raw_obj <- e1$obj
+        iris3api::set_embedding(name = "umap.hgt")
+
+      }
+      Idents(e1$obj) <- e1$obj$orig.ident
+      rb.genes <-
+        rownames(e1$obj)[grep("^R[Pp][slSL][[:digit:]]", rownames(e1$obj),
+                              ignore.case =
+                                TRUE)]
+      percent.ribo <-
+        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      e1$obj <-
+        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+    } else {
+
+      path <- gsub("/mnt/c","c:/",as.character(expr$path))
+      print(path)
+      raw_expr_data <- Read10X_h5(paste0(path))
+      raw_obj <- CreateSeuratObject(raw_expr_data$`Gene Expression`)
+      e1$obj <-
+        CreateSeuratObject(
+          raw_expr_data$`Gene Expression`,
+          min.cells = as.numeric(0.001) *  ncol(raw_expr_data$`Gene Expression`)
+        )
+      atac_obj <- CreateChromatinAssay(counts = raw_expr_data$Peaks[,colnames(e1$obj)],
+                                       sep = c(":", "-"))
+
+      e1$obj[["ATAC"]] <- atac_obj
+      e1$obj <-
+        AddMetaData(e1$obj,
+                    PercentageFeatureSet(e1$obj, pattern = "^MT-"),
+                    col.name = "percent.mt"
+        )
+
+      Idents(e1$obj) <- e1$obj$orig.ident
+      rb.genes <-
+        rownames(e1$obj)[grep("^R[p][sl][[:digit:]]", rownames(e1$obj),
+                              ignore.case =
+                                TRUE)]
+      percent.ribo <-
+        Matrix::colSums(e1$obj[rb.genes, ]) / Matrix::colSums(e1$obj) * 100
+      e1$obj <-
+        AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
+
+    }
+    #e1$obj <-
+    #  subset(e1$obj, subset = `percent.mt` < as.numeric(percentMt) * 100)
+    #e1$obj <-
+    #  subset(e1$obj, subset = `percent.ribo` < as.numeric(percentRb) * 100)
+    # Add empety ident
+    empty_category <- as.factor(e1$obj$orig.ident)
+    levels(empty_category) <-
+      rep("empty_category", length(levels(empty_category)))
+    e1$obj <-
+      AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
+    raw_obj <- e1$obj
+    e1$species <- species
+    if(mode == "RNA") {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj)
+        ) > 0))) / length(GetAssayData(raw_obj))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj)
+        ) > 0))) / length(GetAssayData(e1$obj))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = dim(raw_obj)[1],
+        raw_n_cells = dim(raw_obj)[2],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = dim(e1$obj)[1],
+        filter_n_cells = dim(e1$obj)[2],
+        filter_percent_zero = filter_percent_zero,
+        filter_mean_expr = filter_mean_expr
+      )
+    } else {
+      raw_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(raw_obj, assay="ADT")
+        ) > 0))) / length(GetAssayData(raw_obj, assay="ADT"))
+      filter_percent_zero <-
+        length(which((as.matrix(
+          GetAssayData(e1$obj, assay="ADT")
+        ) > 0))) / length(GetAssayData(e1$obj, assay="ADT"))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      res <- list(
+        raw_n_genes = nrow(GetAssayData(raw_obj, assay="ADT"))[1],
+        raw_n_cells = ncol(GetAssayData(raw_obj, assay="ADT"))[1],
+        raw_percent_zero = raw_percent_zero,
+        raw_mean_expr = raw_mean_expr,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ADT"))[1],
+        filter_n_cells = ncol(GetAssayData(e1$obj, assay="ADT"))[1],
         filter_percent_zero = filter_percent_zero,
         filter_mean_expr = filter_mean_expr
       )

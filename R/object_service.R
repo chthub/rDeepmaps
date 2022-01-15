@@ -35,7 +35,8 @@ get_all_idents <- function() {
       "SCT.weight",
       "blacklist*",
       "rna",
-      "mito"
+      "mito",
+      "HGT_*",
     )
     matches <- unique(grep(paste(pattern, collapse = "|"),
       this_ident,
