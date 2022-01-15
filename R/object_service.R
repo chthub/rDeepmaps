@@ -36,7 +36,7 @@ get_all_idents <- function() {
       "blacklist*",
       "rna",
       "mito",
-      "HGT_*",
+      "HGT_*"
     )
     matches <- unique(grep(paste(pattern, collapse = "|"),
       this_ident,
