@@ -72,6 +72,7 @@ cluster_single_rna <- function(req,
 #' Run multiome clustering
 #'
 #' @param req request payload
+#' @param jobid string
 #' @param nPCs string
 #' @param resolution string
 #' @param neighbor string
@@ -87,7 +88,7 @@ cluster_multiome <- function(req,
                              neighbor = "20") {
 
   TOTAL_STEPS <- 6
-  if(jobid == '1642131295448') {
+  if(jobid %in% c('1642131295448','lymphoma_14k')) {
     if (file.exists("/data")) {
       base_dir <- "/data/"
     } else {
