@@ -7,6 +7,7 @@
 cluster_multiome(
   req,
   jobid = "example",
+  load = "load",
   method = "Velocity weighted method",
   nPCs = "20",
   resolution = "0.5",
@@ -15,6 +16,8 @@ cluster_multiome(
 }
 \arguments{
 \item{req}{request payload}
+
+\item{jobid}{string}
 
 \item{nPCs}{string}
 

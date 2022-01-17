@@ -10,6 +10,7 @@ load_multi_rna(
   jobid = "1642208223822",
   type = "multiRna",
   mode = "RNA",
+  load = "load",
   filename,
   min_cells = 20000,
   min_genes = 0.001,

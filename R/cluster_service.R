@@ -11,12 +11,17 @@
 #'
 cluster_single_rna <- function(req,
                                jobid = "example",
+                               load = "load",
                                nPCs = 15,
                                resolution = 0.5,
                                neighbor = 20) {
   message(glue(
     "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
+
+  if(load == "Load") {
+    e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
+  }
 
   if(jobid == '1642225634954') {
     e1$obj@meta.data$cell_type <- NULL
@@ -60,6 +65,10 @@ cluster_single_rna <- function(req,
     which(colnames(e1$obj@meta.data) == "seurat_clusters")
   Idents(e1$obj) <- e1$obj@meta.data[, e1$ident_idx]
 
+  if(load == "Calculate") {
+    qs::qsave(e1$obj, paste0(get_base_dir(), jobid, ".qsave"))
+  }
+
   return(list(
     n_seurat_clusters = length(levels(e1$obj$seurat_clusters)),
     umap_pts = data.frame(
@@ -82,12 +91,14 @@ cluster_single_rna <- function(req,
 #'
 cluster_multiome <- function(req,
                              jobid = "example",
+                             load = "load",
                              method = "Velocity weighted method",
                              nPCs = "20",
                              resolution = "0.5",
                              neighbor = "20") {
 
   TOTAL_STEPS <- 6
+
   if(jobid %in% c('1642131295448','lymphoma_14k')) {
     if (file.exists("/data")) {
       base_dir <- "/data/"
@@ -132,6 +143,10 @@ cluster_multiome <- function(req,
     e1$obj <- ScaleData(e1$obj, verbose = F)
     e1$obj@meta.data$cell_type <- NULL
     Sys.sleep(10)
+  }
+
+  if(load == "Load") {
+    e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
   }
 
   if(length(e1$obj@reductions) < 2) {
@@ -232,6 +247,10 @@ cluster_multiome <- function(req,
     e1$ident_idx <-
       which(colnames(e1$obj@meta.data) == "hgt_cluster")[1]
     Idents(e1$obj) <- e1$obj@meta.data[, seurat_cluster_idx]
+  }
+
+  if(load == "Calculate") {
+    qs::qsave(e1$obj, paste0(get_base_dir(), jobid, ".qsave"))
   }
 
   return(list(
@@ -588,6 +607,7 @@ select_cells <- function(req, newLevelName = "ct1", filterPayload) {
   active_cate_levels <- levels(e1$obj@meta.data[, active_cate_idx])
 
   e1$regulon_ident <- active_cate
+
   return(
     list(
       active_category = active_cate,

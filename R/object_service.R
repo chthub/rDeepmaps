@@ -147,3 +147,17 @@ set_obj <- function(req, type = "full") {
   }
   return(type)
 }
+
+#' Get base dir
+#' @return string
+#' @export
+#'
+get_base_dir <- function() {
+  if (file.exists("/data")) {
+    base_dir <- "/data/"
+  } else {
+    base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
+  }
+
+  return(base_dir)
+}

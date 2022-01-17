@@ -7,6 +7,7 @@
 cluster_single_rna(
   req,
   jobid = "example",
+  load = "load",
   nPCs = 15,
   resolution = 0.5,
   neighbor = 20

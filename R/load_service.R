@@ -142,6 +142,7 @@ load_multi_rna <-
            jobid = "1642208223822",
            type = "multiRna",
            mode = "RNA",
+           load = "load",
            filename,
            min_cells = 20000,
            min_genes = 0.001,
@@ -179,6 +180,10 @@ load_multi_rna <-
         raw_expr_data,
         min.cells = as.numeric(min_genes) * ncol(raw_expr_data),
       )
+
+    if(load == "Load") {
+      e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
+    }
 
     e1$species <- "Human"
     empty_category <- as.factor(e1$obj$orig.ident)
@@ -234,6 +239,9 @@ load_multi_rna <-
       )
     send_progress("Normalizing data")
     e1$obj <- NormalizeData(e1$obj, verbose = F)
+    if(load == "Calculate") {
+      qs::qsave(e1$obj, paste0(get_base_dir(), jobid, ".qsave"))
+    }
     return(
       list(
         raw_n_genes = dim(raw_obj)[1],
