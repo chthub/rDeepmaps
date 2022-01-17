@@ -733,7 +733,7 @@ load_multiome <-
       #0cc4610f4c9b4c0f97ec5a84c2e19e30
       #
       #path <- gsub("/mnt/c","c:/",as.character(path))
-      path <- gsub("/mnt/c","c:/",as.character(expr$path))
+      path <- gsub("/mnt/c","c:/",as.character(expr$path[1]))
       path <- gsub("/scratch/deepmaps","",as.character(path))
       print(path)
       raw_expr_data <- Read10X_h5(paste0(path))
@@ -881,7 +881,7 @@ load_citeseq <-
         AddMetaData(e1$obj, percent.ribo, col.name = "percent.ribo")
     } else {
 
-      path <- gsub("/mnt/c","c:/",as.character(expr$path))
+      path <- gsub("/mnt/c","c:/",as.character(expr$path[1]))
       path <- gsub("/scratch/deepmaps","",as.character(path))
       print(path)
       raw_expr_data <- Read10X_h5(paste0(path))
