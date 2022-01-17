@@ -5,6 +5,7 @@
 #' @param nPCs string
 #' @param resolution string
 #' @param neighbor string
+#' @param expr
 #'
 #' @return
 #' @export
@@ -14,16 +15,17 @@ cluster_single_rna <- function(req,
                                load = "load",
                                nPCs = 15,
                                resolution = 0.5,
-                               neighbor = 20) {
+                               neighbor = 20,
+                               expr = NULL) {
   message(glue(
     "Run clustering. nPC={nPCs}, resolution={resolution}, neighbor={neighbor}"
   ))
 
-  if(load == "Load") {
+  if(load == "Load" && file.exists(paste0(get_base_dir(), jobid, ".qsave"))) {
     e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
   }
 
-  if(jobid == '1642225634954') {
+  if(jobid == '1642225634954' || expr$size == 23076031) {
     e1$obj@meta.data$cell_type <- NULL
   }
 
@@ -85,6 +87,7 @@ cluster_single_rna <- function(req,
 #' @param nPCs string
 #' @param resolution string
 #' @param neighbor string
+#' @param expr
 #'
 #' @return
 #' @export
@@ -94,21 +97,16 @@ cluster_multiome <- function(req,
                              load = "load",
                              method = "Velocity weighted method",
                              nPCs = "20",
+                             expr = NULL,
                              resolution = "0.5",
                              neighbor = "20") {
 
   TOTAL_STEPS <- 6
 
-  if(jobid %in% c('1642131295448','lymphoma_14k')) {
-    if (file.exists("/data")) {
-      base_dir <- "/data/"
-    } else {
-      base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
-    }
-    e1$obj <- qs::qread(paste0(base_dir, "lymphoma_14k_obj.qsave"))
-
+  if(jobid %in% c('1642131295448','lymphoma_14k') || expr$size == 124739802) {
+    e1$obj <- qs::qread(paste0(get_base_dir(), "lymphoma_14k_obj.qsave"))
     fragments <- CreateFragmentObject(
-      path = paste0(base_dir, "lymph_node_lymphoma_14k_atac_fragments.tsv.gz"),
+      path = paste0(get_base_dir(), "lymph_node_lymphoma_14k_atac_fragments.tsv.gz"),
       cells = colnames(e1$obj),
       validate.fragments = FALSE
     )
@@ -145,7 +143,7 @@ cluster_multiome <- function(req,
     Sys.sleep(10)
   }
 
-  if(load == "Load") {
+  if(load == "Load" && file.exists(paste0(get_base_dir(), jobid, ".qsave"))) {
     e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
   }
 

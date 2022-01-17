@@ -10,6 +10,7 @@ cluster_multiome(
   load = "load",
   method = "Velocity weighted method",
   nPCs = "20",
+  expr = NULL,
   resolution = "0.5",
   neighbor = "20"
 )
@@ -20,6 +21,8 @@ cluster_multiome(
 \item{jobid}{string}
 
 \item{nPCs}{string}
+
+\item{expr}{}
 
 \item{resolution}{string}
 

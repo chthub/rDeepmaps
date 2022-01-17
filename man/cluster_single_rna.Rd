@@ -10,7 +10,8 @@ cluster_single_rna(
   load = "load",
   nPCs = 15,
   resolution = 0.5,
-  neighbor = 20
+  neighbor = 20,
+  expr = NULL
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ cluster_single_rna(
 \item{resolution}{string}
 
 \item{neighbor}{string}
+
+\item{expr}{}
 }
 \value{
 

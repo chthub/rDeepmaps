@@ -359,8 +359,8 @@ example_dr1 <- function(tf = c('CTCF', 'DEAF1'),
 #'
 calc_dr <- function(dat = "lymphoma_14k",
                        tf = c('CTCF', 'ELF1', 'MEF2C', 'E2F6', 'EGR1'),
-                       ct1 = c(0),
-                       ct2 = c(2)) {
+                       ct1 = c("0"),
+                       ct2 = c("2")) {
 
   if(dat == '1642131295448'| dat == "lymphoma_14k") {
     dat <- "lymphoma_14k"
