@@ -25,9 +25,9 @@ cluster_single_rna <- function(req,
     e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
   }
 
-  if(jobid == '1642225634954' || expr$size == 23076031) {
-    e1$obj@meta.data$cell_type <- NULL
-  }
+  #if(jobid == '1642225634954' || expr$size == 23076031) {
+  #  e1$obj@meta.data$cell_type <- NULL
+  #}
 
   nPCs <- as.numeric(nPCs)
   resolution <- as.numeric(resolution)
@@ -36,7 +36,6 @@ cluster_single_rna <- function(req,
   e1$obj <-
     ScaleData(e1$obj, features = rownames(e1$obj), verbose = F)
   variable_genes <- VariableFeatures(e1$obj)
-
 
   e1$obj <-
     RunPCA(e1$obj,

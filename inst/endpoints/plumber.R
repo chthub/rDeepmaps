@@ -130,6 +130,9 @@ rna_qc_plot
 #* @get /atac-qc-list
 atac_qc_list
 
+#* Get ATAC QC list
+#* @get /adt-qc-list
+adt_qc_list
 
 #################################### Regulon
 

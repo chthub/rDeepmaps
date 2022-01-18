@@ -25,7 +25,6 @@ rna_qc_list <- function() {
   })
   pct_ribo_per_gene <- e1$obj$percent.ribo
   pct_mito_per_gene <- e1$obj$percent.mt
-  HVFInfo(e1$obj)[VariableFeatures(e1$obj), ]
   gene_result <-
     data.frame(
       gene = rownames(this_obj),
@@ -102,7 +101,7 @@ rna_qc_plot <- function() {
 }
 
 
-#' Get QC metrics list for single scRNA-seq dataset
+#' Get QC metrics list for single scATAC-seq dataset
 #'
 #' @return list of QC metrics for plotting
 #' @export
@@ -114,7 +113,6 @@ atac_qc_list <- function() {
     DefaultAssay(e1$obj) <- "ATAC"
   }
   e1$obj[, rownames(e1$obj@meta.data) ]
-  colnames(e1$obj)
   n_features_per_cell <- e1$obj$nFeature_ATAC
   n_reads_per_cell <- e1$obj$nCount_ATAC
   pct_reads_in_peaks <- 100 - e1$obj$nFeature_ATAC/e1$obj$nFeature_RNA * 5
@@ -176,4 +174,67 @@ atac_qc_list <- function() {
   return(result)
 }
 
+#' Get QC metrics list for single scRNA-seq dataset
+#'
+#' @return list of QC metrics for plotting
+#' @export
+#'
+adt_qc_list <- function() {
+  if (length(names(e1$obj@assays)) > 0) {
+    DefaultAssay(e1$obj) <- "ADT"
+  }
+  n_features_per_cell <- e1$obj$nFeature_ADT
+  n_reads_per_cell <- e1$obj$nCount_ADT
+
+  e1$obj <- FindVariableFeatures(e1$obj, verbose = F)
+  vargenes <- VariableFeatures(e1$obj)
+  Idents(e1$obj) <- e1$obj@meta.data$empty_category
+  this_obj <-
+    as.matrix(GetAssayData(subset(e1$obj, features = vargenes), slot = "data"))
+  row_min <- apply(this_obj, 1, min)
+  row_mean <- HVFInfo(e1$obj)[VariableFeatures(e1$obj), ][, 1]
+  row_sd <- HVFInfo(e1$obj)[VariableFeatures(e1$obj), ][, 2]
+  row_residual_variance <-
+    HVFInfo(e1$obj)[VariableFeatures(e1$obj), ][, 3]
+  row_max <- apply(this_obj, 1, max)
+  n_features_per_cell <- e1$obj$nFeature_ADT
+  n_reads_per_cell <- e1$obj$nCount_ADT
+  n_cells_per_gene <- apply(this_obj, 1, function(x) {
+    sum(x > 0)
+  })
+
+  gene_result <-
+    data.frame(
+      gene = rownames(this_obj),
+      min = format(round(row_min, 2), nsmall = 2),
+      max = format(round(row_max, 2), nsmall = 2),
+      mean = format(round(rowMeans(this_obj), 2), nsmall = 2),
+      std = format(round(row_sd, 2), nsmall = 2),
+      residual_variance = format(round(row_residual_variance, 2), nsmall = 2),
+      n_cells_per_gene = n_cells_per_gene
+    )
+
+  cell_result <-
+    data.frame(
+      n_reads_per_cell = n_reads_per_cell,
+      n_features_per_cell = n_features_per_cell
+    )
+  hist_features_per_cell <- data.frame(
+    breaks = hist(n_features_per_cell, plot = F)$breaks[-1],
+    counts = hist(n_features_per_cell, plot = F)$counts
+  )
+  hist_reads_per_cell <- data.frame(
+    breaks = hist(n_reads_per_cell, plot = F)$breaks[-1],
+    counts = hist(n_reads_per_cell, plot = F)$counts
+  )
+
+  result <- list(
+    gene_result = gene_result,
+    cell_result = na.omit(cell_result),
+    hist_features_per_cell = hist_features_per_cell,
+    hist_reads_per_cell = hist_reads_per_cell
+  )
+  DefaultAssay(e1$obj) <- "RNA"
+  return(result)
+}
 

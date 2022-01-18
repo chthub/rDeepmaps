@@ -215,6 +215,7 @@ violin_gene_plot <-
       e1$assay_idx <- which(names(e1$obj@assays) == assay)
       this_assay <- names(e1$obj@assays[e1$assay_idx])
       DefaultAssay(e1$obj) <- this_assay
+      print(e1$obj)
       this_group_idx <-
         which(colnames(e1$obj@meta.data) == group)
       plot <-
@@ -222,7 +223,8 @@ violin_gene_plot <-
           e1$obj,
           gene,
           split.by = colnames(e1$obj@meta.data)[idx],
-          group.by = colnames(e1$obj@meta.data)[this_group_idx]
+          group.by = colnames(e1$obj@meta.data)[this_group_idx],
+          assay = this_assay
         )
       this_assay <- names(e1$obj@assays[current_assay])
       DefaultAssay(e1$obj) <- this_assay
