@@ -2,6 +2,7 @@
 
 export("%>%")
 export(active_label)
+export(adt_qc_list)
 export(atac_qc_list)
 export(calc_deg)
 export(calc_dr)

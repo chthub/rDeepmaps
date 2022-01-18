@@ -2,7 +2,7 @@
 % Please edit documentation in R/qc_service.R
 \name{atac_qc_list}
 \alias{atac_qc_list}
-\title{Get QC metrics list for single scRNA-seq dataset}
+\title{Get QC metrics list for single scATAC-seq dataset}
 \usage{
 atac_qc_list()
 }
@@ -10,5 +10,5 @@ atac_qc_list()
 list of QC metrics for plotting
 }
 \description{
-Get QC metrics list for single scRNA-seq dataset
+Get QC metrics list for single scATAC-seq dataset
 }
