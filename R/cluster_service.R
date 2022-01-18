@@ -139,13 +139,12 @@ cluster_multiome <- function(req,
 
     e1$obj <- NormalizeData(e1$obj, verbose = F)
     e1$obj <- ScaleData(e1$obj, verbose = F)
-    e1$obj@meta.data$cell_type <- NULL
-    Sys.sleep(10)
+    #e1$obj@meta.data$cell_type <- NULL
   }
 
-  if(load == "Load" && file.exists(paste0(get_base_dir(), jobid, ".qsave"))) {
-    e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
-  }
+  #if(load == "Load" && file.exists(paste0(get_base_dir(), jobid, ".qsave"))) {
+  #  e1$obj <- qs::qread(paste0(get_base_dir(), jobid, ".qsave"))
+  #}
 
   if(length(e1$obj@reductions) < 2) {
     e1$obj <-
@@ -250,7 +249,7 @@ cluster_multiome <- function(req,
   if(load == "Calculate") {
     qs::qsave(e1$obj, paste0(get_base_dir(), jobid, ".qsave"))
   }
-
+  print(levels(e1$obj$cell_type))
   return(list(
     n_seurat_clusters = length(levels(Idents(e1$obj))),
     umap_pts = data.frame(

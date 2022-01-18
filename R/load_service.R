@@ -560,8 +560,24 @@ load_multiome4 <-
     } else {
       base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
     }
+
+    raw_obj <- qs::qread(paste0(base_dir, "lymphoma_14k_raw_obj.qsave"))
     e1$obj <- qs::qread(paste0(base_dir, "lymphoma_14k_obj.qsave"))
-    raw_obj <- qs::qread(paste0(base_dir, "lymphoma_14k_obj.qsave"))
+    #tmp_ident <- e1$obj$cell_type
+    #levels(tmp_ident)[1] <- "Exhausted CD4+ T cell"
+    #levels(tmp_ident)[2] <- "Exhausted CD8+ T cell"
+    #levels(tmp_ident)[3] <- "Macrophage"
+    #levels(tmp_ident)[4] <- "Naive CD8+ T cell"
+    #levels(tmp_ident)[5] <- "Effector-like CD4+ T cell_1"
+    #levels(tmp_ident)[6] <- "DSLL state-2"
+    #levels(tmp_ident)[7] <- "Effector-like CD4+ T cell_2"
+    #levels(tmp_ident)[8] <- "DSLL state-1"
+    #levels(tmp_ident)[9] <- "Normal B cell"
+    #levels(tmp_ident)[10] <- "Effector-like CD8+ T cell"
+    #levels(tmp_ident)[11] <- "DC"
+    #e1$obj <- AddMetaData(e1$obj, tmp_ident, col.name = "cell_type")
+    #DimPlot(e1$obj, group.by = "cell_type", label = T)
+    #qs::qsave(e1$obj, "lymphoma_14k_obj.qsave")
 
     fragments <- CreateFragmentObject(
       path = paste0(base_dir, "lymph_node_lymphoma_14k_atac_fragments.tsv.gz"),
@@ -569,6 +585,7 @@ load_multiome4 <-
       validate.fragments = FALSE
     )
     e1$obj@assays$ATAC@fragments[[1]] <- fragments
+    raw_obj@assays$ATAC@fragments[[1]] <- fragments
     Idents(e1$obj) <- e1$obj$orig.ident
     rb.genes <-
       rownames(e1$obj)[grep("^RP[SL][[:digit:]]", rownames(e1$obj),
@@ -605,8 +622,7 @@ load_multiome4 <-
       rep("empty_category", length(levels(empty_category)))
     e1$obj <-
       AddMetaData(e1$obj, metadata = empty_category, col.name = "empty_category")
-    raw_obj <- e1$obj
-    send_progress(paste0("Calculating data summary statistics"))
+
     e1$species <- species
     if(mode == "RNA") {
       raw_percent_zero <-
@@ -638,14 +654,14 @@ load_multiome4 <-
         length(which((as.matrix(
           GetAssayData(e1$obj, assay="ATAC")
         ) > 0))) / length(GetAssayData(e1$obj, assay="ATAC"))
-      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj)))
-      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj)))
+      raw_mean_expr <- mean(as.matrix(GetAssayData(raw_obj, assay="ATAC")))
+      filter_mean_expr <- mean(as.matrix(GetAssayData(e1$obj, assay="ATAC")))
       res <- list(
         raw_n_genes = nrow(GetAssayData(raw_obj, assay="ATAC"))[1],
         raw_n_cells = ncol(GetAssayData(raw_obj, assay="ATAC"))[1],
         raw_percent_zero = raw_percent_zero,
         raw_mean_expr = raw_mean_expr,
-        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1] - 6000,
+        filter_n_genes = nrow(GetAssayData(e1$obj, assay="ATAC"))[1],
         filter_n_cells = ncol(GetAssayData(e1$obj, assay="ATAC"))[1],
         filter_percent_zero = filter_percent_zero,
         filter_mean_expr = filter_mean_expr

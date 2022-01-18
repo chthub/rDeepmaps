@@ -57,7 +57,7 @@ calc_regulon_network <- function(dat = "lymphoma_14k", clust = "2") {
     all_network <- dplyr::bind_rows(all_network, this_network)
   }
 
-  Sys.sleep(10)
+  Sys.sleep(1)
   all_network <- all_network %>%
     dplyr::mutate(id = dplyr::group_indices(., tf)) %>%
     dplyr::group_by(tf) %>%
@@ -410,8 +410,8 @@ calc_dr <- function(dat = "lymphoma_14k",
       logfc.threshold = 0,
       min.cells.feature = 0,
       min.cells.group = 0,
-      return.thresh = 1,
-      mean.fxn = mean.fxn
+      return.thresh = 1
+      #mean.fxn = mean.fxn
     )
 
   dr <- tibble::rownames_to_column(dr, "tf") %>%
