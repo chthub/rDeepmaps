@@ -22,6 +22,7 @@ The package is the R API server for testing DeepMAPS website using example datas
 ``` r
 library(devtools)
 install_github("Wang-Cankun/iris3api@master")
+library(iris3api)
 load_all()
 start_debug_server()
 ```
