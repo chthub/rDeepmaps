@@ -292,7 +292,7 @@ load_multiome2 <-
     if (file.exists("/data")) {
       base_dir <- "/data/"
     } else {
-      base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
+      base_dir <- "F:/DeepMAPS/data/"
     }
     e1$obj <- qs::qread(paste0(base_dir, "lymph_obj.qsave"))
     raw_obj <- qs::qread(paste0(base_dir, "lymph_obj.qsave"))
@@ -558,7 +558,7 @@ load_multiome4 <-
     if (file.exists("/data")) {
       base_dir <- "/data/"
     } else {
-      base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
+      base_dir <- "F:/DeepMAPS/data/"
     }
 
     raw_obj <- qs::qread(paste0(base_dir, "lymphoma_14k_raw_obj.qsave"))
@@ -880,7 +880,7 @@ load_citeseq <-
       } else {
         e1$obj <-
           qs::qread(
-            "C:/Users/flyku/Documents/GitHub/iris3api/inst/extdata/PBMCandLung_obj.qsave"
+            "F:/DeepMAPS/data/PBMCandLung_obj.qsave"
           )
         raw_obj <- e1$obj
         iris3api::set_embedding(name = "umap.hgt")
