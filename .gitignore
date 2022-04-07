@@ -17,7 +17,7 @@ tmp
 
 /data-raw/*.csv
 /data-raw/*.fst
-/data
+data
 
 # Site
 
