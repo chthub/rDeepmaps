@@ -153,6 +153,7 @@ load_multi_rna <-
            label = NULL,
            species = "Human") {
     send_progress("Start processing scRNA-seq dataset")
+    print("Start processing scRNA-seq dataset")
     expr <- data.frame(jobid = "1642208223822")
     expr$mimetype <- "application/vnd.ms-excel"
     expr$filename <- "c6c13e15a1f1dd3f0fdcba2ae3c65d20"
@@ -167,6 +168,7 @@ load_multi_rna <-
         e1$meta <- read_deepmaps(label_type, label_path)
       }
     } else {
+      print("jobid!=expample1")
       raw_expr_data <- iris3api::ifnb_2800$expr
       e1$meta <- iris3api::ifnb_2800$meta
       # write.csv(raw_expr_data[,1:1400],"human_ifnb_sample1_expr.csv")
