@@ -291,10 +291,10 @@ load_multiome2 <-
 
     TOTAL_STEPS <- 6
 
-    if (file.exists("/data")) {
-      base_dir <- "/data/"
+    if (file.exists("/bmbl_data/deepmaps/data")) {
+      base_dir <- "/bmbl_data/deepmaps/data/"
     } else {
-      base_dir <- "F:/DeepMAPS/data/"
+      base_dir <- "F:/DeepMAPS/bmbl_data/deepmaps/data/"
     }
     e1$obj <- qs::qread(paste0(base_dir, "lymph_obj.qsave"))
     raw_obj <- qs::qread(paste0(base_dir, "lymph_obj.qsave"))
@@ -424,8 +424,8 @@ load_multiome3 <-
 
     TOTAL_STEPS <- 6
 
-    if (file.exists("/data")) {
-      base_dir <- "/data/"
+    if (file.exists("/bmbl_data/deepmaps/data")) {
+      base_dir <- "/bmbl_data/deepmaps/data/"
     } else {
       base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/pbmc/"
     }
@@ -557,10 +557,10 @@ load_multiome4 <-
 
     TOTAL_STEPS <- 6
 
-    if (file.exists("/data")) {
-      base_dir <- "/data/"
+    if (file.exists("/bmbl_data/deepmaps/data")) {
+      base_dir <- "/bmbl_data/deepmaps/data/"
     } else {
-      base_dir <- "F:/DeepMAPS/data/"
+      base_dir <- "F:/DeepMAPS/bmbl_data/deepmaps/data/"
     }
 
     raw_obj <- qs::qread(paste0(base_dir, "lymphoma_14k_raw_obj.qsave"))
@@ -719,12 +719,12 @@ load_multiome <-
     TOTAL_STEPS <- 6
     if (jobid == "example") {
       send_progress(paste0("Loading example data"))
-      if (file.exists("/data")) {
+      if (file.exists("/bmbl_data/deepmaps/data")) {
         sleep(0.1)
-        e1$obj <- qs::qread("/data/pbmc_sorted_3k.qsave")
-        raw_obj <- qs::qread("/data/pbmc_match_3k.qsave")
+        e1$obj <- qs::qread("/bmbl_data/deepmaps/data/pbmc_sorted_3k.qsave")
+        raw_obj <- qs::qread("/bmbl_data/deepmaps/data/pbmc_match_3k.qsave")
         e1$obj@assays$ATAC@fragments[[1]]@path <-
-          "/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
+          "/bmbl_data/deepmaps/data/pbmc_granulocyte_sorted_3k_atac_fragments.tsv.gz"
       } else {
         e1$obj <-
           qs::qread(
@@ -876,13 +876,13 @@ load_citeseq <-
            destination = NULL
   ) {
     if (jobid !="example1") {
-      if (file.exists("/data")) {
-        e1$obj <- qs::qread("/data/PBMCandLung_obj.qsave")
-        raw_obj <- qs::qread("/data/PBMCandLung_obj.qsave")
+      if (file.exists("/bmbl_data/deepmaps/data")) {
+        e1$obj <- qs::qread("/bmbl_data/deepmaps/data/PBMCandLung_obj.qsave")
+        raw_obj <- qs::qread("/bmbl_data/deepmaps/data/PBMCandLung_obj.qsave")
       } else {
         e1$obj <-
           qs::qread(
-            "F:/DeepMAPS/data/PBMCandLung_obj.qsave"
+            "F:/DeepMAPS/bmbl_data/deepmaps/data/PBMCandLung_obj.qsave"
           )
         raw_obj <- e1$obj
         iris3api::set_embedding(name = "umap.hgt")
