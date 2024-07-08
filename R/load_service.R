@@ -606,6 +606,7 @@ load_multiome4 <-
                   PercentageFeatureSet(e1$obj, pattern = "^MT-"),
                   col.name = "percent.mt"
       )
+    e1$obj@assays$ATAC@key <- "atac_"
     e1$obj <-
       FindVariableFeatures(
         e1$obj,
