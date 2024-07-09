@@ -153,8 +153,8 @@ set_obj <- function(req, type = "full") {
 #' @export
 #'
 get_base_dir <- function() {
-  if (file.exists("/data")) {
-    base_dir <- "/data/"
+  if (file.exists("/bmbl_data/deepmaps/data")) {
+    base_dir <- "/bmbl_data/deepmaps/data"
   } else {
     base_dir <- "C:/Users/flyku/Desktop/iris3/pbmc_match/lymph/"
   }
