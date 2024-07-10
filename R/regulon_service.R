@@ -19,7 +19,7 @@ calc_regulon_network <- function(dat = "lymphoma_14k", clust = "2") {
   if (e1$regulon_ident == 'other') {
     e1$regulon_ident <- 'hgt_cluster'
   }
-  #e1$regulon_ident <- 'seurat_clusters'
+  e1$regulon_ident <- 'hgt_cluster'
   active_idents <-
     droplevels(as.factor(e1$obj@meta.data[, which(colnames(e1$obj@meta.data) == e1$regulon_ident)]))
   if (length(active_idents) == 0) {
